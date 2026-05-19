@@ -400,10 +400,14 @@ firebase.auth().onAuthStateChanged(async (user) => {
                 }
 
                 loadPage(pageToLoad, navToClick);
-                // 🔴 رادار الطرد الإجباري (Force Logout Radar) 🔴
-db.collection("Users").doc(user.email).onSnapshot(doc => {
+// 🔴 رادار الطرد الإجباري (Force Logout Radar) - المحدّث 🔴
+db.collection("Users").doc(user.email).onSnapshot(async (doc) => {
     if (doc.exists && doc.data().forceLogout === true) {
         alert("🔒 تم تسجيل خروجك إدارياً من قبل السوبر أدمن.");
+        
+        // 🔴 التعديل السحري هنا: مسح أمر الطرد من قاعدة البيانات عشان يعرف يدخل تاني!
+        await db.collection("Users").doc(user.email).update({ forceLogout: false });
+        
         firebase.auth().signOut().then(() => {
             sessionStorage.clear();
             window.top.location.href = 'index.html';
