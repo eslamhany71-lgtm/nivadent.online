@@ -232,9 +232,23 @@
                 </button>
             </div>
 
-            <div id="cdet-security" style="display: none; animation: fadeIn 0.3s ease; text-align: center; padding: 40px 20px;">
-                <h3 style="color: #64748b;">جاري تطوير وحدة الأمان (قريباً)...</h3>
-                <p style="color: #94a3b8; font-size: 14px;">(إرسال روابط إعادة التعيين، الإجبار على تسجيل الخروج، تعليق حساب طبيب)</p>
+<div id="cdet-security" style="display: none; animation: fadeIn 0.3s ease;">
+                <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">تحكم في أمان حسابات فريق العمل لهذه العيادة. (إرسال روابط إعادة تعيين المرور، إيقاف الموظفين، أو الطرد الإجباري).</p>
+                
+                <div class="table-container" style="max-height: 350px; overflow-y: auto; box-shadow: none; border: 1px solid #e2e8f0; padding: 0;">
+                    <table style="width: 100%; margin: 0; min-width: 600px;">
+                        <thead style="position: sticky; top: 0; z-index: 1;">
+                            <tr>
+                                <th style="background: #f1f5f9;">المستخدم / البريد الإلكتروني</th>
+                                <th style="background: #f1f5f9; text-align: center;">حالة الأمان</th>
+                                <th style="background: #f1f5f9; text-align: center;">إجراءات الحماية (Actions)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="det-security-body">
+                            <tr><td colspan="3" style="text-align: center;">جاري تحميل البيانات الأمنية...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
         </div>
