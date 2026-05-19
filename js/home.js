@@ -400,6 +400,16 @@ firebase.auth().onAuthStateChanged(async (user) => {
                 }
 
                 loadPage(pageToLoad, navToClick);
+                // 🔴 رادار الطرد الإجباري (Force Logout Radar) 🔴
+db.collection("Users").doc(user.email).onSnapshot(doc => {
+    if (doc.exists && doc.data().forceLogout === true) {
+        alert("🔒 تم تسجيل خروجك إدارياً من قبل السوبر أدمن.");
+        firebase.auth().signOut().then(() => {
+            sessionStorage.clear();
+            window.top.location.href = 'index.html';
+        });
+    }
+});
             }
         } catch (error) {
             console.error("خطأ في جلب بيانات المستخدم:", error);
