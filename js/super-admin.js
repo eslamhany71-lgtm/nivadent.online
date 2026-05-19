@@ -324,7 +324,7 @@ function loadSystemReviews() {
     });
 }
 
-// 🔴 دالة فتح مودال العيادة وتجهيز زراير الصلاحيات 🔴
+// 🔴 دالة فتح مودال العيادة وتجهيز زراير الصلاحيات وجدول الأمان 🔴
 async function openClinicDetailsModal(clinicId) {
     const clinic = allClinicsList.find(c => c.id === clinicId);
     if (!clinic) return;
@@ -366,9 +366,9 @@ async function openClinicDetailsModal(clinicId) {
     const hiddenId = document.getElementById('current-det-clinic-id');
     if (hiddenId) hiddenId.value = clinic.id;
 
-    // --- 🔴 تهيئة زراير الصلاحيات بناءً على الداتا 🔴 ---
+    // --- تهيئة زراير الصلاحيات ---
     const f = clinic.features || {};
-    const getF = (val) => val === undefined ? true : val; // الافتراضي: مفتوح للعيادات القديمة
+    const getF = (val) => val === undefined ? true : val;
 
     document.getElementById('feat_patients').checked = getF(f.patients);
     document.getElementById('feat_appointments').checked = getF(f.appointments);
@@ -385,13 +385,14 @@ async function openClinicDetailsModal(clinicId) {
     document.getElementById('feat_settings').checked = getF(f.settings);
     document.getElementById('feat_support').checked = getF(f.support);
 
-    // العودة للتاب الأول افتراضياً عند كل فتح
     switchClinicDetTab('info');
-    // ---------------------------------------------
 
     document.getElementById('clinicDetailsModal').style.display = 'flex';
+    
     const tbody = document.getElementById('det-users-body');
+    const secTbody = document.getElementById('det-security-body');
     tbody.innerHTML = `<tr><td colspan="6" style="text-align: center;">${isAr ? 'جاري تجميع بيانات المستخدمين...' : 'Fetching users...'}</td></tr>`;
+    if(secTbody) secTbody.innerHTML = `<tr><td colspan="3" style="text-align: center;">جاري تجميع البيانات الأمنية...</td></tr>`;
 
     try {
         const [adminCodesSnap, invitesSnap] = await Promise.all([
@@ -406,10 +407,8 @@ async function openClinicDetailsModal(clinicId) {
             const a = doc.data();
             if (!a.activated) {
                 pendingUsers.push({ 
-                    name: 'مدير العيادة (الأدمن)', 
-                    identifier: `كود التفعيل: ${doc.id}`, 
-                    role: 'admin', status: 'pending', isOnline: false, lastLogin: null,
-                    createdAt: fallbackDate 
+                    name: 'مدير العيادة (الأدمن)', identifier: `كود التفعيل: ${doc.id}`, 
+                    role: 'admin', status: 'pending', isOnline: false, lastLogin: null, createdAt: fallbackDate 
                 });
             }
         });
@@ -419,10 +418,8 @@ async function openClinicDetailsModal(clinicId) {
             if (!inv.activated) {
                 let invDate = inv.createdAt ? (typeof inv.createdAt.toDate === 'function' ? inv.createdAt.toDate() : new Date(inv.createdAt)) : fallbackDate;
                 pendingUsers.push({ 
-                    name: inv.name || 'موظف مجهول', 
-                    identifier: `كود الدعوة: ${doc.id}`, 
-                    role: inv.role, status: 'pending', isOnline: false, lastLogin: null,
-                    createdAt: invDate 
+                    name: inv.name || 'موظف مجهول', identifier: `كود الدعوة: ${doc.id}`, 
+                    role: inv.role, status: 'pending', isOnline: false, lastLogin: null, createdAt: invDate 
                 });
             }
         });
@@ -437,37 +434,32 @@ async function openClinicDetailsModal(clinicId) {
                     const u = doc.data();
                     let uDate = u.createdAt ? (typeof u.createdAt.toDate === 'function' ? u.createdAt.toDate() : new Date(u.createdAt)) : fallbackDate;
                     staffList.push({ 
-                        name: u.name || '---', 
-                        identifier: u.email || doc.id, 
-                        role: u.role, 
-                        status: 'active',
-                        isOnline: u.isOnline || false, 
-                        lastLogin: u.lastLogin || null,
-                        createdAt: uDate 
+                        name: u.name || '---', identifier: u.email || doc.id, 
+                        role: u.role, status: u.status || 'active', // 🔴 قراءة حالة الإيقاف
+                        isOnline: u.isOnline || false, lastLogin: u.lastLogin || null, createdAt: uDate 
                     });
                 });
 
                 staffList.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
                 tbody.innerHTML = '';
+                if(secTbody) secTbody.innerHTML = '';
                 
                 if (staffList.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #64748b;">لا يوجد مستخدمين مسجلين أو أكواد معلقة.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #64748b;">لا يوجد مستخدمين.</td></tr>';
+                    if(secTbody) secTbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #64748b;">لا يوجد مستخدمين.</td></tr>';
                 } else {
                     staffList.forEach(u => {
+                        // --- 1. بناء جدول المعلومات (التاب الأول) ---
                         let roleAr = u.role === 'admin' ? 'أدمن (مدير)' : (u.role === 'nurse' ? 'ممرضة' : (u.role === 'receptionist' ? 'استقبال' : (u.role === 'doctor' ? 'طبيب' : u.role)));
                         let roleColor = u.role === 'admin' ? '#dc2626' : (u.role === 'doctor' ? '#0284c7' : '#d97706');
                         let roleBg = u.role === 'admin' ? '#fee2e2' : (u.role === 'doctor' ? '#e0f2fe' : '#fef3c7');
                         
-                        let identHtml = u.status === 'pending' 
-                            ? `<strong style="color: #dc2626;">${u.identifier}</strong>` 
-                            : `<span dir="ltr">${u.identifier}</span>`;
-
-                        let onlineHtml = '';
-                        let lastSeenHtml = '---';
+                        let identHtml = u.status === 'pending' ? `<strong style="color: #dc2626;">${u.identifier}</strong>` : `<span dir="ltr">${u.identifier}</span>`;
+                        let onlineHtml = ''; let lastSeenHtml = '---';
 
                         if (u.status === 'pending') {
-                            onlineHtml = `<span style="color:#d97706; font-size:12px;">⏳ لم يفعل الحساب</span>`;
+                            onlineHtml = `<span style="color:#d97706; font-size:12px;">⏳ لم يفعل</span>`;
                         } else {
                             if (u.isOnline) {
                                 onlineHtml = `<span class="status-online">${isAr ? 'أونلاين' : 'Online'}</span>`;
@@ -479,34 +471,62 @@ async function openClinicDetailsModal(clinicId) {
                                         const d = typeof u.lastLogin.toDate === 'function' ? u.lastLogin.toDate() : new Date(u.lastLogin);
                                         lastSeenHtml = `<span class="status-offline" dir="ltr">${d.toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US')} ${d.toLocaleTimeString(lang === 'ar' ? 'ar-EG' : 'en-US', {hour:'2-digit', minute:'2-digit'})}</span>`;
                                     } catch(e) { lastSeenHtml = '---'; }
-                                } else {
-                                    lastSeenHtml = `<span class="status-offline">${isAr ? 'لم يسجل دخول' : 'Never'}</span>`;
-                                }
+                                } else { lastSeenHtml = `<span class="status-offline">${isAr ? 'لم يسجل دخول' : 'Never'}</span>`; }
                             }
                         }
 
                         let joinDateHtml = '---';
-                        if (u.createdAt.getTime() !== 0) {
-                            joinDateHtml = `<span dir="ltr" style="color: #475569; font-size: 13px;">${u.createdAt.toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US')}</span>`;
-                        }
+                        if (u.createdAt.getTime() !== 0) joinDateHtml = `<span dir="ltr" style="color: #475569; font-size: 13px;">${u.createdAt.toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US')}</span>`;
 
-                        tbody.innerHTML += `
-                            <tr>
-                                <td style="font-weight: bold; color: #334155;">${u.name}</td>
-                                <td style="text-align: right;">${identHtml}</td>
-                                <td><span style="background: ${roleBg}; color: ${roleColor}; padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: bold;">${roleAr}</span></td>
-                                <td style="text-align: center;">${joinDateHtml}</td>
-                                <td style="text-align: center;">${onlineHtml}</td>
-                                <td>${lastSeenHtml}</td>
-                            </tr>
-                        `;
+                        tbody.innerHTML += `<tr>
+                            <td style="font-weight: bold; color: #334155;">${u.name}</td>
+                            <td style="text-align: right;">${identHtml}</td>
+                            <td><span style="background: ${roleBg}; color: ${roleColor}; padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: bold;">${roleAr}</span></td>
+                            <td style="text-align: center;">${joinDateHtml}</td>
+                            <td style="text-align: center;">${onlineHtml}</td>
+                            <td>${lastSeenHtml}</td>
+                        </tr>`;
+
+                        // --- 2. بناء جدول الأمان (التاب الثالث) 🔴 ---
+                        if (secTbody) {
+                            let isRealEmail = u.identifier.includes('@');
+                            
+                            let secStatusHtml = u.status === 'suspended' ? `<span style="color:#ef4444; font-weight:bold; background:#fee2e2; padding:4px 8px; border-radius:4px;">موقوف 🚫</span>` : 
+                                               (u.status === 'pending' ? `<span style="color:#d97706; font-weight:bold;">معلق ⏳</span>` : `<span style="color:#10b981; font-weight:bold;">نشط ✅</span>`);
+                            
+                            // زرار الباسوورد
+                            let resetBtn = isRealEmail ? `<button onclick="sendUserPasswordReset('${u.identifier}')" style="background:#3b82f6; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold;" title="إرسال رابط لتغيير الباسوورد">🔑 باسوورد</button>` : '';
+                            
+                            // زرار الإيقاف (للموظفين فقط مش أدمن العيادة الرئيسي عشان العيادة ماتضربش)
+                            let suspendBtn = '';
+                            if (isRealEmail && u.role !== 'admin') { 
+                                if (u.status === 'suspended') {
+                                    suspendBtn = `<button onclick="toggleUserAccountStatus('${u.identifier}', 'active')" style="background:#10b981; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold;">▶️ تفعيل</button>`;
+                                } else {
+                                    suspendBtn = `<button onclick="toggleUserAccountStatus('${u.identifier}', 'suspended')" style="background:#f59e0b; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold;">⏸️ إيقاف</button>`;
+                                }
+                            }
+
+                            // زرار الطرد
+                            let forceLogoutBtn = (isRealEmail && u.isOnline) ? `<button onclick="forceUserLogout('${u.identifier}')" style="background:#ef4444; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold;" title="طرد من النظام حالاً">🚪 طرد</button>` : `<button style="background:#cbd5e1; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:not-allowed;" disabled>🚪 أوفلاين</button>`;
+
+                            secTbody.innerHTML += `<tr>
+                                <td><strong style="color:#334155; font-size:15px;">${u.name}</strong><br><small dir="ltr" style="color:#64748b;">${u.identifier}</small></td>
+                                <td style="text-align: center;">${secStatusHtml}</td>
+                                <td style="text-align: center; display: flex; gap: 8px; justify-content: center;">
+                                    ${resetBtn}
+                                    ${suspendBtn}
+                                    ${forceLogoutBtn}
+                                </td>
+                            </tr>`;
+                        }
                     });
                 }
             });
 
     } catch (e) {
         console.error(e);
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: red;">حدث خطأ في تحميل بيانات المستخدمين والنشاط.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: red;">حدث خطأ في تحميل البيانات.</td></tr>';
     }
 }
 
@@ -1140,3 +1160,63 @@ window.onload = () => {
     document.body.dir = lang === 'en' ? 'ltr' : 'rtl';
     updatePageContent(lang);
 };
+
+// ==========================================
+// 🔴 دوال وحدة الأمان (Security & IAM) 🔴
+// ==========================================
+
+async function sendUserPasswordReset(email) {
+    const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
+    if(!confirm(isAr ? `هل أنت متأكد من إرسال رابط إعادة تعيين كلمة المرور إلى:\n${email} ؟` : `Send reset link to ${email}?`)) return;
+    
+    if (window.showLoader) window.showLoader(isAr ? "جاري إرسال الرابط..." : "Sending link...");
+    try {
+        const actionCodeSettings = {
+            url: 'https://nivadent.online/', 
+            handleCodeInApp: false
+        };
+        await firebase.auth().sendPasswordResetEmail(email, actionCodeSettings);
+        alert(isAr ? "✅ تم إرسال رابط تغيير كلمة المرور للإيميل بنجاح!" : "✅ Password reset link sent successfully!");
+    } catch (error) {
+        console.error("Error sending reset email:", error);
+        alert(isAr ? "❌ حدث خطأ! تأكد أن هذا الإيميل مسجل فعلياً في النظام." : "❌ Error sending link.");
+    } finally {
+        if (window.hideLoader) window.hideLoader();
+    }
+}
+
+async function toggleUserAccountStatus(email, newStatus) {
+    const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
+    if(!confirm(isAr ? "هل أنت متأكد من تغيير حالة هذا الموظف؟" : "Are you sure?")) return;
+    
+    if (window.showLoader) window.showLoader(isAr ? "جاري التحديث..." : "Updating...");
+    try {
+        await db.collection("Users").doc(email).update({ 
+            status: newStatus,
+            forceLogout: newStatus === 'suspended' ? true : false // لو اتوقف، نرسل أمر طرد كمان
+        });
+    } catch (error) {
+        console.error("Error toggling user status:", error);
+        alert(isAr ? "❌ حدث خطأ!" : "❌ Error!");
+    } finally {
+        if (window.hideLoader) window.hideLoader();
+    }
+}
+
+async function forceUserLogout(email) {
+    const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
+    if(!confirm(isAr ? `هل تريد فعلاً إجبار هذا الحساب على تسجيل الخروج فوراً؟\n(${email})` : "Force logout this user?")) return;
+    
+    if (window.showLoader) window.showLoader(isAr ? "جاري طرد المستخدم..." : "Forcing logout...");
+    try {
+        // بمجرد ما نغير القيمة دي لـ true، السيستم في العيادة هيطرده أوتوماتيك
+        await db.collection("Users").doc(email).update({ forceLogout: true });
+        alert(isAr ? "✅ تم إرسال أمر الطرد! سيتم تسجيل خروجه في ثواني." : "✅ Force logout command sent!");
+    } catch (error) {
+        console.error("Error forcing logout:", error);
+        alert(isAr ? "❌ حدث خطأ!" : "❌ Error!");
+    } finally {
+        if (window.hideLoader) window.hideLoader();
+    }
+}
+
