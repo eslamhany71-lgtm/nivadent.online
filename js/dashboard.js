@@ -917,9 +917,21 @@ function openPatientDetails(p) {
     document.getElementById('patientDetailsModal').style.display = 'flex';
 }
 
-function goToPatientProfile() {
-    if(currentSelectedPatientId) {
-        window.parent.loadPage(`patient-profile.html?id=${currentSelectedPatientId}`, window.parent.document.getElementById('nav-patients').parentElement);
+function goToPatientProfile(patientId) {
+    // 🔴 الحل الذكي: لو السيستم جوه iframe استخدم الطريقة القديمة، لو لا، استخدم التوجيه المباشر 🔴
+    if (window.parent && window.parent.loadPage) {
+        const navPatients = window.parent.document.getElementById('nav-patients');
+        
+        // فحص أمني: هل العنصر موجود؟
+        if (navPatients && navPatients.parentElement) {
+            window.parent.loadPage(`patient-profile.html?id=${patientId}`, navPatients.parentElement);
+        } else {
+            // لو العنصر مش موجود، اعمل توجيه مباشر للصفحة
+            window.location.href = `patient-profile.html?id=${patientId}`;
+        }
+    } else {
+        // توجيه مباشر في نفس التاب لو مش داخل iframe
+        window.location.href = `patient-profile.html?id=${patientId}`;
     }
 }
 
