@@ -1289,3 +1289,24 @@ async function forceUserLogout(email) {
         if (window.hideLoader) window.hideLoader();
     }
 }
+
+async function impersonateClinic() {
+    const clinicId = document.getElementById('current-det-clinic-id').value;
+    const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
+    
+    if(!clinicId) return;
+
+    if(confirm(isAr ? "هل تريد الدخول إلى لوحة تحكم هذه العيادة الآن؟" : "Enter this clinic's dashboard?")) {
+        try {
+            // تخزين الـ clinicId الخاص بالعيادة اللي هتدخل عليها في الـ Session
+            // والسيستم هيتعامل معاك فوراً كأنك صاحب العيادة
+            sessionStorage.setItem('impersonatedClinicId', clinicId);
+            
+            // هنفتح شاشة العيادة في نافذة جديدة (أو نفس النافذة حسب رغبتك)
+            window.open('dashboard.html', '_blank'); 
+        } catch (e) {
+            console.error(e);
+            alert(isAr ? "خطأ في الدخول السريع" : "Impersonation error");
+        }
+    }
+}
