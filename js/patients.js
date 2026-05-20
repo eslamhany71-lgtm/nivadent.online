@@ -1,8 +1,9 @@
 // js/patients.js
 const db = firebase.firestore();
-let currentClinicId = sessionStorage.getItem('clinicId');
-const userRole = sessionStorage.getItem('userRole'); // 🔴 جلب وظيفة الموظف
-const userBranch = sessionStorage.getItem('branchId') || 'main'; // 🔴 جلب فرع الموظف الافتراضي
+// 🔴 التعديلات السحرية لضمان قراءة بيانات العيادة المنتحلة 🔴
+let currentClinicId = sessionStorage.getItem('impersonatedClinicId') || sessionStorage.getItem('clinicId');
+let userRole = sessionStorage.getItem('impersonatedClinicId') ? 'admin' : sessionStorage.getItem('userRole'); 
+let userBranch = sessionStorage.getItem('branchId') || 'main';جلب فرع الموظف الافتراضي
 
 let currentEditPatientId = null;
 let patientsDataArray = []; 
@@ -284,11 +285,14 @@ async function loadPatients(isLoadMore = false) {
     try {
         let queryRef = db.collection("Patients").where("clinicId", "==", currentClinicId);
 
-        if (userRole !== 'admin' && userRole !== 'superadmin') {
+if (userRole !== 'admin' && userRole !== 'superadmin') {
             queryRef = queryRef.where("branchId", "==", userBranch);
         } else {
-            const selectedBranch = document.getElementById('branch-filter').value;
-            if (selectedBranch !== 'all') {
+            // 🔴 حماية إضافية للفلتر 🔴
+            const branchFilterEl = document.getElementById('branch-filter');
+            const selectedBranch = branchFilterEl ? branchFilterEl.value : 'all';
+            
+            if (selectedBranch && selectedBranch !== 'all') {
                 queryRef = queryRef.where("branchId", "==", selectedBranch);
             }
         }
