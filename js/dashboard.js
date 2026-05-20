@@ -1,6 +1,7 @@
 // js/dashboard.js
 const db = firebase.firestore();
-const clinicId = sessionStorage.getItem('clinicId'); 
+// 🔴 التعديل هنا: السيستم هيشوف لو فيه impersonatedClinicId، لو مفيش هيستخدم الـ clinicId العادي
+const clinicId = sessionStorage.getItem('impersonatedClinicId') || sessionStorage.getItem('clinicId'); 
 const userRole = sessionStorage.getItem('userRole'); 
 const userBranch = sessionStorage.getItem('branchId') || 'main';
 
