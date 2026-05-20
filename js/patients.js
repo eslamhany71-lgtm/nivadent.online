@@ -66,7 +66,9 @@ function updatePageContent(lang) {
             selCount: "تم تحديد", patWord: "مريض", bulkDel: "🗑️ حذف المحدد", confDel: "هل أنت متأكد من حذف المريض؟ لا يمكن التراجع عن هذا الإجراء.", confBulkDel: "هل أنت متأكد من حذف جميع المرضى المحددين؟",
             loadMore: "⬇️ تحميل المزيد...", noMore: "لا يوجد مرضى آخرين", empty: "لا يوجد مرضى مسجلين",
             btnSearch: "بحث دقيق", btnBarcode: "مسح بالكاميرا (سكان)", btnExcel: "استيراد إكسيل",
-            optAll: "كل الفروع", lBranch: "الفرع التابع له المريض"
+            optAll: "كل الفروع", lBranch: "الفرع التابع له المريض",
+            quotaAlert: "عفواً، لقد وصلت للحد الأقصى لعدد المرضى في باقتك. يرجى ترقية الاشتراك.",
+            excelQuotaAlert: "المساحة المتبقية في باقتك لا تكفي لاستيراد كل المرضى."
         },
         en: {
             title: "Patients Management", sub: "List of registered clinic patients and medical history",
@@ -78,7 +80,9 @@ function updatePageContent(lang) {
             selCount: "Selected", patWord: "Patient(s)", bulkDel: "🗑️ Delete Selected", confDel: "Are you sure you want to delete this patient?", confBulkDel: "Are you sure you want to delete all selected patients?",
             loadMore: "⬇️ Load More...", noMore: "No more patients", empty: "No registered patients",
             btnSearch: "Deep Search", btnBarcode: "Scan Barcode", btnExcel: "Import Excel",
-            optAll: "All Branches", lBranch: "Patient's Branch"
+            optAll: "All Branches", lBranch: "Patient's Branch",
+            quotaAlert: "Quota exceeded. You have reached the maximum number of patients allowed in your plan.",
+            excelQuotaAlert: "Your plan's remaining quota is not enough to import all patients."
         }
     };
     const c = t[lang] || t.ar;
@@ -165,14 +169,16 @@ function openPatientModal(patientId = null) {
 
 function closePatientModal() { document.getElementById('patientModal').style.display = 'none'; }
 
+// 🔴 دالة الحفظ مع حارس سعة المرضى (Quota Guard) 🔴
 async function savePatient(e) {
     e.preventDefault();
     const btn = document.getElementById('btn-save');
     btn.disabled = true; btn.innerText = "...";
 
     if (!currentClinicId) return;
+    const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
 
-    if (window.showLoader) window.showLoader(document.body.dir === 'rtl' ? "جاري حفظ البيانات..." : "Saving data...");
+    if (window.showLoader) window.showLoader(isAr ? "جاري حفظ البيانات..." : "Saving data...");
 
     let historyArr = [];
     document.querySelectorAll('.med-history-cb:checked').forEach(cb => { historyArr.push(cb.value); });
@@ -182,7 +188,6 @@ async function savePatient(e) {
     const selectedDateStr = document.getElementById('p_date').value;
     const selectedDateObj = new Date(selectedDateStr);
     
-    // 🔴 تحديد الـ branchId للمريض الجديد 🔴
     let targetBranchId = userBranch;
     if (userRole === 'admin' || userRole === 'superadmin') {
         targetBranchId = document.getElementById('p_branch').value;
@@ -190,7 +195,7 @@ async function savePatient(e) {
 
     const patientData = {
         clinicId: currentClinicId,
-        branchId: targetBranchId, // 🔴 ختم الفرع 🔴
+        branchId: targetBranchId, 
         name: document.getElementById('p_name').value.trim(),
         phone: document.getElementById('p_phone').value.trim(),
         age: document.getElementById('p_age').value,
@@ -201,11 +206,30 @@ async function savePatient(e) {
 
     try {
         if (currentEditPatientId) {
+            // تحديث (لا يحتاج فحص حصص لأنه مريض موجود بالفعل)
             patientData.createdAt = firebase.firestore.Timestamp.fromDate(selectedDateObj);
             await db.collection("Patients").doc(currentEditPatientId).update(patientData);
             const index = patientsDataArray.findIndex(p => p.id === currentEditPatientId);
             if(index !== -1) { patientsDataArray[index] = { ...patientsDataArray[index], ...patientData }; }
         } else {
+            // 🔴 إضافة مريض جديد (شرطي الحصص يتدخل هنا) 🔴
+            const clinicDoc = await db.collection("Clinics").doc(currentClinicId).get();
+            let maxPat = 500; // السعة الافتراضية
+            if(clinicDoc.exists && clinicDoc.data().maxPatients) {
+                maxPat = clinicDoc.data().maxPatients;
+            }
+
+            const countSnap = await db.collection("Patients").where("clinicId", "==", currentClinicId).count().get();
+            const currentCount = countSnap.data().count;
+
+            if (currentCount >= maxPat) {
+                alert(`⚠️ ${window.langVars.quotaAlert}\n(${isAr ? 'الحد الأقصى:' : 'Limit:'} ${maxPat})`);
+                btn.disabled = false; btn.innerText = window.langVars.btnSave; 
+                if (window.hideLoader) window.hideLoader();
+                return; // ⛔ منع الإضافة
+            }
+
+            // لو الباقة تسمح، كمل الإضافة
             patientData.totalDebt = 0; 
             patientData.createdAt = firebase.firestore.Timestamp.fromDate(selectedDateObj);
             const docRef = await db.collection("Patients").add(patientData);
@@ -224,7 +248,8 @@ async function savePatient(e) {
 
 async function deletePatient(patientId) {
     if(confirm(window.langVars.confDel)) {
-        if (window.showLoader) window.showLoader(document.body.dir === 'rtl' ? "جاري الحذف..." : "Deleting...");
+        const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
+        if (window.showLoader) window.showLoader(isAr ? "جاري الحذف..." : "Deleting...");
         try { 
             await db.collection("Patients").doc(patientId).delete(); 
             patientsDataArray = patientsDataArray.filter(p => p.id !== patientId);
@@ -239,14 +264,15 @@ async function deletePatient(patientId) {
 async function loadPatients(isLoadMore = false) {
     if (!currentClinicId) return;
     isSearchMode = false;
+    const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
 
     const tbody = document.getElementById('patientsBody');
     const loadMoreBtn = document.getElementById('btn-load-more');
 
-    if (!isLoadMore && window.showLoader) window.showLoader(document.body.dir === 'rtl' ? "جاري تحميل بيانات المرضى..." : "Loading patients...");
+    if (!isLoadMore && window.showLoader) window.showLoader(isAr ? "جاري تحميل بيانات المرضى..." : "Loading patients...");
 
     if (!isLoadMore) {
-        tbody.innerHTML = '<tr><td colspan="9" style="text-align: center;">جاري تحميل البيانات...</td></tr>';
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center;">${isAr ? 'جاري تحميل البيانات...' : 'Loading data...'}</td></tr>`;
         patientsDataArray = [];
         lastVisibleDoc = null;
     } else {
@@ -255,14 +281,11 @@ async function loadPatients(isLoadMore = false) {
     }
 
     try {
-        // 🔴 الكبسولة السحرية للفلترة والعزل 🔴
         let queryRef = db.collection("Patients").where("clinicId", "==", currentClinicId);
 
         if (userRole !== 'admin' && userRole !== 'superadmin') {
-            // عزل إجباري للموظف العادي
             queryRef = queryRef.where("branchId", "==", userBranch);
         } else {
-            // فلتر اختياري للمدير
             const selectedBranch = document.getElementById('branch-filter').value;
             if (selectedBranch !== 'all') {
                 queryRef = queryRef.where("branchId", "==", selectedBranch);
@@ -286,7 +309,7 @@ async function loadPatients(isLoadMore = false) {
             });
             
             filteredPatientsArray = [...patientsDataArray];
-            injectPatientSortButton(); // 🔴 السطر اللي ضفناه
+            injectPatientSortButton(); 
             renderPatientsTable();
             
             if(snap.docs.length === PATIENTS_PER_PAGE) {
@@ -330,14 +353,15 @@ async function searchPatients() {
     const input = document.getElementById('searchInput').value.trim();
     const loadMoreBtn = document.getElementById('btn-load-more');
     const tbody = document.getElementById('patientsBody');
+    const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
 
     if (!input) { resetPatientSearch(); return; }
 
     isSearchMode = true;
     if(loadMoreBtn) loadMoreBtn.style.display = 'none'; 
-    tbody.innerHTML = '<tr><td colspan="9" style="text-align: center;">جاري البحث...</td></tr>';
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align: center;">${isAr ? 'جاري البحث...' : 'Searching...'}</td></tr>`;
 
-    if (window.showLoader) window.showLoader(document.body.dir === 'rtl' ? "جاري البحث السحابي..." : "Searching...");
+    if (window.showLoader) window.showLoader(isAr ? "جاري البحث السحابي..." : "Cloud searching...");
 
     try {
         let queryRef = db.collection("Patients").where("clinicId", "==", currentClinicId);
@@ -353,15 +377,12 @@ async function searchPatients() {
 
         let searchResults = [];
 
-        // 🔴 السحر والذكاء في توفير القراءات 🔴
-        // لو بيبحث برقم موبايل (أرقام)، هنكلم الداتابيز تجيبهولنا مباشرة (التكلفة = 1 قراءة فقط!)
         if (/^\d+$/.test(input)) {
             const phoneSnap = await queryRef.where("phone", "==", input).get();
             phoneSnap.forEach(doc => {
                 searchResults.push({ id: doc.id, ...doc.data() });
             });
         } else {
-            // لو بيبحث بالاسم، هنسحب أحدث 200 مريض بس ندور فيهم (لحماية الباقة من السحب العشوائي)
             const nameSnap = await queryRef.orderBy("createdAt", "desc").limit(200).get();
             const lowerInput = input.toLowerCase();
             nameSnap.forEach(doc => {
@@ -377,26 +398,23 @@ async function searchPatients() {
 
     } catch (error) { 
         console.error("Search Error:", error); 
-        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color:red;">حدث خطأ في البحث</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color:red;">${isAr ? 'حدث خطأ في البحث' : 'Search error'}</td></tr>`;
     } finally {
         if (window.hideLoader) window.hideLoader();
     }
 }
-// 🔴 متغير الترتيب الافتراضي (الأحدث أولاً) 🔴
+
 let currentSortPatients = 'desc';
 
-// 🔴 دالة تغيير الترتيب 🔴
 window.toggleSortPatients = function() {
     currentSortPatients = currentSortPatients === 'desc' ? 'asc' : 'desc';
     const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
     const btn = document.getElementById('btn-sort-patients');
     if(btn) btn.innerHTML = currentSortPatients === 'desc' ? (isAr ? '🔽 الأحدث' : 'Sort: Newest') : (isAr ? '🔼 الأقدم' : 'Sort: Oldest');
     
-    // سحب أول 15 مريض بالترتيب الجديد
     loadPatients(false); 
 };
 
-// 🔴 دالة حقن الزرار جنب خانة البحث 🔴
 function injectPatientSortButton() {
     if(document.getElementById('btn-sort-patients')) return;
     const searchInput = document.getElementById('searchInput');
@@ -407,9 +425,15 @@ function injectPatientSortButton() {
         btn.className = 'btn-action';
         btn.innerHTML = currentSortPatients === 'desc' ? (isAr ? '🔽 الأحدث' : 'Sort: Newest') : (isAr ? '🔼 الأقدم' : 'Sort: Oldest');
         
-        // نفس الشياكة والمقاس الثابت اللي عملناه في المخزون
         btn.style.cssText = 'flex-shrink: 0; min-width: max-content; margin-right: 10px; margin-left: 10px; background: #ffffff; color: #0f172a; border: 1px solid #cbd5e1; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05);';
         
+        // دعم الدارك مود للزرار المحقون
+        if(document.body.getAttribute('data-theme') === 'dark') {
+            btn.style.background = '#334155';
+            btn.style.color = '#f8fafc';
+            btn.style.borderColor = '#475569';
+        }
+
         btn.onclick = window.toggleSortPatients;
         searchInput.parentNode.insertBefore(btn, searchInput.nextSibling);
     }
@@ -423,13 +447,12 @@ function resetPatientSearch() {
 function renderPatientsTable() {
     const tbody = document.getElementById('patientsBody');
     tbody.innerHTML = '';
+    const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
     
     if(filteredPatientsArray.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color:#64748b;">لا توجد نتائج مطابقة</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color:#64748b;">${isAr ? 'لا توجد نتائج مطابقة' : 'No matching results'}</td></tr>`;
         return;
     }
-
-    const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
 
     filteredPatientsArray.forEach(p => {
         let dateStr = '---';
@@ -444,8 +467,8 @@ function renderPatientsTable() {
 
         let debtAmount = p.totalDebt || 0;
         let debtHtml = debtAmount > 0 
-            ? `<span style="color: #ef4444; font-weight: bold; background: #fee2e2; padding: 4px 8px; border-radius: 6px;">${debtAmount} ج.م</span>`
-            : `<span style="color: #10b981;">0 ج.م</span>`;
+            ? `<span style="color: #ef4444; font-weight: bold; background: #fee2e2; padding: 4px 8px; border-radius: 6px;">${debtAmount} ${isAr ? 'ج.م' : 'EGP'}</span>`
+            : `<span style="color: #10b981;">0 ${isAr ? 'ج.م' : 'EGP'}</span>`;
 
         let historyTags = '';
         if (p.medicalHistory && p.medicalHistory.length > 0) {
@@ -460,7 +483,12 @@ function renderPatientsTable() {
         tr.className = 'clickable-row';
         tr.onclick = function(e) {
             if(e.target.type === 'checkbox' || e.target.tagName === 'BUTTON' || e.target.parentElement.tagName === 'BUTTON') return;
-            openMedicalProfile(p.id);
+            // 🔴 تم تطبيق الـ Router Guard هنا للمسارات 🔴
+            if (window.parent && typeof window.parent.loadPage === 'function') {
+                window.parent.loadPage(`patient-profile.html?id=${p.id}&clinicId=${currentClinicId}&v=${Date.now()}`);
+            } else {
+                openMedicalProfile(p.id);
+            }
         };
 
         tr.innerHTML = `
@@ -524,8 +552,9 @@ async function deleteSelectedPatients() {
     if(confirm(window.langVars.confBulkDel)) {
         const btn = document.getElementById('btn-bulk-delete');
         btn.disabled = true; btn.innerText = "...";
+        const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
 
-        if (window.showLoader) window.showLoader(document.body.dir === 'rtl' ? "جاري الحذف..." : "Deleting...");
+        if (window.showLoader) window.showLoader(isAr ? "جاري الحذف..." : "Deleting...");
         
         try {
             const batch = db.batch();
@@ -555,94 +584,129 @@ function openMedicalProfile(patientId) {
     window.location.href = `patient-profile.html?id=${patientId}&clinicId=${currentClinicId}&v=${Date.now()}`; 
 }
 
-function importPatientsFromExcel(input) {
+// 🔴 دالة الاستيراد من الإكسيل مدعمة بحارس سعة المرضى (Quota Guard) 🔴
+async function importPatientsFromExcel(input) {
     const file = input.files[0];
     if (!file) return;
 
-    if (window.showLoader) window.showLoader(document.body.dir === 'rtl' ? "جاري سحب بيانات المرضى من الإكسيل..." : "Importing patients...");
+    const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
 
-    const reader = new FileReader();
-    reader.onload = async function(e) {
-        try {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, {type: 'array'});
-            const firstSheet = workbook.SheetNames[0];
-            const excelRows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet]);
+    if (window.showLoader) window.showLoader(isAr ? "جاري فحص مساحة الباقة واستيراد البيانات..." : "Checking quota & importing...");
 
-            if (excelRows.length === 0) { alert("ملف الإكسيل فارغ!"); return; }
-
-            let importedCount = 0;
-            let skippedCount = 0;
-            const batch = db.batch();
-            
-            const currentPatientsSet = new Set(patientsDataArray.map(p => String(p.phone).trim() + "_" + String(p.name).trim().toLowerCase()));
-
-            // 🔴 تحديد الفرع أثناء استيراد الإكسيل 🔴
-            let targetBranchId = userBranch;
-            if (userRole === 'admin' || userRole === 'superadmin') {
-                const filterVal = document.getElementById('branch-filter').value;
-                targetBranchId = filterVal === 'all' ? 'main' : filterVal;
-            }
-
-            excelRows.forEach(row => {
-                const pName = row['الاسم'] || row['اسم المريض'] || row['name'];
-                const pPhone = row['الموبايل'] || row['الهاتف'] || row['phone'];
-                
-                if (pName && pPhone) {
-                    const phoneStr = String(pPhone).trim();
-                    const nameStr = String(pName).trim().toLowerCase();
-                    const uniqueKey = phoneStr + "_" + nameStr;
-                    
-                    if (currentPatientsSet.has(uniqueKey)) {
-                        skippedCount++;
-                        return;
-                    }
-
-                    const pAge = row['السن'] || row['العمر'] || row['age'] || "";
-                    const pDebt = row['المديونية'] || row['debt'] || 0;
-                    
-                    let historyArr = [];
-                    const pHistory = row['التاريخ الطبي'] || row['الأمراض'] || row['history'];
-                    if (pHistory) {
-                        historyArr = String(pHistory).split(',').map(i => i.trim());
-                    }
-
-                    const docRef = db.collection("Patients").doc();
-                    batch.set(docRef, {
-                        clinicId: currentClinicId,
-                        branchId: targetBranchId, // 🔴 ختم الفرع للإكسيل 🔴
-                        name: String(pName).trim(),
-                        phone: phoneStr,
-                        age: String(pAge).trim(),
-                        gender: "غير محدد",
-                        medicalHistory: historyArr,
-                        notes: "تم الاستيراد من الإكسيل",
-                        totalDebt: Number(pDebt),
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    
-                    currentPatientsSet.add(uniqueKey); 
-                    importedCount++;
-                }
-            });
-
-            if (importedCount > 0) {
-                await batch.commit();
-                alert(`✅ تم استيراد ${importedCount} مريض بنجاح!\n⚠️ تم تجاهل ${skippedCount} مريض لأنهم مسجلين مسبقاً.`);
-                loadPatients(); 
-            } else {
-                alert("لم يتم استيراد أي مريض. تأكد من صحة أسماء الأعمدة (الاسم، الموبايل) أو أنهم مسجلين بالفعل.");
-            }
-
-        } catch (error) {
-            console.error(error);
-            alert("❌ حدث خطأ في قراءة ملف الإكسيل.");
-        } finally {
-            input.value = ''; 
-            if (window.hideLoader) window.hideLoader();
+    try {
+        // 1. فحص باقة المرضى قبل الاستيراد 
+        const clinicDoc = await db.collection("Clinics").doc(currentClinicId).get();
+        let maxPat = 500;
+        if(clinicDoc.exists && clinicDoc.data().maxPatients) {
+            maxPat = clinicDoc.data().maxPatients;
         }
-    };
-    reader.readAsArrayBuffer(file);
+
+        const countSnap = await db.collection("Patients").where("clinicId", "==", currentClinicId).count().get();
+        const currentCount = countSnap.data().count;
+        const availableSlots = maxPat - currentCount;
+
+        if (availableSlots <= 0) {
+            alert(`⚠️ ${window.langVars.excelQuotaAlert}\n(${isAr ? 'الحد الأقصى:' : 'Limit:'} ${maxPat})`);
+            input.value = '';
+            if (window.hideLoader) window.hideLoader();
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const firstSheet = workbook.SheetNames[0];
+                const excelRows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet]);
+
+                if (excelRows.length === 0) { alert(isAr ? "ملف الإكسيل فارغ!" : "Excel file is empty!"); return; }
+
+                let importedCount = 0;
+                let skippedCount = 0;
+                let outOfQuotaCount = 0;
+                const batch = db.batch();
+                
+                const currentPatientsSet = new Set(patientsDataArray.map(p => String(p.phone).trim() + "_" + String(p.name).trim().toLowerCase()));
+
+                let targetBranchId = userBranch;
+                if (userRole === 'admin' || userRole === 'superadmin') {
+                    const filterVal = document.getElementById('branch-filter').value;
+                    targetBranchId = filterVal === 'all' ? 'main' : filterVal;
+                }
+
+                excelRows.forEach(row => {
+                    if (importedCount >= availableSlots) {
+                        outOfQuotaCount++;
+                        return; // ⛔ تجاهل باقي المرضى في الإكسيل لاكتمال الباقة
+                    }
+
+                    const pName = row['الاسم'] || row['اسم المريض'] || row['name'];
+                    const pPhone = row['الموبايل'] || row['الهاتف'] || row['phone'];
+                    
+                    if (pName && pPhone) {
+                        const phoneStr = String(pPhone).trim();
+                        const nameStr = String(pName).trim().toLowerCase();
+                        const uniqueKey = phoneStr + "_" + nameStr;
+                        
+                        if (currentPatientsSet.has(uniqueKey)) {
+                            skippedCount++;
+                            return;
+                        }
+
+                        const pAge = row['السن'] || row['العمر'] || row['age'] || "";
+                        const pDebt = row['المديونية'] || row['debt'] || 0;
+                        
+                        let historyArr = [];
+                        const pHistory = row['التاريخ الطبي'] || row['الأمراض'] || row['history'];
+                        if (pHistory) {
+                            historyArr = String(pHistory).split(',').map(i => i.trim());
+                        }
+
+                        const docRef = db.collection("Patients").doc();
+                        batch.set(docRef, {
+                            clinicId: currentClinicId,
+                            branchId: targetBranchId, 
+                            name: String(pName).trim(),
+                            phone: phoneStr,
+                            age: String(pAge).trim(),
+                            gender: "غير محدد",
+                            medicalHistory: historyArr,
+                            notes: isAr ? "تم الاستيراد من الإكسيل" : "Imported from Excel",
+                            totalDebt: Number(pDebt),
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        
+                        currentPatientsSet.add(uniqueKey); 
+                        importedCount++;
+                    }
+                });
+
+                if (importedCount > 0) {
+                    await batch.commit();
+                    let msg = isAr ? `✅ تم استيراد ${importedCount} مريض بنجاح!` : `✅ Successfully imported ${importedCount} patients!`;
+                    if (skippedCount > 0) msg += isAr ? `\n⚠️ تم تجاهل ${skippedCount} مريض لأنهم مسجلين مسبقاً.` : `\n⚠️ Skipped ${skippedCount} existing patients.`;
+                    if (outOfQuotaCount > 0) msg += isAr ? `\n⛔ تم استبعاد ${outOfQuotaCount} مريض لاكتمال باقتك (الحد الأقصى ${maxPat}).` : `\n⛔ Dropped ${outOfQuotaCount} patients due to quota limit (${maxPat}).`;
+                    
+                    alert(msg);
+                    loadPatients(); 
+                } else {
+                    alert(isAr ? "لم يتم استيراد أي مريض. تأكد من صحة الملف أو أن المرضى مسجلين بالفعل." : "No patients imported. Check file or duplicates.");
+                }
+
+            } catch (error) {
+                console.error(error);
+                alert(isAr ? "❌ حدث خطأ في قراءة ملف الإكسيل." : "❌ Error reading Excel file.");
+            } finally {
+                input.value = ''; 
+                if (window.hideLoader) window.hideLoader();
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    } catch (e) {
+        console.error("Quota Check Error:", e);
+        if (window.hideLoader) window.hideLoader();
+    }
 }
 
 window.onload = async () => {
@@ -652,9 +716,7 @@ window.onload = async () => {
     
     firebase.auth().onAuthStateChanged(async (user) => {
         if (user) {
-            // 🔴 جلب الفروع أولاً للمدير 🔴
             await loadBranchesForAdmin();
-            // 🔴 بعدين جلب المرضى حسب الفلتر 🔴
             loadPatients();
         }
     });
@@ -725,14 +787,16 @@ async function handlePatientQRScan(scannedCode) {
     if (window.showLoader) window.showLoader(isAr ? "جاري البحث عن المريض..." : "Searching patient...");
 
     try {
-        // 1. نبحث بكود المريض (ID) مباشرة في الفايربيز (تكلفة 1 قراءة فقط)
         const docRef = await db.collection("Patients").doc(scannedCode).get();
         if (docRef.exists && docRef.data().clinicId === currentClinicId) {
-            openMedicalProfile(docRef.id);
+            if (window.parent && typeof window.parent.loadPage === 'function') {
+                window.parent.loadPage(`patient-profile.html?id=${docRef.id}&clinicId=${currentClinicId}&v=${Date.now()}`);
+            } else {
+                openMedicalProfile(docRef.id);
+            }
             return;
         }
 
-        // 2. لو ملقاناهوش بالكود، نجرب نبحث برقم الموبايل (تكلفة 1 قراءة فقط)
         const phoneSnap = await db.collection("Patients")
             .where("clinicId", "==", currentClinicId)
             .where("phone", "==", scannedCode)
@@ -740,11 +804,15 @@ async function handlePatientQRScan(scannedCode) {
             .get();
 
         if (!phoneSnap.empty) {
-            openMedicalProfile(phoneSnap.docs[0].id);
+            const pid = phoneSnap.docs[0].id;
+            if (window.parent && typeof window.parent.loadPage === 'function') {
+                window.parent.loadPage(`patient-profile.html?id=${pid}&clinicId=${currentClinicId}&v=${Date.now()}`);
+            } else {
+                openMedicalProfile(pid);
+            }
             return;
         }
 
-        // لو مفيش
         alert(isAr ? `لم يتم العثور على مريض بهذا الكود: (${scannedCode})` : `No patient found with this code: (${scannedCode})`);
         
     } catch (e) {
