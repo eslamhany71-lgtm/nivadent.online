@@ -2,6 +2,15 @@
 
 const SMART_VERSION = Math.floor(Date.now() / 3600000); 
 
+// 🔴 لقط الـ ID من الرابط لو احنا داخلين كمنتحلين شخصية 🔴
+const urlParams = new URLSearchParams(window.location.search);
+const impersonateParam = urlParams.get('impersonate');
+if (impersonateParam) {
+    sessionStorage.setItem('impersonatedClinicId', impersonateParam);
+    // تنظيف الرابط عشان يبقى شكله احترافي
+    window.history.replaceState({}, document.title, window.location.pathname); 
+}
+
 function applyTheme(themeName) {
     document.body.setAttribute('data-theme', themeName);
     localStorage.setItem('niva_theme', themeName);
@@ -402,13 +411,14 @@ firebase.auth().onAuthStateChanged(async (user) => {
                     const logoutBtn = document.getElementById('btn-logout');
                     if (logoutBtn) {
                         const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
-                        logoutBtn.innerHTML = isAr ? "🔙 العودة كـ مالك النظام" : "🔙 Return to Super Admin";
+                        logoutBtn.innerHTML = isAr ? "❌ إغلاق العيادة والعودة" : "❌ Close & Return";
                         logoutBtn.classList.remove('btn-danger');
-                        logoutBtn.style.backgroundColor = '#8b5cf6'; // لون مميز للعودة
+                        logoutBtn.style.backgroundColor = '#e11d48';
                         logoutBtn.onclick = (e) => {
                             e.preventDefault();
                             sessionStorage.removeItem('impersonatedClinicId');
-                            window.location.href = 'home.html'; // عمل ريفريش يرجعك لشخصيتك الحقيقية
+                            window.close(); // يقفل التاب خالص!
+                            window.location.href = 'home.html'; // خطة بديلة لو المتصفح رفض القفل
                         };
                     }
                 }
