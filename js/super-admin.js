@@ -1290,20 +1290,25 @@ async function forceUserLogout(email) {
     }
 }
 
+// ===============================================
+// 🔴 دالة الدخول السحري كصاحب العيادة (Impersonation) 🔴
+// ===============================================
 async function impersonateClinic() {
     const clinicId = document.getElementById('current-det-clinic-id').value;
     const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
     
-    if(!clinicId) return;
+    if(!clinicId) {
+        alert(isAr ? "حدث خطأ: لم يتم التعرف على العيادة." : "Error: Clinic ID not found.");
+        return;
+    }
 
     if(confirm(isAr ? "هل تريد الدخول إلى لوحة تحكم هذه العيادة الآن؟" : "Enter this clinic's dashboard?")) {
         try {
             // تخزين الـ clinicId الخاص بالعيادة اللي هتدخل عليها في الـ Session
-            // والسيستم هيتعامل معاك فوراً كأنك صاحب العيادة
             sessionStorage.setItem('impersonatedClinicId', clinicId);
             
-            // هنفتح شاشة العيادة في نافذة جديدة (أو نفس النافذة حسب رغبتك)
-            window.open('dashboard.html', '_blank'); 
+            // السطر السحري: هنفتح شاشة (home.html) عشان السيدبار تترسم صح!
+            window.open('home.html', '_blank'); 
         } catch (e) {
             console.error(e);
             alert(isAr ? "خطأ في الدخول السريع" : "Impersonation error");
