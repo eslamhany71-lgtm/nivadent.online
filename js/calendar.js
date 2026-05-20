@@ -526,6 +526,13 @@ function sendWhatsAppReminder() {
 
 async function saveAppointment(e) {
     e.preventDefault();
+
+    // 🔴 الحل: جلب الـ clinicId من الـ SessionStorage فوراً
+    const clinicId = sessionStorage.getItem('clinicId');
+    if (!clinicId) {
+        alert("خطأ: لم يتم التعرف على العيادة. يرجى تسجيل الدخول مرة أخرى.");
+        return;
+    }
     const btn = document.getElementById('btn-save');
     btn.disabled = true; btn.innerText = "...";
 
