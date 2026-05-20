@@ -918,21 +918,16 @@ function openPatientDetails(p) {
 }
 
 function goToPatientProfile(patientId) {
-    // 🔴 الحل الذكي: لو السيستم جوه iframe استخدم الطريقة القديمة، لو لا، استخدم التوجيه المباشر 🔴
-    if (window.parent && window.parent.loadPage) {
+    // 🔴 الحل: فحص وجود الـ parent والـ element قبل استخدامه
+    if (window.parent && window.parent.document && window.parent.loadPage) {
         const navPatients = window.parent.document.getElementById('nav-patients');
-        
-        // فحص أمني: هل العنصر موجود؟
         if (navPatients && navPatients.parentElement) {
-            window.parent.loadPage(`patient-profile.html?id=${patientId}`, navPatients.parentElement);
-        } else {
-            // لو العنصر مش موجود، اعمل توجيه مباشر للصفحة
-            window.location.href = `patient-profile.html?id=${patientId}`;
+            window.parent.loadPage(`patient-profile.html?id=${patientId}&clinicId=${clinicId}`, navPatients.parentElement);
+            return;
         }
-    } else {
-        // توجيه مباشر في نفس التاب لو مش داخل iframe
-        window.location.href = `patient-profile.html?id=${patientId}`;
     }
+    // لو مفيش parent أو العناصر مش موجودة، افتح في نفس الصفحة عادي
+    window.location.href = `patient-profile.html?id=${patientId}&clinicId=${clinicId}`;
 }
 
 function openRevenueModal() {
