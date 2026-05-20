@@ -173,10 +173,22 @@
                     <div><strong id="lbl-det-pkg" style="color: #64748b; font-size: 13px; display: block; margin-bottom: 4px;">نوع الباقة</strong> <span id="det-clinic-pkg" style="color: #10b981; font-weight: bold;">---</span></div>
                     <div><strong id="lbl-det-created" style="color: #64748b; font-size: 13px; display: block; margin-bottom: 4px;">تاريخ الإنشاء</strong> <span id="det-clinic-created" style="color: #0f172a; font-weight: bold;" dir="ltr">---</span></div>
                     
-                    <div style="background: #fffbeb; padding: 10px; border-radius: 8px; border: 1px dashed #f59e0b;">
-                        <strong id="lbl-det-limit" style="color: #d97706; font-size: 13px; display: block; margin-bottom: 4px;">الحد الأقصى للمستخدمين:</strong> 
-                        <span id="det-clinic-limit" style="color: #b45309; font-weight: bold; font-size: 16px;">0</span>
-                        <button class="btn-edit-price" onclick="editClinicUsersLimit()" title="تعديل الحد الأقصى">✏️</button>
+                    <div style="grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 10px;">
+                        <div style="background: #fffbeb; padding: 10px; border-radius: 8px; border: 1px dashed #f59e0b; text-align: center;">
+                            <strong id="lbl-det-limit" style="color: #d97706; font-size: 13px; display: block; margin-bottom: 4px;">الحد الأقصى للمستخدمين</strong> 
+                            <span id="det-clinic-limit" style="color: #b45309; font-weight: bold; font-size: 18px;">0</span>
+                            <button class="btn-edit-price" onclick="editClinicUsersLimit()" title="تعديل">✏️</button>
+                        </div>
+                        <div style="background: #f0fdf4; padding: 10px; border-radius: 8px; border: 1px dashed #22c55e; text-align: center;">
+                            <strong id="lbl-det-pat-limit" style="color: #16a34a; font-size: 13px; display: block; margin-bottom: 4px;">سعة المرضى بالباقة</strong> 
+                            <span id="det-clinic-pat-limit" style="color: #15803d; font-weight: bold; font-size: 18px;">0</span>
+                            <button class="btn-edit-price" onclick="editClinicPatientsLimit()" title="تعديل">✏️</button>
+                        </div>
+                        <div style="background: #eff6ff; padding: 10px; border-radius: 8px; border: 1px dashed #3b82f6; text-align: center;">
+                            <strong id="lbl-det-wa-limit" style="color: #2563eb; font-size: 13px; display: block; margin-bottom: 4px;">رصيد رسائل الواتساب</strong> 
+                            <span id="det-clinic-wa-limit" style="color: #1d4ed8; font-weight: bold; font-size: 18px;">0</span>
+                            <button class="btn-edit-price" onclick="editClinicWhatsappLimit()" title="تعديل">✏️</button>
+                        </div>
                     </div>
 
                     <div class="price-box" style="grid-column: 1 / -1;">
@@ -287,24 +299,31 @@
                     </div>
                     
                     <div class="form-group">
-                        <label id="lbl-c-price">قيمة الاشتراك (ج.م)</label>
-                        <input type="number" id="clinic_sub_price" value="0" min="0" required placeholder="مثال: 500">
-                    </div>
-                </div>
-
-                <div class="grid-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div class="form-group">
-                        <label id="lbl-c-limit">الحد الأقصى للمستخدمين (الموظفين)</label>
-                        <input type="number" id="clinic_max_users" value="3" min="1" required style="border: 2px solid #8b5cf6;">
-                        <small style="color: #64748b; font-size: 11px;" id="hint-c-limit">شاملاً حساب الدكتور المالك</small>
-                    </div>
-
-                    <div class="form-group">
                         <label id="lbl-c-plan">حالة الحساب</label>
                         <select id="clinic_plan">
                             <option value="active" id="opt-active">نشط (Active)</option>
                             <option value="suspended" id="opt-susp">موقوف (Suspended)</option>
                         </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label id="lbl-c-price">قيمة الاشتراك (ج.م)</label>
+                    <input type="number" id="clinic_sub_price" value="0" min="0" required placeholder="مثال: 500">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; background: #f8fafc; padding: 10px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #e2e8f0;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label id="lbl-c-limit" style="font-size: 12px; color: #d97706; font-weight: bold;">المستخدمين</label>
+                        <input type="number" id="clinic_max_users" value="3" min="1" required style="border: 1px solid #d97706; padding: 8px;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label id="lbl-c-pat-limit" style="font-size: 12px; color: #16a34a; font-weight: bold;">سعة المرضى</label>
+                        <input type="number" id="clinic_max_patients" value="500" min="1" required style="border: 1px solid #22c55e; padding: 8px;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label id="lbl-c-wa-limit" style="font-size: 12px; color: #2563eb; font-weight: bold;">رصيد الواتس</label>
+                        <input type="number" id="clinic_max_whatsapp" value="100" min="0" required style="border: 1px solid #3b82f6; padding: 8px;">
                     </div>
                 </div>
 
@@ -381,9 +400,19 @@
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label id="lbl-upg-limit">الحد الأقصى للمستخدمين بالباقة الجديدة</label>
-                    <input type="number" id="upg_max_users" required value="5" min="1" style="border: 2px solid #10b981;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; background: #f8fafc; padding: 10px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #e2e8f0;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 12px; color: #d97706; font-weight: bold;">المستخدمين</label>
+                        <input type="number" id="upg_max_users" value="3" min="1" required style="border: 1px solid #d97706; padding: 8px;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 12px; color: #16a34a; font-weight: bold;">سعة المرضى</label>
+                        <input type="number" id="upg_max_patients" value="500" min="1" required style="border: 1px solid #22c55e; padding: 8px;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label style="font-size: 12px; color: #2563eb; font-weight: bold;">رصيد الواتس</label>
+                        <input type="number" id="upg_max_whatsapp" value="100" min="0" required style="border: 1px solid #3b82f6; padding: 8px;">
+                    </div>
                 </div>
 
                 <button type="submit" id="btn-confirm-upgrade" class="btn-primary" style="width: 100%; margin-top: 10px; justify-content: center; background: #10b981; border: none; font-size: 16px;">تأكيد الترقية وتوليد الكود</button>
