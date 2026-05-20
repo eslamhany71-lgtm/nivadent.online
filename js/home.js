@@ -353,7 +353,8 @@ firebase.auth().onAuthStateChanged(async (user) => {
             if (userDoc.exists) {
                 const userData = userDoc.data();
                 const role = userData.role || 'reception';
-                const clinicId = userData.clinicId || sessionStorage.getItem('clinicId') || 'default';
+                // جوه دالة الـ auth state changed، عدل سطر الـ clinicId ده:
+                const clinicId = sessionStorage.getItem('impersonatedClinicId') || userData.clinicId || sessionStorage.getItem('clinicId') || 'default';
                 const branchId = userData.branchId || sessionStorage.getItem('branchId') || 'main'; 
                 sessionStorage.setItem('clinicId', clinicId);
                 sessionStorage.setItem('userRole', role); // تخرين الرول حياً لاستدعائه عند تحديث الميزات
