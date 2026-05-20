@@ -10,7 +10,7 @@ let calendarUnsubscribe = null;
 
 let allClinicPatients = [];
 let allAppointmentsData = []; 
-let allClinicDoctors = []; // 🔴 مصفوفة الأطباء 🔴
+let allClinicDoctors = []; 
 
 let erpServices = [];
 let erpContracts = [];
@@ -60,7 +60,8 @@ function updatePageContent(lang) {
             lblSearch: "🔍 بحث عن مريض مسجل (اختياري)", searchPlh: "اكتب الاسم أو رقم الموبايل للبحث...", lblPhone: "رقم الموبايل", lblAge: "العمر (سنوات)", lblGender: "النوع", lblTotal: "الإجمالي", lblPaid: "المدفوع", lblRem: "المتبقي",
             lblHistoryTitle: "التاريخ الطبي وأمراض مزمنة (اختياري)", lblDetHistory: "📋 التاريخ الطبي:", lblDetFinance: "💰 الحساب (مدفوع / إجمالي):", lblDetPhone: "📱 الموبايل:",
             btnWaRem: "📱 إرسال تذكير بالموعد (واتساب)", btnCompleteApp: "✅ المريض حضر (اكتمال الحجز وتوريد الإيراد)", btnCancelApp: "🚫 إلغاء الحجز (بدون مسح)", btnRestoreApp: "🔄 إرجاع الحجز لقيد الانتظار",
-            errOffDay: "عفواً، هذا اليوم هو يوم الإجازة الأسبوعي للعيادة!", errTimeBounds: "عفواً، الموعد المحدد خارج ساعات العمل الرسمية للعيادة!"
+            errOffDay: "عفواً، هذا اليوم هو يوم الإجازة الأسبوعي للعيادة!", errTimeBounds: "عفواً، الموعد المحدد خارج ساعات العمل الرسمية للعيادة!",
+            quotaAlert: "عفواً، لقد وصلت للحد الأقصى لعدد المرضى في باقتك. يرجى ترقية الاشتراك."
         },
         en: {
             title: "Appointments Calendar", sub: "Manage clinic bookings and organize doctor's time", btnAdd: "Book Appointment",
@@ -72,7 +73,8 @@ function updatePageContent(lang) {
             lblSearch: "🔍 Search Existing Patient (Optional)", searchPlh: "Type name or phone to search...", lblPhone: "Mobile Number", lblAge: "Age (Years)", lblGender: "Gender", lblTotal: "Total", lblPaid: "Paid", lblRem: "Remaining",
             lblHistoryTitle: "Medical History (Optional)", lblDetHistory: "📋 Med History:", lblDetFinance: "💰 Finance (Paid/Total):", lblDetPhone: "📱 Mobile:",
             btnWaRem: "📱 Send WhatsApp Reminder", btnCompleteApp: "✅ Patient Attended (Complete)", btnCancelApp: "🚫 Cancel Appointment", btnRestoreApp: "🔄 Restore to Pending",
-            errOffDay: "Sorry, this day is the clinic's weekly day off!", errTimeBounds: "Sorry, the selected time is outside official working hours!"
+            errOffDay: "Sorry, this day is the clinic's weekly day off!", errTimeBounds: "Sorry, the selected time is outside official working hours!",
+            quotaAlert: "Quota exceeded. You have reached the maximum number of patients allowed in your plan."
         }
     };
     const c = t[lang] || t.ar;
@@ -100,7 +102,6 @@ function updatePageContent(lang) {
     setTxt('btn-wa-reminder', c.btnWaRem); setTxt('btn-complete-app', c.btnCompleteApp); setTxt('btn-edit-app', c.btnEdit);
     setTxt('btn-cancel-app', c.btnCancelApp); setTxt('btn-restore-app', c.btnRestoreApp); setTxt('btn-delete-app', c.btnDel);
     
-    // تغيير التسمية لتصبح اختياري
     const lblDoc = document.getElementById('lbl-app-doctor');
     if(lblDoc) lblDoc.innerText = lang === 'ar' ? 'الطبيب المعالج (اختياري)' : 'Treating Doctor (Optional)';
 
@@ -221,7 +222,6 @@ function showAppDetailsModal(appId, props) {
     document.getElementById('appDetailsModal').style.display = 'flex';
 }
 
-// 🔴 دالة تصفية الأطباء حسب الفرع المختار 🔴
 function populateModalDoctors() {
     const docSelect = document.getElementById('app_doctor');
     if (!docSelect) return;
@@ -238,7 +238,6 @@ function populateModalDoctors() {
 
     allClinicDoctors.forEach(d => {
         if (targetBranch === 'all' || d.branchId === targetBranch || d.branchId === 'main') {
-            // 🔴 تم التصحيح هنا: d.id بدلاً من doc.id 🔴
             docSelect.innerHTML += `<option value="${d.id}">${d.name}</option>`;
         }
     });
@@ -274,11 +273,10 @@ function loadClinicSettingsAndERP() {
         });
     });
 
-    // 🔴 جلب جميع الأطباء في العيادة 🔴
     db.collection("Users").where("clinicId", "==", currentClinicId).where("role", "==", "doctor").onSnapshot(snap => {
         allClinicDoctors = [];
         snap.forEach(doc => { allClinicDoctors.push({ id: doc.id, ...doc.data() }); });
-        populateModalDoctors(); // تحديث القائمة فوراً
+        populateModalDoctors();
     });
 
     db.collection("Contracts").where("clinicId", "==", currentClinicId).onSnapshot(snap => {
@@ -329,7 +327,6 @@ function openAppointmentModal() {
         document.getElementById('app_branch').value = filterVal === 'all' ? 'main' : filterVal;
     }
     
-    // 🔴 تحديث قائمة الأطباء 🔴
     populateModalDoctors();
     
     document.getElementById('app_doctor').value = ''; 
@@ -526,13 +523,8 @@ function sendWhatsAppReminder() {
 
 async function saveAppointment(e) {
     e.preventDefault();
-
-    // 🔴 الحل: جلب الـ clinicId من الـ SessionStorage فوراً
     const clinicId = sessionStorage.getItem('clinicId');
-    if (!clinicId) {
-        alert("خطأ: لم يتم التعرف على العيادة. يرجى تسجيل الدخول مرة أخرى.");
-        return;
-    }
+    if (!clinicId) { alert("خطأ: لم يتم التعرف على العيادة. يرجى تسجيل الدخول مرة أخرى."); return; }
     const btn = document.getElementById('btn-save');
     btn.disabled = true; btn.innerText = "...";
 
@@ -572,7 +564,6 @@ async function saveAppointment(e) {
     const srvSelect = document.getElementById('app_type');
     const typeVal = srvSelect.value || "كشف";
 
-    // 🔴 قراءة بيانات الدكتور (بأمان حتى لو اختياري) 🔴
     const docSelect = document.getElementById('app_doctor');
     const doctorId = docSelect ? docSelect.value : '';
     const doctorName = (docSelect && docSelect.selectedIndex > 0) ? docSelect.options[docSelect.selectedIndex].text : '';
@@ -614,56 +605,36 @@ async function saveAppointment(e) {
     try {
         if (currentEditAppId) { await db.collection("Appointments").doc(currentEditAppId).update(appData); } 
         else { appData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-              // ==========================================
-    // 🛡️ فحص التعارض (Pre-Check Validation)
-    // ==========================================
-    const checkDate = document.getElementById('app_date').value;
-    const checkTime = document.getElementById('app_time').value;
-    const checkPhone = document.getElementById('app_phone').value.trim();
-    
-    // سحب المواعيد اللي في نفس اليوم ونفس الفرع وحالتها قيد الانتظار
-    const conflictSnap = await db.collection("Appointments")
-        .where("clinicId", "==", clinicId)
-        .where("branchId", "==", targetBranchId)
-        .where("date", "==", checkDate)
-        .where("status", "==", "pending")
-        .get();
+            const checkDate = document.getElementById('app_date').value;
+            const checkTime = document.getElementById('app_time').value;
+            const checkPhone = document.getElementById('app_phone').value.trim();
+            const conflictSnap = await db.collection("Appointments")
+                .where("clinicId", "==", clinicId)
+                .where("branchId", "==", targetBranchId)
+                .where("date", "==", checkDate)
+                .where("status", "==", "pending")
+                .get();
 
-    let isTimeTaken = false;
-    let isPatientDuplicate = false;
+            let isTimeTaken = false;
+            let isPatientDuplicate = false;
 
-    conflictSnap.forEach(doc => {
-        const existingApp = doc.data();
-        
-        // 1. فحص تعارض الوقت (نفس الوقت لنفس الطبيب)
-        // لو مفيش طبيب محدد (العيادة كلها شغالة طابور)، هنفحص الوقت بس
-        const isSameDoctor = doctorId ? (existingApp.doctorId === doctorId) : true; 
-        if (existingApp.time === checkTime && isSameDoctor) {
-            isTimeTaken = true;
-        }
+            conflictSnap.forEach(doc => {
+                const existingApp = doc.data();
+                const isSameDoctor = doctorId ? (existingApp.doctorId === doctorId) : true; 
+                if (existingApp.time === checkTime && isSameDoctor) { isTimeTaken = true; }
+                if (existingApp.phone === checkPhone) { isPatientDuplicate = true; }
+            });
 
-        // 2. فحص تكرار المريض (نفس الرقم في نفس اليوم)
-        if (existingApp.phone === checkPhone) {
-            isPatientDuplicate = true;
-        }
-    });
-
-    if (isTimeTaken) {
-        alert("⚠️ عذراً، هذا الموعد محجوز مسبقاً! يرجى اختيار وقت آخر أو طبيب آخر.");
-        if (window.hideLoader) window.hideLoader();
-        return; // توقيف عملية الحفظ فوراً
-    }
-
-    if (isPatientDuplicate) {
-        const confirmDuplicate = confirm("⚠️ هذا المريض (نفس رقم الموبايل) لديه حجز بالفعل في هذا اليوم.. هل تريد تأكيد حجز موعد إضافي له؟");
-        if (!confirmDuplicate) {
-            if (window.hideLoader) window.hideLoader();
-            return; // توقيف عملية الحفظ لو ضغط Cancel
-        }
-    }
-    // ==========================================
-    // نهاية الفحص، نكمل الحفظ العادي لو الدنيا تمام
-              await db.collection("Appointments").add(appData); }
+            if (isTimeTaken) {
+                alert("⚠️ عذراً، هذا الموعد محجوز مسبقاً! يرجى اختيار وقت آخر أو طبيب آخر.");
+                if (window.hideLoader) window.hideLoader();
+                return;
+            }
+            if (isPatientDuplicate) {
+                const confirmDuplicate = confirm("⚠️ هذا المريض (نفس رقم الموبايل) لديه حجز بالفعل في هذا اليوم.. هل تريد تأكيد حجز موعد إضافي له؟");
+                if (!confirmDuplicate) { if (window.hideLoader) window.hideLoader(); return; }
+            }
+            await db.collection("Appointments").add(appData); }
         closeAppointmentModal();
     } catch (error) { console.error("Error saving:", error); alert(window.calendarLang.errSave); } 
     finally { btn.disabled = false; btn.innerText = currentEditAppId ? window.calendarLang.btnUpdate : window.calendarLang.btnSave; if (window.hideLoader) window.hideLoader(); }
@@ -678,9 +649,27 @@ async function markAppAsCompleted() {
     const btn = document.querySelector('#complete-action-box button');
     btn.innerText = "جاري الحفظ والإنشاء..."; btn.disabled = true;
 
-    if (window.showLoader) window.showLoader(document.body.dir === 'rtl' ? "جاري إتمام الحجز..." : "Completing...");
+    const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
+    if (window.showLoader) window.showLoader(isAr ? "جاري إتمام الحجز..." : "Completing...");
 
     try {
+        // 🔴 حارس سعة المرضى (Quota Guard) 🔴
+        const clinicDoc = await db.collection("Clinics").doc(currentClinicId).get();
+        let maxPat = 500;
+        if(clinicDoc.exists && clinicDoc.data().maxPatients) {
+            maxPat = clinicDoc.data().maxPatients;
+        }
+
+        const countSnap = await db.collection("Patients").where("clinicId", "==", currentClinicId).get();
+        const currentCount = countSnap.size;
+        
+        if (currentCount >= maxPat) {
+            alert(`⚠️ ${window.calendarLang.quotaAlert || (isAr ? 'عفواً، لقد وصلت للحد الأقصى لعدد المرضى في باقتك.' : 'Quota exceeded.')}\n(${isAr ? 'الحد الأقصى:' : 'Limit:'} ${maxPat})`);
+            btn.disabled = false; btn.innerText = window.calendarLang.btnCompleteApp;
+            if (window.hideLoader) window.hideLoader();
+            return; 
+        }
+
         await db.collection("Appointments").doc(appId).update({ status: 'completed' });
 
         const patientPhone = props.phone || "غير مسجل";
@@ -704,7 +693,7 @@ async function markAppAsCompleted() {
 
             if (!matchedPatientDoc) {
                 let historyArray = [];
-                if(props.history && props.history.length > 0 && props.history !== "سليم (لا يوجد)") { historyArray = props.history.split(' ، ').map(item => item.trim()).filter(i => i); }
+                if(props.history && props.history !== "سليم (لا يوجد)" && props.history !== "Healthy (None)") { historyArray = props.history.split(' ، ').map(item => item.trim()).filter(i => i); }
 
                 const newPat = await db.collection("Patients").add({
                     clinicId: currentClinicId, branchId: appBranchId, name: props.patientName, phone: patientPhone, age: props.age || '', gender: props.gender || '',
@@ -788,7 +777,6 @@ async function openEditModal() {
             if (appBranchEl) appBranchEl.value = props.branchId || 'main';
         }
 
-        // 🔴 تحديث قائمة الأطباء قبل تعيين الطبيب 🔴
         populateModalDoctors();
         const docEl = document.getElementById('app_doctor');
         if (docEl) docEl.value = props.doctorId || '';
