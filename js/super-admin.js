@@ -1296,22 +1296,10 @@ async function forceUserLogout(email) {
 async function impersonateClinic() {
     const clinicId = document.getElementById('current-det-clinic-id').value;
     const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
-    
-    if(!clinicId) {
-        alert(isAr ? "حدث خطأ: لم يتم التعرف على العيادة." : "Error: Clinic ID not found.");
-        return;
-    }
+    if(!clinicId) return;
 
     if(confirm(isAr ? "هل تريد الدخول إلى لوحة تحكم هذه العيادة الآن؟" : "Enter this clinic's dashboard?")) {
-        try {
-            // تخزين الـ clinicId الخاص بالعيادة اللي هتدخل عليها في الـ Session
-            sessionStorage.setItem('impersonatedClinicId', clinicId);
-            
-            // السطر السحري: هنفتح شاشة (home.html) عشان السيدبار تترسم صح!
-            window.open('home.html', '_blank'); 
-        } catch (e) {
-            console.error(e);
-            alert(isAr ? "خطأ في الدخول السريع" : "Impersonation error");
-        }
+        // 🔴 التعديل السحري: هنبعت الـ ID في الرابط بدل ما نلوث السشن الأصلية
+        window.open(`home.html?impersonate=${clinicId}`, '_blank'); 
     }
 }
