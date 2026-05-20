@@ -16,7 +16,7 @@ function updatePageContent(lang) {
             lHint: "* يجب إنشاء هذا الحساب لاحقاً من شاشة تسجيل الدخول.", lPhone: "رقم الموبايل",
             lPkg: "باقة الاشتراك", optPkgT7: "تجريبي (7 أيام)", optPkgT14: "تجريبي (14 يوم)", optPkgMonth: "شهري (Monthly)", optPkgYear: "سنوي (Yearly)",
             lPlan: "حالة الحساب", optAct: "نشط (Active)", optSusp: "موقوف (Suspended)", btnSave: "إنشاء العيادة وتوليد المعرف",
-            lLimit: "الحد الأقصى للمستخدمين (الموظفين)", hintLimit: "شاملاً حساب الدكتور المالك", lPrice: "قيمة الاشتراك (ج.م)",
+            lLimit: "الحد الأقصى للمستخدمين", hintLimit: "شاملاً حساب الدكتور المالك", lPrice: "قيمة الاشتراك (ج.م)",
             sAct: "نشط", sSusp: "موقوف", sExpired: "منتهي (خلص وقته)", 
             btnPaid: "تم الدفع", btnCancelSub: "إيقاف الحساب", btnRenew: "تفعيل الحساب", btnDelete: "حذف العيادة",
             msgSuccess: "تم إنشاء العيادة بنجاح!\n\nكود الدخول: {id}\nإيميل الأدمن: {email}\n\nيرجى إرسال الكود للدكتور لتفعيل الحساب.",
@@ -37,7 +37,6 @@ function updatePageContent(lang) {
             txtTeamTitle: "👥 فريق العمل والمستخدمين", thUName: "اسم المستخدم", thUEmail: "البريد / الكود", thURole: "الصلاحية",
             thUDate: "تاريخ الانضمام", thUOnline: "متصل الآن؟", thULast: "آخر ظهور", txtULoad: "جاري تحميل المستخدمين...",
             
-            // تابات السوبر أدمن الجديدة
             tabActive: "🏢 العيادات النشطة والموقوفة", tabTrials: "🚀 التجارب المجانية", tabSupport: "🎧 تذاكر الدعم الفني", tabReviews: "⭐ تقييمات النظام",
             noSupport: "لا توجد تذاكر دعم فني.", noReviews: "لا توجد تقييمات حتى الآن.", btnReply: "رد وإغلاق",
             msgReplySent: "تم إرسال الرد وإغلاق التذكرة بنجاح."
@@ -51,7 +50,7 @@ function updatePageContent(lang) {
             lHint: "* This account must be created later from login screen.", lPhone: "Mobile Number",
             lPkg: "Subscription Package", optPkgT7: "Trial (7 Days)", optPkgT14: "Trial (14 Days)", optPkgMonth: "Monthly", optPkgYear: "Yearly",
             lPlan: "Account Status", optAct: "Active", optSusp: "Suspended", btnSave: "Create Clinic & Generate ID",
-            lLimit: "Max Allowed Users (Staff)", hintLimit: "Including Admin doctor", lPrice: "Subscription Price",
+            lLimit: "Max Users", hintLimit: "Including Admin doctor", lPrice: "Subscription Price",
             sAct: "Active", sSusp: "Suspended", sExpired: "Expired", 
             btnPaid: "Paid", btnCancelSub: "Suspend Acc", btnRenew: "Activate Acc", btnDelete: "Delete Clinic",
             msgSuccess: "Clinic created successfully!\n\nAccess Code: {id}\nAdmin Email: {email}\n\nPlease send code to the doctor.",
@@ -114,6 +113,12 @@ function updatePageContent(lang) {
     
     if(document.getElementById('tab-reviews')) document.getElementById('tab-reviews').innerHTML = c.tabReviews;
 
+    // إضافة ترجمات الحصص لو مش موجودة بالـ HTML
+    setTxt('lbl-c-pat-limit', lang === 'ar' ? 'سعة المرضى' : 'Patients Limit');
+    setTxt('lbl-c-wa-limit', lang === 'ar' ? 'رصيد الواتس' : 'WhatsApp Balance');
+    setTxt('lbl-det-pat-limit', lang === 'ar' ? 'سعة المرضى بالباقة' : 'Plan Patients Limit');
+    setTxt('lbl-det-wa-limit', lang === 'ar' ? 'رصيد رسائل الواتساب' : 'WhatsApp Messages Limit');
+
     window.superLang = c;
 }
 
@@ -155,17 +160,14 @@ function switchMainTab(tabName) {
 
 // 🔴 التنقل بين تابات تفاصيل العيادة الداخلية 🔴
 function switchClinicDetTab(tabName) {
-    // إخفاء كل المحتوى الداخلي
     document.getElementById('cdet-info').style.display = 'none';
     document.getElementById('cdet-features').style.display = 'none';
     document.getElementById('cdet-security').style.display = 'none';
     
-    // إزالة التفعيل من كل الزراير
     document.getElementById('tab-det-info').classList.remove('active');
     document.getElementById('tab-det-features').classList.remove('active');
     document.getElementById('tab-det-security').classList.remove('active');
     
-    // إظهار المطلوب
     document.getElementById('cdet-' + tabName).style.display = 'block';
     document.getElementById('tab-det-' + tabName).classList.add('active');
 }
@@ -324,7 +326,7 @@ function loadSystemReviews() {
     });
 }
 
-// 🔴 دالة فتح مودال العيادة وتجهيز زراير الصلاحيات وجدول الأمان 🔴
+// 🔴 دالة فتح مودال العيادة وتجهيز زراير الصلاحيات وجدول الأمان والحصص 🔴
 async function openClinicDetailsModal(clinicId) {
     const clinic = allClinicsList.find(c => c.id === clinicId);
     if (!clinic) return;
@@ -362,6 +364,13 @@ async function openClinicDetailsModal(clinicId) {
     
     const limitDisplay = document.getElementById('det-clinic-limit');
     if (limitDisplay) limitDisplay.innerText = clinic.maxUsers || 1;
+
+    // 🔴 قراءة وتحديث حصص المرضى والواتساب في اللوحة
+    const patLimitDisplay = document.getElementById('det-clinic-pat-limit');
+    if (patLimitDisplay) patLimitDisplay.innerText = clinic.maxPatients || 500; // الافتراضي لو قديمة
+    
+    const waLimitDisplay = document.getElementById('det-clinic-wa-limit');
+    if (waLimitDisplay) waLimitDisplay.innerText = clinic.maxWhatsapp || 100; // الافتراضي لو قديمة
     
     const hiddenId = document.getElementById('current-det-clinic-id');
     if (hiddenId) hiddenId.value = clinic.id;
@@ -435,7 +444,7 @@ async function openClinicDetailsModal(clinicId) {
                     let uDate = u.createdAt ? (typeof u.createdAt.toDate === 'function' ? u.createdAt.toDate() : new Date(u.createdAt)) : fallbackDate;
                     staffList.push({ 
                         name: u.name || '---', identifier: u.email || doc.id, 
-                        role: u.role, status: u.status || 'active', // 🔴 قراءة حالة الإيقاف
+                        role: u.role, status: u.status || 'active', 
                         isOnline: u.isOnline || false, lastLogin: u.lastLogin || null, createdAt: uDate 
                     });
                 });
@@ -450,7 +459,6 @@ async function openClinicDetailsModal(clinicId) {
                     if(secTbody) secTbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #64748b;">لا يوجد مستخدمين.</td></tr>';
                 } else {
                     staffList.forEach(u => {
-                        // --- 1. بناء جدول المعلومات (التاب الأول) ---
                         let roleAr = u.role === 'admin' ? 'أدمن (مدير)' : (u.role === 'nurse' ? 'ممرضة' : (u.role === 'receptionist' ? 'استقبال' : (u.role === 'doctor' ? 'طبيب' : u.role)));
                         let roleColor = u.role === 'admin' ? '#dc2626' : (u.role === 'doctor' ? '#0284c7' : '#d97706');
                         let roleBg = u.role === 'admin' ? '#fee2e2' : (u.role === 'doctor' ? '#e0f2fe' : '#fef3c7');
@@ -487,17 +495,12 @@ async function openClinicDetailsModal(clinicId) {
                             <td>${lastSeenHtml}</td>
                         </tr>`;
 
-                        // --- 2. بناء جدول الأمان (التاب الثالث) 🔴 ---
                         if (secTbody) {
                             let isRealEmail = u.identifier.includes('@');
-                            
                             let secStatusHtml = u.status === 'suspended' ? `<span style="color:#ef4444; font-weight:bold; background:#fee2e2; padding:4px 8px; border-radius:4px;">موقوف 🚫</span>` : 
                                                (u.status === 'pending' ? `<span style="color:#d97706; font-weight:bold;">معلق ⏳</span>` : `<span style="color:#10b981; font-weight:bold;">نشط ✅</span>`);
                             
-                            // زرار الباسوورد
                             let resetBtn = isRealEmail ? `<button onclick="sendUserPasswordReset('${u.identifier}')" style="background:#3b82f6; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold;" title="إرسال رابط لتغيير الباسوورد">🔑 باسوورد</button>` : '';
-                            
-                            // زرار الإيقاف (للموظفين فقط مش أدمن العيادة الرئيسي عشان العيادة ماتضربش)
                             let suspendBtn = '';
                             if (isRealEmail && u.role !== 'admin') { 
                                 if (u.status === 'suspended') {
@@ -506,8 +509,6 @@ async function openClinicDetailsModal(clinicId) {
                                     suspendBtn = `<button onclick="toggleUserAccountStatus('${u.identifier}', 'suspended')" style="background:#f59e0b; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold;">⏸️ إيقاف</button>`;
                                 }
                             }
-
-                            // زرار الطرد
                             let forceLogoutBtn = (isRealEmail && u.isOnline) ? `<button onclick="forceUserLogout('${u.identifier}')" style="background:#ef4444; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold;" title="طرد من النظام حالاً">🚪 طرد</button>` : `<button style="background:#cbd5e1; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:not-allowed;" disabled>🚪 أوفلاين</button>`;
 
                             secTbody.innerHTML += `<tr>
@@ -530,7 +531,59 @@ async function openClinicDetailsModal(clinicId) {
     }
 }
 
-// 🔴 دالة حفظ الصلاحيات في الفايربيز 🔴
+// 🔴 دوال التعديل المباشر للحصص من لوحة العيادة 🔴
+async function editClinicPatientsLimit() {
+    const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
+    const currentLimit = document.getElementById('det-clinic-pat-limit').innerText;
+    const clinicId = document.getElementById('current-det-clinic-id').value;
+    if (!clinicId) return;
+
+    let newLimit = prompt(isAr ? "أدخل سعة المرضى القصوى الجديدة:" : "Enter new max patients limit:", currentLimit);
+    if (newLimit !== null && newLimit.trim() !== "") {
+        const numLimit = Number(newLimit);
+        if (!isNaN(numLimit) && numLimit >= 1) {
+            if (window.showLoader) window.showLoader(isAr ? "جاري التحديث..." : "Updating limit...");
+            try {
+                await db.collection("Clinics").doc(clinicId).update({ maxPatients: numLimit });
+                document.getElementById('det-clinic-pat-limit').innerText = numLimit;
+            } catch (err) {
+                console.error(err);
+                alert(isAr ? "حدث خطأ أثناء التحديث" : "Error updating limit");
+            } finally {
+                if (window.hideLoader) window.hideLoader();
+            }
+        } else {
+            alert(isAr ? "برجاء إدخال رقم صحيح أكبر من 0." : "Please enter a valid number.");
+        }
+    }
+}
+
+async function editClinicWhatsappLimit() {
+    const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
+    const currentLimit = document.getElementById('det-clinic-wa-limit').innerText;
+    const clinicId = document.getElementById('current-det-clinic-id').value;
+    if (!clinicId) return;
+
+    let newLimit = prompt(isAr ? "أدخل رصيد رسائل الواتساب الجديد:" : "Enter new WhatsApp limit:", currentLimit);
+    if (newLimit !== null && newLimit.trim() !== "") {
+        const numLimit = Number(newLimit);
+        if (!isNaN(numLimit) && numLimit >= 0) {
+            if (window.showLoader) window.showLoader(isAr ? "جاري التحديث..." : "Updating limit...");
+            try {
+                await db.collection("Clinics").doc(clinicId).update({ maxWhatsapp: numLimit });
+                document.getElementById('det-clinic-wa-limit').innerText = numLimit;
+            } catch (err) {
+                console.error(err);
+                alert(isAr ? "حدث خطأ أثناء التحديث" : "Error updating limit");
+            } finally {
+                if (window.hideLoader) window.hideLoader();
+            }
+        } else {
+            alert(isAr ? "برجاء إدخال رقم صحيح." : "Please enter a valid number.");
+        }
+    }
+}
+
 async function saveClinicFeatures() {
     const clinicId = document.getElementById('current-det-clinic-id').value;
     if(!clinicId) return;
@@ -576,7 +629,6 @@ async function editClinicPrice() {
     if (!clinicId) return;
 
     let newPrice = prompt(isAr ? "أدخل قيمة الاشتراك الجديدة (ج.م):" : "Enter new subscription price (EGP):", currentPriceStr);
-    
     if (newPrice !== null && newPrice.trim() !== "") {
         const numPrice = Number(newPrice);
         if (!isNaN(numPrice) && numPrice >= 0) {
@@ -603,7 +655,6 @@ async function editClinicUsersLimit() {
     if (!clinicId) return;
 
     let newLimit = prompt(isAr ? "أدخل الحد الأقصى الجديد للمستخدمين (شاملاً المدير):" : "Enter new max users limit (including admin):", currentLimit);
-    
     if (newLimit !== null && newLimit.trim() !== "") {
         const numLimit = Number(newLimit);
         if (!isNaN(numLimit) && numLimit >= 1) {
@@ -756,6 +807,13 @@ async function saveNewClinic(e) {
     const maxUsersInput = document.getElementById('clinic_max_users');
     const maxUsers = maxUsersInput ? Number(maxUsersInput.value) : 3;
 
+    // 🔴 سحب حصص المرضى والواتساب من الفورم
+    const maxPatientsInput = document.getElementById('clinic_max_patients');
+    const maxPatients = maxPatientsInput ? Number(maxPatientsInput.value) : 500;
+    
+    const maxWhatsappInput = document.getElementById('clinic_max_whatsapp');
+    const maxWhatsapp = maxWhatsappInput ? Number(maxWhatsappInput.value) : 100;
+
     try {
         const accessCode = Math.floor(10000 + Math.random() * 90000).toString();
         const uniqueClinicId = "clinic_" + accessCode + "_" + Date.now().toString().slice(-4);
@@ -772,6 +830,8 @@ async function saveNewClinic(e) {
             package: packageType, 
             subPrice: subPrice, 
             maxUsers: maxUsers,
+            maxPatients: maxPatients, // 🔴 حفظ حد المرضى
+            maxWhatsapp: maxWhatsapp, // 🔴 حفظ رصيد الواتساب
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             nextPaymentDate: nextPayDate,
             logoUrl: "",
@@ -908,9 +968,10 @@ function renderClinicsTable() {
 
         let actionsHtml = '';
         
+        // 🔴 تحديث نقل البيانات لمودال الترقية
         if (currentActiveTab === 'trials') {
             actionsHtml = `
-                <button onclick="openUpgradeTrialModal('${c.id}', '${c.clinicName}', '${adminEmail}', '${c.phone1}')" style="background:#10b981; border:none; padding:5px 10px; color:white; border-radius:5px; cursor:pointer; font-weight: bold; width: 100%;">🚀 ترقية العيادة ودفع الاشتراك</button>
+                <button onclick="openUpgradeTrialModal('${c.id}', '${c.clinicName}', '${adminEmail}', '${c.phone1}', ${c.maxUsers||3}, ${c.maxPatients||500}, ${c.maxWhatsapp||100})" style="background:#10b981; border:none; padding:5px 10px; color:white; border-radius:5px; cursor:pointer; font-weight: bold; width: 100%;">🚀 ترقية العيادة ودفع الاشتراك</button>
             `;
         } 
         else {
@@ -940,7 +1001,7 @@ function renderClinicsTable() {
     });
 }
 
-function openUpgradeTrialModal(clinicId, clinicName, adminEmail, adminPhone) {
+function openUpgradeTrialModal(clinicId, clinicName, adminEmail, adminPhone, currentMaxUsers, currentMaxPat, currentMaxWa) {
     document.getElementById('upg_clinic_id').value = clinicId;
     document.getElementById('upg_clinic_name').value = clinicName;
     document.getElementById('upg_admin_email').value = adminEmail;
@@ -948,7 +1009,11 @@ function openUpgradeTrialModal(clinicId, clinicName, adminEmail, adminPhone) {
     
     document.getElementById('upg_package').value = 'monthly';
     document.getElementById('upg_price').value = '';
-    document.getElementById('upg_max_users').value = '5';
+    
+    // 🔴 تمرير الحصص الحالية للمودال بدل القيم الافتراضية
+    document.getElementById('upg_max_users').value = currentMaxUsers || '5';
+    document.getElementById('upg_max_patients').value = currentMaxPat || '500';
+    document.getElementById('upg_max_whatsapp').value = currentMaxWa || '100';
     
     document.getElementById('upgradeTrialModal').style.display = 'flex';
 }
@@ -969,7 +1034,11 @@ async function confirmUpgradeTrial(e) {
     const adminPhone = document.getElementById('upg_admin_phone').value;
     const packageType = document.getElementById('upg_package').value;
     const subPrice = Number(document.getElementById('upg_price').value);
+    
+    // 🔴 سحب الحصص
     const maxUsers = Number(document.getElementById('upg_max_users').value);
+    const maxPatients = Number(document.getElementById('upg_max_patients').value);
+    const maxWhatsapp = Number(document.getElementById('upg_max_whatsapp').value);
 
     if (window.showLoader) window.showLoader(isAr ? "جاري ترقية العيادة وتوليد كود الدخول..." : "Upgrading clinic...");
 
@@ -985,6 +1054,8 @@ async function confirmUpgradeTrial(e) {
             package: packageType,
             subPrice: subPrice,
             maxUsers: maxUsers,
+            maxPatients: maxPatients, // 🔴 حفظ الترقية للمرضى
+            maxWhatsapp: maxWhatsapp, // 🔴 حفظ الترقية للواتساب
             accessCode: accessCode,
             nextPaymentDate: nextPayDate,
             status: 'active'
@@ -1193,7 +1264,7 @@ async function toggleUserAccountStatus(email, newStatus) {
     try {
         await db.collection("Users").doc(email).update({ 
             status: newStatus,
-            forceLogout: newStatus === 'suspended' ? true : false // لو اتوقف، نرسل أمر طرد كمان
+            forceLogout: newStatus === 'suspended' ? true : false 
         });
     } catch (error) {
         console.error("Error toggling user status:", error);
@@ -1209,7 +1280,6 @@ async function forceUserLogout(email) {
     
     if (window.showLoader) window.showLoader(isAr ? "جاري طرد المستخدم..." : "Forcing logout...");
     try {
-        // بمجرد ما نغير القيمة دي لـ true، السيستم في العيادة هيطرده أوتوماتيك
         await db.collection("Users").doc(email).update({ forceLogout: true });
         alert(isAr ? "✅ تم إرسال أمر الطرد! سيتم تسجيل خروجه في ثواني." : "✅ Force logout command sent!");
     } catch (error) {
@@ -1219,4 +1289,3 @@ async function forceUserLogout(email) {
         if (window.hideLoader) window.hideLoader();
     }
 }
-
