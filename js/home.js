@@ -247,7 +247,7 @@ function getDefaultPermissions(role) {
 // 🔴 تحديث وتطوير دالة تطبيق الصلاحيات لدعم الـ SaaS Feature Flags 🔴
 function applyPermissions(perms, role) {
     const superAdminLi = document.getElementById('nav-super-admin') || document.getElementById('nav-super-admin-li');
-    if (superAdminLi) superAdminLi.style.display = (role === 'superadmin') ? 'block' : 'none';
+    if (superAdminLi) superAdminLi.style.display = (role === 'superadmin' && !sessionStorage.getItem('impersonatedClinicId')) ? 'block' : 'none';
     
     if (role === 'superadmin') return;
 
@@ -352,8 +352,13 @@ firebase.auth().onAuthStateChanged(async (user) => {
             const userDoc = await db.collection("Users").doc(user.email).get();
             if (userDoc.exists) {
                 const userData = userDoc.data();
-                const role = userData.role || 'reception';
-                // جوه دالة الـ auth state changed، عدل سطر الـ clinicId ده:
+                
+                // 🔴 التعديل السحري هنا: لو منتحل، هنعتبره أدمن العيادة غصب عن السيستم عشان السيدبار تترسم كاملة! 🔴
+                let role = userData.role || 'reception';
+                if (sessionStorage.getItem('impersonatedClinicId')) {
+                    role = 'admin'; 
+                }
+                
                 const clinicId = sessionStorage.getItem('impersonatedClinicId') || userData.clinicId || sessionStorage.getItem('clinicId') || 'default';
                 const branchId = userData.branchId || sessionStorage.getItem('branchId') || 'main'; 
                 sessionStorage.setItem('clinicId', clinicId);
@@ -364,7 +369,10 @@ firebase.auth().onAuthStateChanged(async (user) => {
                 
                 if (!userPermissions) {
                     userPermissions = defaultPerms;
-                    db.collection("Users").doc(user.email).update({ permissions: userPermissions }).catch(e=>{});
+                    // لا تقم بحفظ الصلاحيات لو ده انتحال شخصية
+                    if(!sessionStorage.getItem('impersonatedClinicId')) {
+                        db.collection("Users").doc(user.email).update({ permissions: userPermissions }).catch(e=>{});
+                    }
                 } else {
                     let isMissingKeys = false;
                     for (let key in defaultPerms) {
@@ -373,7 +381,7 @@ firebase.auth().onAuthStateChanged(async (user) => {
                             isMissingKeys = true;
                         }
                     }
-                    if (isMissingKeys) {
+                    if (isMissingKeys && !sessionStorage.getItem('impersonatedClinicId')) {
                         db.collection("Users").doc(user.email).update({ permissions: userPermissions }).catch(e=>{});
                     }
                 }
@@ -389,6 +397,22 @@ firebase.auth().onAuthStateChanged(async (user) => {
 
                 startGlobalNotificationsListener(clinicId, role, branchId);
 
+                // 🔴 زرار العودة السحري لمالك النظام لو إنت منتحل 🔴
+                if (sessionStorage.getItem('impersonatedClinicId')) {
+                    const logoutBtn = document.getElementById('btn-logout');
+                    if (logoutBtn) {
+                        const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
+                        logoutBtn.innerHTML = isAr ? "🔙 العودة كـ مالك النظام" : "🔙 Return to Super Admin";
+                        logoutBtn.classList.remove('btn-danger');
+                        logoutBtn.style.backgroundColor = '#8b5cf6'; // لون مميز للعودة
+                        logoutBtn.onclick = (e) => {
+                            e.preventDefault();
+                            sessionStorage.removeItem('impersonatedClinicId');
+                            window.location.href = 'home.html'; // عمل ريفريش يرجعك لشخصيتك الحقيقية
+                        };
+                    }
+                }
+
                 const lastPage = sessionStorage.getItem('lastOpenedPage');
                 const lastNavId = sessionStorage.getItem('lastActiveNavId');
                 
@@ -401,12 +425,13 @@ firebase.auth().onAuthStateChanged(async (user) => {
                 }
 
                 loadPage(pageToLoad, navToClick);
+                
 // 🔴 رادار الطرد الإجباري (Force Logout Radar) - المحدّث 🔴
 db.collection("Users").doc(user.email).onSnapshot(async (doc) => {
     if (doc.exists && doc.data().forceLogout === true) {
         alert("🔒 تم تسجيل خروجك إدارياً من قبل السوبر أدمن.");
         
-        // 🔴 التعديل السحري هنا: مسح أمر الطرد من قاعدة البيانات عشان يعرف يدخل تاني!
+        // مسح أمر الطرد من قاعدة البيانات عشان يعرف يدخل تاني!
         await db.collection("Users").doc(user.email).update({ forceLogout: false });
         
         firebase.auth().signOut().then(() => {
@@ -803,12 +828,6 @@ async function askAI(promptType) {
             if (total === 0) { aiResponse = isAr ? "لا توجد أي حجوزات مسجلة لغدٍ حتى الآن. 🏖️" : "No appointments scheduled for tomorrow yet. 🏖️"; } 
             else { aiResponse = isAr ? `🔮 يوجد <strong>${total} كشوفات</strong> مسجلة غداً.` : `🔮 There are <strong>${total} appointments</strong> scheduled for tomorrow.`; }
         }
-        else if (promptType === 'tomorrow') {
-            const snap = await db.collection("Appointments").where("clinicId", "==", clinicId).where("date", "==", tomorrowStr).get();
-            let total = snap.size;
-            if (total === 0) { aiResponse = isAr ? "لا توجد أي حجوزات مسجلة لغدٍ حتى الآن. 🏖️" : "No appointments scheduled for tomorrow yet. 🏖️"; } 
-            else { aiResponse = isAr ? `🔮 يوجد <strong>${total} كشوفات</strong> مسجلة غداً.` : `🔮 There are <strong>${total} appointments</strong> scheduled for tomorrow.`; }
-        }
         else if (promptType === 'inventory') {
             const snap = await db.collection("Inventory").where("clinicId", "==", clinicId).get();
             let shortages = [];
@@ -891,3 +910,11 @@ function printClinicQR() {
 window.openPortalSettings = openPortalSettings;
 window.copyPortalLink = copyPortalLink;
 window.printClinicQR = printClinicQR;
+
+// 🔴 استقبال الإشارات من الداشبورد (لحل مشكلة السيدبار المختفية) 🔴
+window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'REFRESH_SIDEBAR') {
+        console.log("الداشبورد بتنبهنا لتحديث العيادة:", event.data.clinicId);
+        loadClinicBranding(event.data.clinicId);
+    }
+});
