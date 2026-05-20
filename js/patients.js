@@ -219,8 +219,9 @@ async function savePatient(e) {
                 maxPat = clinicDoc.data().maxPatients;
             }
 
-            const countSnap = await db.collection("Patients").where("clinicId", "==", currentClinicId).count().get();
-            const currentCount = countSnap.data().count;
+            // 🔴 التعديل هنا: استخدام الطريقة المتوافقة مع كل النسخ 🔴
+            const countSnap = await db.collection("Patients").where("clinicId", "==", currentClinicId).get();
+            const currentCount = countSnap.size; // بنجيب العدد من الـ size مباشرة
 
             if (currentCount >= maxPat) {
                 alert(`⚠️ ${window.langVars.quotaAlert}\n(${isAr ? 'الحد الأقصى:' : 'Limit:'} ${maxPat})`);
