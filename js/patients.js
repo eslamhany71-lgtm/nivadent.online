@@ -1,9 +1,8 @@
 // js/patients.js
 const db = firebase.firestore();
-// 🔴 التعديلات السحرية لضمان قراءة بيانات العيادة المنتحلة 🔴
 let currentClinicId = sessionStorage.getItem('impersonatedClinicId') || sessionStorage.getItem('clinicId');
 let userRole = sessionStorage.getItem('impersonatedClinicId') ? 'admin' : sessionStorage.getItem('userRole'); 
-let userBranch = sessionStorage.getItem('branchId') || 'main';جلب فرع الموظف الافتراضي
+let userBranch = sessionStorage.getItem('branchId') || 'main'; 
 
 let currentEditPatientId = null;
 let patientsDataArray = []; 
@@ -13,7 +12,6 @@ const PATIENTS_PER_PAGE = 15;
 let lastVisibleDoc = null; 
 let isSearchMode = false;  
 
-// 🔴 دالة لجلب قائمة الفروع (للمدير فقط)
 async function loadBranchesForAdmin() {
     if (userRole !== 'admin' && userRole !== 'superadmin') return;
 
@@ -37,14 +35,11 @@ async function loadBranchesForAdmin() {
         filterSelect.innerHTML = optionsHtml;
         modalSelect.innerHTML = modalOptionsHtml;
 
-        // إظهار الفلتر وتحديد الفرع الافتراضي للمدير
         filterSelect.style.display = 'block';
         filterSelect.value = userBranch;
         
-        // إظهار اختيار الفرع في مودال الإضافة للمدير
         document.getElementById('admin-branch-group').style.display = 'block';
 
-        // ترجمة كلمة "كل الفروع" لو إنجليزي
         const lang = localStorage.getItem('preferredLang') || 'ar';
         if (lang === 'en') {
             const allOpt = document.getElementById('opt-all-branches');
@@ -126,9 +121,9 @@ function openPatientModal(patientId = null) {
     const todayStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     document.getElementById('p_date').value = todayStr;
 
-    // 🔴 ضبط الفرع الافتراضي في المودال للمدير
     if (userRole === 'admin' || userRole === 'superadmin') {
-        const filterVal = document.getElementById('branch-filter').value;
+        const filterEl = document.getElementById('branch-filter');
+        const filterVal = filterEl ? filterEl.value : 'main';
         document.getElementById('p_branch').value = filterVal === 'all' ? 'main' : filterVal;
     }
 
@@ -170,7 +165,6 @@ function openPatientModal(patientId = null) {
 
 function closePatientModal() { document.getElementById('patientModal').style.display = 'none'; }
 
-// 🔴 دالة الحفظ مع حارس سعة المرضى (Quota Guard) 🔴
 async function savePatient(e) {
     e.preventDefault();
     const btn = document.getElementById('btn-save');
@@ -207,31 +201,27 @@ async function savePatient(e) {
 
     try {
         if (currentEditPatientId) {
-            // تحديث (لا يحتاج فحص حصص لأنه مريض موجود بالفعل)
             patientData.createdAt = firebase.firestore.Timestamp.fromDate(selectedDateObj);
             await db.collection("Patients").doc(currentEditPatientId).update(patientData);
             const index = patientsDataArray.findIndex(p => p.id === currentEditPatientId);
             if(index !== -1) { patientsDataArray[index] = { ...patientsDataArray[index], ...patientData }; }
         } else {
-            // 🔴 إضافة مريض جديد (شرطي الحصص يتدخل هنا) 🔴
             const clinicDoc = await db.collection("Clinics").doc(currentClinicId).get();
-            let maxPat = 500; // السعة الافتراضية
+            let maxPat = 500;
             if(clinicDoc.exists && clinicDoc.data().maxPatients) {
                 maxPat = clinicDoc.data().maxPatients;
             }
 
-            // 🔴 التعديل هنا: استخدام الطريقة المتوافقة مع كل النسخ 🔴
             const countSnap = await db.collection("Patients").where("clinicId", "==", currentClinicId).get();
-            const currentCount = countSnap.size; // بنجيب العدد من الـ size مباشرة
+            const currentCount = countSnap.size;
 
             if (currentCount >= maxPat) {
                 alert(`⚠️ ${window.langVars.quotaAlert}\n(${isAr ? 'الحد الأقصى:' : 'Limit:'} ${maxPat})`);
                 btn.disabled = false; btn.innerText = window.langVars.btnSave; 
                 if (window.hideLoader) window.hideLoader();
-                return; // ⛔ منع الإضافة
+                return; 
             }
 
-            // لو الباقة تسمح، كمل الإضافة
             patientData.totalDebt = 0; 
             patientData.createdAt = firebase.firestore.Timestamp.fromDate(selectedDateObj);
             const docRef = await db.collection("Patients").add(patientData);
@@ -285,10 +275,9 @@ async function loadPatients(isLoadMore = false) {
     try {
         let queryRef = db.collection("Patients").where("clinicId", "==", currentClinicId);
 
-if (userRole !== 'admin' && userRole !== 'superadmin') {
+        if (userRole !== 'admin' && userRole !== 'superadmin') {
             queryRef = queryRef.where("branchId", "==", userBranch);
         } else {
-            // 🔴 حماية إضافية للفلتر 🔴
             const branchFilterEl = document.getElementById('branch-filter');
             const selectedBranch = branchFilterEl ? branchFilterEl.value : 'all';
             
@@ -374,8 +363,10 @@ async function searchPatients() {
         if (userRole !== 'admin' && userRole !== 'superadmin') {
             queryRef = queryRef.where("branchId", "==", userBranch);
         } else {
-            const selectedBranch = document.getElementById('branch-filter').value;
-            if (selectedBranch !== 'all') {
+            const branchFilterEl = document.getElementById('branch-filter');
+            const selectedBranch = branchFilterEl ? branchFilterEl.value : 'all';
+            
+            if (selectedBranch && selectedBranch !== 'all') {
                 queryRef = queryRef.where("branchId", "==", selectedBranch);
             }
         }
@@ -432,7 +423,6 @@ function injectPatientSortButton() {
         
         btn.style.cssText = 'flex-shrink: 0; min-width: max-content; margin-right: 10px; margin-left: 10px; background: #ffffff; color: #0f172a; border: 1px solid #cbd5e1; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05);';
         
-        // دعم الدارك مود للزرار المحقون
         if(document.body.getAttribute('data-theme') === 'dark') {
             btn.style.background = '#334155';
             btn.style.color = '#f8fafc';
@@ -488,7 +478,6 @@ function renderPatientsTable() {
         tr.className = 'clickable-row';
         tr.onclick = function(e) {
             if(e.target.type === 'checkbox' || e.target.tagName === 'BUTTON' || e.target.parentElement.tagName === 'BUTTON') return;
-            // 🔴 تم تطبيق الـ Router Guard هنا للمسارات 🔴
             if (window.parent && typeof window.parent.loadPage === 'function') {
                 window.parent.loadPage(`patient-profile.html?id=${p.id}&clinicId=${currentClinicId}&v=${Date.now()}`);
             } else {
@@ -589,7 +578,6 @@ function openMedicalProfile(patientId) {
     window.location.href = `patient-profile.html?id=${patientId}&clinicId=${currentClinicId}&v=${Date.now()}`; 
 }
 
-// 🔴 دالة الاستيراد من الإكسيل مدعمة بحارس سعة المرضى (Quota Guard) 🔴
 async function importPatientsFromExcel(input) {
     const file = input.files[0];
     if (!file) return;
@@ -599,15 +587,14 @@ async function importPatientsFromExcel(input) {
     if (window.showLoader) window.showLoader(isAr ? "جاري فحص مساحة الباقة واستيراد البيانات..." : "Checking quota & importing...");
 
     try {
-        // 1. فحص باقة المرضى قبل الاستيراد 
         const clinicDoc = await db.collection("Clinics").doc(currentClinicId).get();
         let maxPat = 500;
         if(clinicDoc.exists && clinicDoc.data().maxPatients) {
             maxPat = clinicDoc.data().maxPatients;
         }
 
-        const countSnap = await db.collection("Patients").where("clinicId", "==", currentClinicId).count().get();
-        const currentCount = countSnap.data().count;
+        const countSnap = await db.collection("Patients").where("clinicId", "==", currentClinicId).get();
+        const currentCount = countSnap.size;
         const availableSlots = maxPat - currentCount;
 
         if (availableSlots <= 0) {
@@ -636,14 +623,15 @@ async function importPatientsFromExcel(input) {
 
                 let targetBranchId = userBranch;
                 if (userRole === 'admin' || userRole === 'superadmin') {
-                    const filterVal = document.getElementById('branch-filter').value;
+                    const filterEl = document.getElementById('branch-filter');
+                    const filterVal = filterEl ? filterEl.value : 'main';
                     targetBranchId = filterVal === 'all' ? 'main' : filterVal;
                 }
 
                 excelRows.forEach(row => {
                     if (importedCount >= availableSlots) {
                         outOfQuotaCount++;
-                        return; // ⛔ تجاهل باقي المرضى في الإكسيل لاكتمال الباقة
+                        return; 
                     }
 
                     const pName = row['الاسم'] || row['اسم المريض'] || row['name'];
