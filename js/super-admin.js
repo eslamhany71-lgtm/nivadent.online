@@ -1401,3 +1401,63 @@ function updateMRRStats() {
         }
     });
 }
+// ==========================================
+// 📢 محرك الإذاعة المركزية والإشعارات (Global Announcements)
+// ==========================================
+async function sendGlobalAnnouncement() {
+    const msgBox = document.getElementById('global_announcement_msg');
+    const msg = msgBox.value.trim();
+    const type = document.getElementById('global_announcement_type').value;
+    const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
+
+    if (!msg) {
+        alert(isAr ? "⚠️ يرجى كتابة الرسالة أولاً قبل الإرسال!" : "⚠️ Please write a message first!");
+        return;
+    }
+
+    if (!confirm(isAr ? "هل أنت متأكد من إرسال هذا الإشعار لجميع العيادات النشطة في نفس اللحظة؟" : "Broadcast this to all active clinics?")) {
+        return;
+    }
+
+    if (window.showLoader) window.showLoader(isAr ? "جاري البث للعيادات..." : "Broadcasting...");
+
+    try {
+        // فلترة العيادات عشان نبعت للعيادات اللي شغالة (Active) بس
+        const activeClinics = allClinicsList.filter(c => c.status === 'active');
+        
+        const batch = db.batch(); // استخدام الـ Batch عشان نبعت كله كعملية واحدة (أسرع وأوفر)
+        let count = 0;
+
+        const d = new Date();
+        const todayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+        activeClinics.forEach(clinic => {
+            const notifRef = db.collection("Notifications").doc(); // إنشاء ID جديد للإشعار
+            batch.set(notifRef, {
+                clinicId: clinic.id,
+                branchId: 'main', // بنبعته للفرع الرئيسي كافتراضي عشان يظهر للأدمن
+                title: isAr ? "رسالة من الإدارة (NivaDent)" : "System Announcement",
+                message: msg,
+                type: type,
+                isRead: false,
+                date: todayStr,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            count++;
+        });
+
+        if (count > 0) {
+            await batch.commit(); // تنفيذ الإرسال الجماعي
+            alert(isAr ? `✅ بوم! تم إرسال الإشعار بنجاح إلى ${count} عيادة! الجرس بيرن عندهم دلوقتي.` : `✅ Successfully sent to ${count} clinics!`);
+            msgBox.value = ''; // تفريغ الصندوق بعد الإرسال
+        } else {
+            alert(isAr ? "لا توجد عيادات نشطة لإرسال الإشعار لها حالياً." : "No active clinics to send to.");
+        }
+
+    } catch (error) {
+        console.error("Broadcast Error:", error);
+        alert(isAr ? "❌ حدث خطأ أثناء إرسال الإشعار السحابي." : "❌ Error sending announcement.");
+    } finally {
+        if (window.hideLoader) window.hideLoader();
+    }
+}
