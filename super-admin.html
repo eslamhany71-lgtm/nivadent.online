@@ -106,6 +106,22 @@
         <canvas id="mrrChart"></canvas>
     </div>
 </div>
+        <div class="stat-card" style="border-right: 5px solid #10b981;">
+            <h3 style="color: #10b981; margin-bottom: 10px;">صحة السيرفر (System Health)</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <span style="font-size: 12px; color:#64748b;">حالة قواعد البيانات</span><br>
+                    <strong id="sys-status-text" style="color:#10b981; font-size: 16px;">مستقر 🟢</strong>
+                </div>
+                <div style="text-align: left;">
+                    <span style="font-size: 12px; color:#64748b;">مؤشر الاستهلاك</span><br>
+                    <strong id="sys-load-text" style="font-size: 18px; color: #0f172a;">0%</strong>
+                </div>
+            </div>
+            <div style="width: 100%; background: #e2e8f0; border-radius: 5px; height: 8px; margin-top: 15px; overflow: hidden;">
+                <div id="sys-load-bar" style="width: 0%; background: #10b981; height: 100%; border-radius: 5px; transition: width 1s ease-in-out;"></div>
+            </div>
+        </div>
         <div class="stat-card" style="grid-column: 1 / -1; border-top: 4px solid #3b82f6; text-align: start;">
             <h3 style="color: #3b82f6; display: flex; align-items: center; gap: 8px; margin-top: 0;">
                 📢 الإذاعة المركزية (Global Announcements)
@@ -228,11 +244,11 @@
                         <strong id="lbl-det-price" style="color: #d97706; font-size: 13px; display: inline-block; margin-bottom: 4px;">قيمة الاشتراك المتفق عليها:</strong> 
                         <span id="det-clinic-price" style="color: #0f172a; font-weight: bold; font-size: 16px; margin-inline-start: 5px;">0</span> <span style="font-size: 12px; color: #64748b;">ج.م</span>
                         <button class="btn-edit-price" id="btn-edit-clinic-price" onclick="editClinicPrice()" title="تعديل السعر">✏️ تعديل</button>
-                        <button onclick="impersonateClinic()" style="background: #e11d48; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px;">
+                        <button id="btn-impersonate-clinic" onclick="impersonateClinic()" style="background: #e11d48; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px;">
                                 🚀 الدخول كـ (Admin) العيادة
                         </button>
                         <input type="hidden" id="current-det-clinic-id">
-                        <button onclick="openOverrideModal()" style="background: #f5f3ff; color: #8b5cf6; border: 1px solid #ddd6fe; padding: 10px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <button id="btn-override-clinic" onclick="openOverrideModal()" style="background: #f5f3ff; color: #8b5cf6; border: 1px solid #ddd6fe; padding: 10px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px;">
                             ⚙️ تعديل مالي وخصومات (Manual Override)
                         </button>
                     </div>
