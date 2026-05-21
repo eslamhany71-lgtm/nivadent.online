@@ -321,19 +321,12 @@ function startGlobalNotificationsListener(clinicId, role, branchId) {
 
     if (globalNotifUnsubscribe) globalNotifUnsubscribe();
 
-    // 🔴 الخطوة 1: جيب الفرع المختار حالياً من الـ Dropdown (لو موجود)
-    const activeBranchFilter = document.getElementById('branch-filter-notifications')?.value || branchId;
-
     let queryRef = db.collection("Notifications")
         .where("clinicId", "==", clinicId)
         .where("isRead", "==", false);
 
-    // 🔴 الخطوة 2: الفلترة الذكية
-    // لو هو مش أدمن، هنفلتر بالفرع.. بس لو مختار "كل الفروع" (all) مفيش فلتر!
     if (role !== 'admin' && role !== 'superadmin') {
-        if (activeBranchFilter && activeBranchFilter !== 'all') {
-            queryRef = queryRef.where("branchId", "==", activeBranchFilter);
-        }
+        queryRef = queryRef.where("branchId", "==", branchId);
     }
 
     globalNotifUnsubscribe = queryRef.onSnapshot(snap => {
