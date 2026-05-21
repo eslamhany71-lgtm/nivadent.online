@@ -155,6 +155,7 @@
             <span id="badge-support" class="support-badge" style="display: none;">0</span>
         </button>
         <button class="sa-tab" id="tab-reviews" onclick="switchMainTab('reviews')">⭐ تقييمات النظام</button>
+        <button class="sa-tab" id="tab-team" onclick="switchMainTab('team')">🛡️ فريق الإدارة (Niva Team)</button>
     </div>
 
     <div id="view-clinics" class="main-view-container" style="display: block;">
@@ -199,6 +200,40 @@
     <div id="view-reviews" class="main-view-container" style="display: none;">
         <div id="reviewsContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px;">
             <div style="text-align: center; padding: 20px; color: #64748b; grid-column: 1/-1;">جاري تحميل التقييمات...</div>
+        </div>
+    </div>
+    <div id="view-team" class="main-view-container" style="display: none;">
+        <div class="stat-card" style="margin-bottom: 20px; border-top: 4px solid #0f172a;">
+            <h3 style="color: #0f172a; margin-top:0;">إضافة موظف إدارة جديد</h3>
+            <form id="addNivaAdminForm" onsubmit="addNivaAdmin(event)" style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 200px;">
+                    <label style="font-size: 13px; color: #64748b; font-weight: bold;">البريد الإلكتروني (جيميل)</label>
+                    <input type="email" id="niva_admin_email" class="search-box" style="width: 100%; margin-top: 5px;" required placeholder="مثال: sales@nivadent.com">
+                </div>
+                <div style="flex: 1; min-width: 200px;">
+                    <label style="font-size: 13px; color: #64748b; font-weight: bold;">الرتبة (الصلاحية)</label>
+                    <select id="niva_admin_role" class="search-box" style="width: 100%; margin-top: 5px;">
+                        <option value="sales">مبيعات (Sales - رؤية فقط)</option>
+                        <option value="support">دعم فني (Support)</option>
+                    </select>
+                </div>
+                <button type="submit" id="btn-add-niva-admin" class="btn-primary" style="height: 42px; background: #0f172a; padding: 0 20px;">إضافة الموظف</button>
+            </form>
+        </div>
+        <div class="table-container">
+            <table style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th style="background: #f1f5f9;">البريد الإلكتروني</th>
+                        <th style="background: #f1f5f9;">الرتبة الممنوحة</th>
+                        <th style="background: #f1f5f9; text-align: center;">تاريخ الإضافة</th>
+                        <th style="background: #f1f5f9; text-align: center;">إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="nivaTeamBody">
+                    <tr><td colspan="4" style="text-align: center;">جاري التحميل...</td></tr>
+                </tbody>
+            </table>
         </div>
     </div>
 
