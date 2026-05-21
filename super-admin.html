@@ -96,7 +96,15 @@
             <div class="kpi-info"><h4 id="lbl-tot-patients">إجمالي المرضى (في كل النظام)</h4><h2 id="stat-all-patients">0</h2></div>
             <div class="kpi-icon green">👥</div>
         </div>
+            <div class="stat-card" style="border-right: 5px solid #8b5cf6;">
+        <h3 id="lbl-mrr-title">إجمالي الأرباح المتوقعة (MRR)</h3>
+        <div style="display: flex; align-items: baseline; gap: 10px;">
+            <h2 id="stat-mrr">0</h2>
+            <span style="font-size: 14px; color: #64748b;">ج.م / شهرياً</span>
+        </div>
+        <canvas id="mrrChart" style="max-height: 80px; margin-top: 10px;"></canvas>
     </div>
+        </div>
 
     <div class="sa-tabs">
         <button class="sa-tab active" id="tab-active" onclick="switchMainTab('active')">🏢 العيادات النشطة والموقوفة</button>
@@ -199,6 +207,9 @@
                                 🚀 الدخول كـ (Admin) العيادة
                         </button>
                         <input type="hidden" id="current-det-clinic-id">
+                        <button onclick="openOverrideModal()" style="background: #f5f3ff; color: #8b5cf6; border: 1px solid #ddd6fe; padding: 10px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            ⚙️ تعديل مالي وخصومات (Manual Override)
+                        </button>
                     </div>
                 </div>
 
@@ -440,6 +451,36 @@
             </form>
         </div>
     </div>
+    <div id="overrideModal" class="modal no-print">
+    <div class="modal-content" style="max-width: 450px;">
+        <span class="close-modal" onclick="closeModal('overrideModal')">&times;</span>
+        <h2 id="mod-ovr-title" style="color: #8b5cf6; margin-bottom: 5px;">🛠️ تحكم يدوي في الاشتراك</h2>
+        <p id="mod-ovr-sub" style="color: #64748b; margin-bottom: 20px; font-size: 14px;">تعديل الخصومات أو تمديد الفترة التجريبية للعيادة.</p>
+        
+        <form id="overrideForm" onsubmit="saveOverride(event)">
+            <input type="hidden" id="ovr_clinic_id">
+            
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label id="lbl-ovr-discount">نسبة خصم خاصة (%)</label>
+                <input type="number" id="ovr_discount" class="search-box" placeholder="مثلاً 50" min="0" max="100">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label id="lbl-ovr-trial">تمديد تجربة (أيام إضافية)</label>
+                <input type="number" id="ovr_trial_days" class="search-box" placeholder="مثلاً 7" min="0">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label id="lbl-ovr-notes">ملاحظات / سبب التعديل</label>
+                <textarea id="ovr_notes" class="search-box" style="height: 80px;"></textarea>
+            </div>
+
+            <button type="submit" class="btn-primary" id="btn-save-override" style="width: 100%; background: #8b5cf6; justify-content: center;">
+                حفظ التعديلات المالية
+            </button>
+        </form>
+    </div>
+</div>
 
     <script src="js/firebase-config.js"></script>
     <script src="js/super-admin.js"></script>
