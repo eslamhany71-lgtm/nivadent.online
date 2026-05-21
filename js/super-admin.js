@@ -129,8 +129,8 @@ function updatePageContent(lang) {
 
 firebase.auth().onAuthStateChanged(async (user) => {
     if (user) {
-        document.getElementById('userEmail').innerText = user.email;
-
+        const emailEl = document.getElementById('userEmail');
+        if (emailEl) { emailEl.innerText = user.email; }
         // 🛡️ قراءة رتبة الموظف من قاعدة البيانات
         try {
             const adminDoc = await db.collection("NivaAdmins").doc(user.email).get();
