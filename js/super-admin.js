@@ -2,6 +2,8 @@
 const db = firebase.firestore();
 let allClinicsList = []; 
 let clinicUsersUnsubscribe = null; 
+// 🛡️ رتبة المستخدم الحالي في لوحة السوبر أدمن
+let currentNivaRole = 'owner';
 
 let currentActiveTab = 'active'; 
 
@@ -127,15 +129,23 @@ function updatePageContent(lang) {
 
 firebase.auth().onAuthStateChanged(async (user) => {
     if (user) {
-        const userDoc = await db.collection("Users").doc(user.email).get();
-        if (userDoc.exists && userDoc.data().role === 'superadmin') {
-            loadClinics();
-            loadGlobalStats();
-            loadSupportTickets(); 
-            loadSystemReviews(); 
-        } else {
-            const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
-            document.body.innerHTML = `<h2 style='text-align:center; color:red; margin-top:50px;'>${isAr ? "عفواً، ليس لديك صلاحية للدخول لهذه الشاشة." : "Access Denied."}</h2>`;
+        document.getElementById('userEmail').innerText = user.email;
+
+        // 🛡️ قراءة رتبة الموظف من قاعدة البيانات
+        try {
+            const adminDoc = await db.collection("NivaAdmins").doc(user.email).get();
+            if (adminDoc.exists) {
+                currentNivaRole = adminDoc.data().role; 
+            } else if (user.email === 'eslamhany71@gmail.com') { // 🔴 غير ده لإيميلك الشخصي
+                currentNivaRole = 'owner'; 
+            } else {
+                currentNivaRole = 'sales'; // أي حد مجهول هنعتبره مبيعات للأمان
+            }
+        } catch(e) { console.error("Error reading admin role", e); }
+
+        loadClinics();
+        if(document.getElementById('tab-active').classList.contains('active')){
+            // loadClinics already called above
         }
     } else {
         window.location.href = "index.html";
@@ -532,6 +542,17 @@ async function openClinicDetailsModal(clinicId) {
         console.error(e);
         tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: red;">حدث خطأ في تحميل البيانات.</td></tr>';
     }
+    // 🛡️ تطبيق صلاحيات موظف السوبر أدمن
+    const overrideBtn = document.getElementById('btn-override-clinic');
+    const impersonateBtn = document.getElementById('btn-impersonate-clinic');
+
+    if (currentNivaRole !== 'owner') {
+        if (overrideBtn) overrideBtn.style.display = 'none';
+        if (impersonateBtn) impersonateBtn.style.display = 'none';
+    } else {
+        if (overrideBtn) overrideBtn.style.display = 'flex';
+        if (impersonateBtn) impersonateBtn.style.display = 'flex';
+    }
 }
 
 // 🔴 دوال التعديل المباشر للحصص من لوحة العيادة 🔴
@@ -900,7 +921,7 @@ function loadClinics() {
         
         renderClinicsTable(); 
         updateMRRStats(); // نداء المحرك المالي
-
+        updateSystemHealth(); // 🔴 نداء مؤشر صحة السيرفر
         if (window.hideLoader) window.hideLoader();
     }, () => {
         if (window.hideLoader) window.hideLoader();
@@ -1459,5 +1480,36 @@ async function sendGlobalAnnouncement() {
         alert(isAr ? "❌ حدث خطأ أثناء إرسال الإشعار السحابي." : "❌ Error sending announcement.");
     } finally {
         if (window.hideLoader) window.hideLoader();
+    }
+}
+// 📊 محرك صحة النظام والاستهلاك (System Health)
+function updateSystemHealth() {
+    const maxCapacity = 100; // افترض إن الباقة المجانية تستحمل 100 عيادة (تقدر تغيرها)
+    const activeClinics = allClinicsList.filter(c => c.status === 'active').length;
+    
+    let loadPercentage = Math.round((activeClinics / maxCapacity) * 100);
+    if (loadPercentage > 100) loadPercentage = 100;
+
+    const loadBar = document.getElementById('sys-load-bar');
+    const loadText = document.getElementById('sys-load-text');
+    const statusText = document.getElementById('sys-status-text');
+
+    if(!loadBar || !loadText) return;
+
+    loadText.innerText = `${loadPercentage}%`;
+    loadBar.style.width = `${loadPercentage}%`;
+
+    if (loadPercentage < 50) {
+        loadBar.style.background = '#10b981'; // أخضر
+        statusText.innerHTML = 'مستقر 🟢';
+        statusText.style.color = '#10b981';
+    } else if (loadPercentage < 80) {
+        loadBar.style.background = '#f59e0b'; // أصفر
+        statusText.innerHTML = 'ضغط متوسط 🟡';
+        statusText.style.color = '#f59e0b';
+    } else {
+        loadBar.style.background = '#ef4444'; // أحمر
+        statusText.innerHTML = 'خطر / اقترب للحد 🔴';
+        statusText.style.color = '#ef4444';
     }
 }
