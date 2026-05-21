@@ -131,19 +131,26 @@ firebase.auth().onAuthStateChanged(async (user) => {
     if (user) {
         const emailEl = document.getElementById('userEmail');
         if (emailEl) { emailEl.innerText = user.email; }
+        
         // 🛡️ قراءة رتبة الموظف من قاعدة البيانات
         try {
             const adminDoc = await db.collection("NivaAdmins").doc(user.email).get();
             if (adminDoc.exists) {
                 currentNivaRole = adminDoc.data().role; 
-            } else if (user.email === 'eslamhany71@gmail.com') { // 🔴 غير ده لإيميلك الشخصي
+            } else if (user.email === 'eslamhany71@gmail.com') { // إيميلك إنت
                 currentNivaRole = 'owner'; 
             } else {
-                currentNivaRole = 'sales'; // أي حد مجهول هنعتبره مبيعات للأمان
+                currentNivaRole = 'sales'; // افتراضي
             }
         } catch(e) { console.error("Error reading admin role", e); }
 
+        // 🔴 استدعاء الدوال اللي كانت ناقصة 🔴
         loadClinics();
+        loadGlobalStats(); 
+        loadSupportTickets();
+        loadSystemReviews();
+        loadNivaTeam(); // استدعاء دالة فريق الدعم
+        
         if(document.getElementById('tab-active').classList.contains('active')){
             // loadClinics already called above
         }
@@ -168,6 +175,9 @@ function switchMainTab(tabName) {
     } else if (tabName === 'reviews') {
         document.getElementById('tab-reviews').classList.add('active');
         document.getElementById('view-reviews').style.display = 'block';
+    } else if (tabName === 'team') { // 🔴 التابة الجديدة لفريق الدعم 🔴
+        document.getElementById('tab-team').classList.add('active');
+        document.getElementById('view-team').style.display = 'block';
     }
 }
 
@@ -191,6 +201,7 @@ function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 function loadSupportTickets() {
     db.collection("SupportTickets").orderBy("timestamp", "desc").onSnapshot(snap => {
         const tbody = document.getElementById('supportBody');
+        if(!tbody) return;
         tbody.innerHTML = '';
         let openCount = 0;
         const lang = localStorage.getItem('preferredLang') || 'ar';
@@ -235,11 +246,13 @@ function loadSupportTickets() {
         });
 
         const badge = document.getElementById('badge-support');
-        if (openCount > 0) {
-            badge.innerText = openCount;
-            badge.style.display = 'flex';
-        } else {
-            badge.style.display = 'none';
+        if(badge) {
+            if (openCount > 0) {
+                badge.innerText = openCount;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
         }
     });
 }
@@ -302,6 +315,7 @@ async function submitTicketReply(e) {
 function loadSystemReviews() {
     db.collection("SystemReviews").orderBy("createdAt", "desc").onSnapshot(snap => {
         const container = document.getElementById('reviewsContainer');
+        if(!container) return;
         container.innerHTML = '';
         
         if (snap.empty) {
@@ -378,17 +392,15 @@ async function openClinicDetailsModal(clinicId) {
     const limitDisplay = document.getElementById('det-clinic-limit');
     if (limitDisplay) limitDisplay.innerText = clinic.maxUsers || 1;
 
-    // 🔴 قراءة وتحديث حصص المرضى والواتساب في اللوحة
     const patLimitDisplay = document.getElementById('det-clinic-pat-limit');
-    if (patLimitDisplay) patLimitDisplay.innerText = clinic.maxPatients || 500; // الافتراضي لو قديمة
+    if (patLimitDisplay) patLimitDisplay.innerText = clinic.maxPatients || 500; 
     
     const waLimitDisplay = document.getElementById('det-clinic-wa-limit');
-    if (waLimitDisplay) waLimitDisplay.innerText = clinic.maxWhatsapp || 100; // الافتراضي لو قديمة
+    if (waLimitDisplay) waLimitDisplay.innerText = clinic.maxWhatsapp || 100; 
     
     const hiddenId = document.getElementById('current-det-clinic-id');
     if (hiddenId) hiddenId.value = clinic.id;
 
-    // --- تهيئة زراير الصلاحيات ---
     const f = clinic.features || {};
     const getF = (val) => val === undefined ? true : val;
 
@@ -542,6 +554,7 @@ async function openClinicDetailsModal(clinicId) {
         console.error(e);
         tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: red;">حدث خطأ في تحميل البيانات.</td></tr>';
     }
+
     // 🛡️ تطبيق صلاحيات موظف السوبر أدمن
     const overrideBtn = document.getElementById('btn-override-clinic');
     const impersonateBtn = document.getElementById('btn-impersonate-clinic');
@@ -831,7 +844,6 @@ async function saveNewClinic(e) {
     const maxUsersInput = document.getElementById('clinic_max_users');
     const maxUsers = maxUsersInput ? Number(maxUsersInput.value) : 3;
 
-    // 🔴 سحب حصص المرضى والواتساب من الفورم
     const maxPatientsInput = document.getElementById('clinic_max_patients');
     const maxPatients = maxPatientsInput ? Number(maxPatientsInput.value) : 500;
     
@@ -854,8 +866,8 @@ async function saveNewClinic(e) {
             package: packageType, 
             subPrice: subPrice, 
             maxUsers: maxUsers,
-            maxPatients: maxPatients, // 🔴 حفظ حد المرضى
-            maxWhatsapp: maxWhatsapp, // 🔴 حفظ رصيد الواتساب
+            maxPatients: maxPatients,
+            maxWhatsapp: maxWhatsapp,
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             nextPaymentDate: nextPayDate,
             logoUrl: "",
@@ -889,7 +901,6 @@ function loadClinics() {
     if (window.showLoader && allClinicsList.length === 0) window.showLoader(document.body.dir === 'rtl' ? "جاري مزامنة بيانات النظام..." : "Syncing SaaS data...");
 
     db.collection("Clinics").orderBy("createdAt", "desc").onSnapshot(async (snap) => {
-        // جوه loadClinics
         allClinicsList = []; 
         let activeCount = 0;
         let suspendedCount = 0;
@@ -920,8 +931,8 @@ function loadClinics() {
         document.getElementById('stat-susp-clinics').innerText = suspendedCount;
         
         renderClinicsTable(); 
-        updateMRRStats(); // نداء المحرك المالي
-        updateSystemHealth(); // 🔴 نداء مؤشر صحة السيرفر
+        updateMRRStats(); 
+        updateSystemHealth(); 
         if (window.hideLoader) window.hideLoader();
     }, () => {
         if (window.hideLoader) window.hideLoader();
@@ -930,6 +941,7 @@ function loadClinics() {
 
 function renderClinicsTable() {
     const tbody = document.getElementById('clinicsBody');
+    if(!tbody) return;
     tbody.innerHTML = '';
     const lang = localStorage.getItem('preferredLang') || 'ar';
     const now = new Date();
@@ -995,7 +1007,6 @@ function renderClinicsTable() {
 
         let actionsHtml = '';
         
-        // 🔴 تحديث نقل البيانات لمودال الترقية
         if (currentActiveTab === 'trials') {
             actionsHtml = `
                 <button onclick="openUpgradeTrialModal('${c.id}', '${c.clinicName}', '${adminEmail}', '${c.phone1}', ${c.maxUsers||3}, ${c.maxPatients||500}, ${c.maxWhatsapp||100})" style="background:#10b981; border:none; padding:5px 10px; color:white; border-radius:5px; cursor:pointer; font-weight: bold; width: 100%;">🚀 ترقية العيادة ودفع الاشتراك</button>
@@ -1006,8 +1017,12 @@ function renderClinicsTable() {
                 <button onclick="markAsPaid('${c.id}')" style="background:#10b981; border:none; padding:5px 10px; color:white; border-radius:5px; cursor:pointer;" title="إضافة شهر جديد">💰 ${window.superLang.btnPaid}</button>
                 <button onclick="openChangePackageModal('${c.id}')" style="background:#8b5cf6; border:none; padding:5px 10px; color:white; border-radius:5px; cursor:pointer;" title="${btnPkgTxt}">📦 ${btnPkgTxt}</button>
                 ${toggleBtnHtml}
-                <button class="btn-danger" onclick="deleteClinic('${c.id}', '${accessCode}')" style="background:#ef4444; border:none; padding:5px 10px; color:white; border-radius:5px; cursor:pointer;">🗑️ ${window.superLang.btnDelete}</button>
             `;
+            
+            // 🛡️ المالك فقط يمكنه الحذف
+            if (currentNivaRole === 'owner') {
+                actionsHtml += `<button class="btn-danger" onclick="deleteClinic('${c.id}', '${accessCode}')" style="background:#ef4444; border:none; padding:5px 10px; color:white; border-radius:5px; cursor:pointer;">🗑️ ${window.superLang.btnDelete}</button>`;
+            }
         }
 
         const tr = document.createElement('tr');
@@ -1037,7 +1052,6 @@ function openUpgradeTrialModal(clinicId, clinicName, adminEmail, adminPhone, cur
     document.getElementById('upg_package').value = 'monthly';
     document.getElementById('upg_price').value = '';
     
-    // 🔴 تمرير الحصص الحالية للمودال بدل القيم الافتراضية
     document.getElementById('upg_max_users').value = currentMaxUsers || '5';
     document.getElementById('upg_max_patients').value = currentMaxPat || '500';
     document.getElementById('upg_max_whatsapp').value = currentMaxWa || '100';
@@ -1045,9 +1059,7 @@ function openUpgradeTrialModal(clinicId, clinicName, adminEmail, adminPhone, cur
     document.getElementById('upgradeTrialModal').style.display = 'flex';
 }
 
-function closeUpgradeTrialModal() {
-    document.getElementById('upgradeTrialModal').style.display = 'none';
-}
+function closeUpgradeTrialModal() { document.getElementById('upgradeTrialModal').style.display = 'none'; }
 
 async function confirmUpgradeTrial(e) {
     e.preventDefault();
@@ -1062,7 +1074,6 @@ async function confirmUpgradeTrial(e) {
     const packageType = document.getElementById('upg_package').value;
     const subPrice = Number(document.getElementById('upg_price').value);
     
-    // 🔴 سحب الحصص
     const maxUsers = Number(document.getElementById('upg_max_users').value);
     const maxPatients = Number(document.getElementById('upg_max_patients').value);
     const maxWhatsapp = Number(document.getElementById('upg_max_whatsapp').value);
@@ -1071,7 +1082,6 @@ async function confirmUpgradeTrial(e) {
 
     try {
         const accessCode = Math.floor(10000 + Math.random() * 90000).toString();
-        
         const nextPayDate = new Date();
         if (packageType === 'monthly') nextPayDate.setMonth(nextPayDate.getMonth() + 1);
         else if (packageType === 'yearly') nextPayDate.setFullYear(nextPayDate.getFullYear() + 1);
@@ -1081,8 +1091,8 @@ async function confirmUpgradeTrial(e) {
             package: packageType,
             subPrice: subPrice,
             maxUsers: maxUsers,
-            maxPatients: maxPatients, // 🔴 حفظ الترقية للمرضى
-            maxWhatsapp: maxWhatsapp, // 🔴 حفظ الترقية للواتساب
+            maxPatients: maxPatients,
+            maxWhatsapp: maxWhatsapp,
             accessCode: accessCode,
             nextPaymentDate: nextPayDate,
             status: 'active'
@@ -1223,14 +1233,14 @@ async function deleteClinic(clinicId, accessCode) {
 
 function loadGlobalStats() {
     db.collection("Patients").get().then(snap => {
-        document.getElementById('stat-all-patients').innerText = snap.size;
-    });
+        const countEl = document.getElementById('stat-all-patients');
+        if(countEl) countEl.innerText = snap.size;
+    }).catch(e => console.error("Error loading patients stats:", e));
 }
 
 function filterData() {
     const input = document.getElementById('searchInput').value.toLowerCase();
     
-    // فلترة العيادات
     const cRows = document.getElementById('clinicsBody').getElementsByTagName('tr');
     for (let i = 0; i < cRows.length; i++) {
         const nameCol = cRows[i].getElementsByTagName('td')[2]; 
@@ -1241,14 +1251,16 @@ function filterData() {
         }
     }
     
-    // فلترة الدعم الفني
-    const sRows = document.getElementById('supportBody').getElementsByTagName('tr');
-    for (let i = 0; i < sRows.length; i++) {
-        const clinicCol = sRows[i].getElementsByTagName('td')[1]; 
-        if (clinicCol) {
-            const textToSearch = clinicCol.textContent.toLowerCase();
-            if (textToSearch.indexOf(input) > -1) sRows[i].style.display = "";
-            else sRows[i].style.display = "none";
+    const sRows = document.getElementById('supportBody');
+    if (sRows) {
+        const rows = sRows.getElementsByTagName('tr');
+        for (let i = 0; i < rows.length; i++) {
+            const clinicCol = rows[i].getElementsByTagName('td')[1]; 
+            if (clinicCol) {
+                const textToSearch = clinicCol.textContent.toLowerCase();
+                if (textToSearch.indexOf(input) > -1) rows[i].style.display = "";
+                else rows[i].style.display = "none";
+            }
         }
     }
 }
@@ -1317,21 +1329,16 @@ async function forceUserLogout(email) {
     }
 }
 
-// ===============================================
-// 🔴 دالة الدخول السحري كصاحب العيادة (Impersonation) 🔴
-// ===============================================
 async function impersonateClinic() {
     const clinicId = document.getElementById('current-det-clinic-id').value;
     const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
     if(!clinicId) return;
 
     if(confirm(isAr ? "هل تريد الدخول إلى لوحة تحكم هذه العيادة الآن؟" : "Enter this clinic's dashboard?")) {
-        // 🔴 التعديل السحري: هنبعت الـ ID في الرابط بدل ما نلوث السشن الأصلية
         window.open(`home.html?impersonate=${clinicId}`, '_blank'); 
     }
 }
 
-// فتح مودال الـ Override
 function openOverrideModal() {
     const clinicId = document.getElementById('current-det-clinic-id').value;
     const clinic = allClinicsList.find(c => c.id === clinicId);
@@ -1345,7 +1352,6 @@ function openOverrideModal() {
     openModal('overrideModal');
 }
 
-// حفظ التعديلات في الفايربيز
 async function saveOverride(e) {
     e.preventDefault();
     const clinicId = document.getElementById('ovr_clinic_id').value;
@@ -1364,7 +1370,6 @@ async function saveOverride(e) {
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         };
 
-        // لو فيه تمديد أيام، نعدل تاريخ الدفع القادم
         if (trialDays > 0) {
             const clinic = allClinicsList.find(c => c.id === clinicId);
             let currentExp = clinic.nextPaymentDate ? (clinic.nextPaymentDate.toDate ? clinic.nextPaymentDate.toDate() : new Date(clinic.nextPaymentDate)) : new Date();
@@ -1375,7 +1380,7 @@ async function saveOverride(e) {
         await db.collection("Clinics").doc(clinicId).update(updateData);
         alert(isAr ? "✅ تم تحديث بيانات الاشتراك بنجاح!" : "✅ Subscription updated!");
         closeModal('overrideModal');
-        closeClinicDetailsModal(); // ريفريش للقائمة
+        closeClinicDetailsModal(); 
     } catch (err) {
         console.error(err);
         alert("Error saving overrides");
@@ -1384,7 +1389,6 @@ async function saveOverride(e) {
     }
 }
 
-// 📊 محرك الرسم البياني للأرباح (MRR Chart)
 let mrrChart = null;
 function updateMRRStats() {
     const activeClinics = allClinicsList.filter(c => c.status === 'active');
@@ -1398,14 +1402,16 @@ function updateMRRStats() {
         return { name: c.clinicName, revenue: finalPrice };
     });
 
-    document.getElementById('stat-mrr').innerText = Math.round(totalMRR).toLocaleString();
+    const mrrEl = document.getElementById('stat-mrr');
+    if(mrrEl) mrrEl.innerText = Math.round(totalMRR).toLocaleString();
 
-    // رسم البياني
-    const ctx = document.getElementById('mrrChart').getContext('2d');
+    const canvas = document.getElementById('mrrChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
     if (mrrChart) mrrChart.destroy();
     
     mrrChart = new Chart(ctx, {
-        type: 'bar', // بار شارت بيوريك كل عيادة بتدفع كام
+        type: 'bar',
         data: {
             labels: chartData.map(d => d.name),
             datasets: [{
@@ -1422,9 +1428,7 @@ function updateMRRStats() {
         }
     });
 }
-// ==========================================
-// 📢 محرك الإذاعة المركزية والإشعارات (Global Announcements)
-// ==========================================
+
 async function sendGlobalAnnouncement() {
     const msgBox = document.getElementById('global_announcement_msg');
     const msg = msgBox.value.trim();
@@ -1443,20 +1447,18 @@ async function sendGlobalAnnouncement() {
     if (window.showLoader) window.showLoader(isAr ? "جاري البث للعيادات..." : "Broadcasting...");
 
     try {
-        // فلترة العيادات عشان نبعت للعيادات اللي شغالة (Active) بس
         const activeClinics = allClinicsList.filter(c => c.status === 'active');
-        
-        const batch = db.batch(); // استخدام الـ Batch عشان نبعت كله كعملية واحدة (أسرع وأوفر)
+        const batch = db.batch(); 
         let count = 0;
 
         const d = new Date();
         const todayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
         activeClinics.forEach(clinic => {
-            const notifRef = db.collection("Notifications").doc(); // إنشاء ID جديد للإشعار
+            const notifRef = db.collection("Notifications").doc(); 
             batch.set(notifRef, {
                 clinicId: clinic.id,
-                branchId: 'main', // بنبعته للفرع الرئيسي كافتراضي عشان يظهر للأدمن
+                branchId: 'main', 
                 title: isAr ? "رسالة من الإدارة (NivaDent)" : "System Announcement",
                 message: msg,
                 type: type,
@@ -1468,9 +1470,9 @@ async function sendGlobalAnnouncement() {
         });
 
         if (count > 0) {
-            await batch.commit(); // تنفيذ الإرسال الجماعي
+            await batch.commit(); 
             alert(isAr ? `✅ بوم! تم إرسال الإشعار بنجاح إلى ${count} عيادة! الجرس بيرن عندهم دلوقتي.` : `✅ Successfully sent to ${count} clinics!`);
-            msgBox.value = ''; // تفريغ الصندوق بعد الإرسال
+            msgBox.value = ''; 
         } else {
             alert(isAr ? "لا توجد عيادات نشطة لإرسال الإشعار لها حالياً." : "No active clinics to send to.");
         }
@@ -1482,9 +1484,9 @@ async function sendGlobalAnnouncement() {
         if (window.hideLoader) window.hideLoader();
     }
 }
-// 📊 محرك صحة النظام والاستهلاك (System Health)
+
 function updateSystemHealth() {
-    const maxCapacity = 100; // افترض إن الباقة المجانية تستحمل 100 عيادة (تقدر تغيرها)
+    const maxCapacity = 100; 
     const activeClinics = allClinicsList.filter(c => c.status === 'active').length;
     
     let loadPercentage = Math.round((activeClinics / maxCapacity) * 100);
@@ -1500,16 +1502,98 @@ function updateSystemHealth() {
     loadBar.style.width = `${loadPercentage}%`;
 
     if (loadPercentage < 50) {
-        loadBar.style.background = '#10b981'; // أخضر
+        loadBar.style.background = '#10b981'; 
         statusText.innerHTML = 'مستقر 🟢';
         statusText.style.color = '#10b981';
     } else if (loadPercentage < 80) {
-        loadBar.style.background = '#f59e0b'; // أصفر
+        loadBar.style.background = '#f59e0b'; 
         statusText.innerHTML = 'ضغط متوسط 🟡';
         statusText.style.color = '#f59e0b';
     } else {
-        loadBar.style.background = '#ef4444'; // أحمر
+        loadBar.style.background = '#ef4444'; 
         statusText.innerHTML = 'خطر / اقترب للحد 🔴';
         statusText.style.color = '#ef4444';
+    }
+}
+
+// ==========================================
+// 🛡️ إدارة فريق نظام NivaDent (Super Admin Roles)
+// ==========================================
+function loadNivaTeam() {
+    if (currentNivaRole !== 'owner') {
+        const teamTab = document.getElementById('tab-team');
+        if(teamTab) teamTab.style.display = 'none';
+        return; 
+    }
+
+    db.collection("NivaAdmins").onSnapshot(snap => {
+        const tbody = document.getElementById('nivaTeamBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        if (snap.empty) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #64748b;">لا يوجد موظفين حالياً.</td></tr>';
+            return;
+        }
+
+        snap.forEach(doc => {
+            const admin = doc.data();
+            const email = doc.id;
+            let roleStr = admin.role === 'sales' ? 'مبيعات (Sales)' : (admin.role === 'support' ? 'دعم فني (Support)' : 'مدير (Owner)');
+            
+            let dateStr = '---';
+            if(admin.addedAt) {
+                const d = typeof admin.addedAt.toDate === 'function' ? admin.addedAt.toDate() : new Date(admin.addedAt);
+                dateStr = d.toLocaleDateString('ar-EG');
+            }
+
+            tbody.innerHTML += `
+                <tr>
+                    <td dir="ltr" style="text-align: start; font-weight: bold; color: #0f172a;">${email}</td>
+                    <td><span style="background:#e0f2fe; color:#0284c7; padding:4px 8px; border-radius:6px; font-size:13px; font-weight:bold;">${roleStr}</span></td>
+                    <td style="text-align: center;">${dateStr}</td>
+                    <td style="text-align: center;">
+                        <button class="btn-danger" onclick="deleteNivaAdmin('${email}')" style="background:#ef4444; border:none; padding:5px 10px; color:white; border-radius:5px; cursor:pointer;">🗑️ إزالة</button>
+                    </td>
+                </tr>
+            `;
+        });
+    });
+}
+
+async function addNivaAdmin(e) {
+    e.preventDefault();
+    if (currentNivaRole !== 'owner') { alert("غير مصرح لك!"); return; }
+
+    const email = document.getElementById('niva_admin_email').value.trim().toLowerCase();
+    const role = document.getElementById('niva_admin_role').value;
+    const btn = document.getElementById('btn-add-niva-admin');
+    
+    btn.disabled = true; btn.innerText = "جاري الإضافة...";
+    try {
+        await db.collection("NivaAdmins").doc(email).set({
+            role: role,
+            addedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        alert("✅ تم إضافة الموظف بنجاح للوحة السوبر أدمن!");
+        document.getElementById('addNivaAdminForm').reset();
+    } catch (err) {
+        console.error(err);
+        alert("حدث خطأ أثناء الإضافة.");
+    } finally {
+        btn.disabled = false; btn.innerText = "إضافة الموظف";
+    }
+}
+
+async function deleteNivaAdmin(email) {
+    if (currentNivaRole !== 'owner') return;
+    if (email === 'eslamhany71@gmail.com') { alert("لا يمكن حذف المالك الأساسي للنظام!"); return; }
+
+    if (confirm(`هل أنت متأكد من سحب الصلاحيات وإزالة الموظف (${email})؟`)) {
+        try {
+            await db.collection("NivaAdmins").doc(email).delete();
+        } catch (err) {
+            console.error(err);
+        }
     }
 }
