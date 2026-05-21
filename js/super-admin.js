@@ -23,6 +23,7 @@ function updatePageContent(lang) {
             msgError: "حدث خطأ أثناء الإنشاء!", msgConfirmToggle: "هل متأكد من تغيير حالة العيادة؟",
             msgConfirmPaid: "هل تريد تأكيد استلام الدفعة وتجديد الاشتراك لمدة شهر؟",
             msgWarnDel: "تحذير: هذا سيحذف العيادة تماماً ولن يمكن استرجاعها! اكتب '1234' للتأكيد:", msgDelSuccess: "تم حذف العيادة بنجاح.", btnSaving: "جاري الإنشاء...",
+            ovrTitle: "تحكم يدوي في الاشتراك", ovrDiscount: "نسبة خصم خاصة (%)", ovrTrial: "تمديد تجربة (أيام إضافية)", ovrBtn: "حفظ التعديلات المالية",
             
             mUpgTitle: "🚀 ترقية العيادة التجريبية", mUpgSub: "حدد الباقة وقيمة الاشتراك لتوليد كود الدخول الجديد للعيادة.",
             lUpgPkg: "باقة الاشتراك", optUpgMonth: "شهري (Monthly)", optUpgYear: "سنوي (Yearly)",
@@ -73,7 +74,8 @@ function updatePageContent(lang) {
 
             tabActive: "🏢 Active & Suspended Clinics", tabTrials: "🚀 Free Trials", tabSupport: "🎧 Support Tickets", tabReviews: "⭐ System Reviews",
             noSupport: "No support tickets found.", noReviews: "No reviews yet.", btnReply: "Reply & Close",
-            msgReplySent: "Reply sent and ticket closed successfully."
+            msgReplySent: "Reply sent and ticket closed successfully.",
+            ovrTitle: "Subscription Override", ovrDiscount: "Special Discount (%)", ovrTrial: "Trial Extension (Days)", ovrBtn: "Save Financial Changes",
         }
     };
     const c = t[lang] || t.ar;
@@ -118,6 +120,7 @@ function updatePageContent(lang) {
     setTxt('lbl-c-wa-limit', lang === 'ar' ? 'رصيد الواتس' : 'WhatsApp Balance');
     setTxt('lbl-det-pat-limit', lang === 'ar' ? 'سعة المرضى بالباقة' : 'Plan Patients Limit');
     setTxt('lbl-det-wa-limit', lang === 'ar' ? 'رصيد رسائل الواتساب' : 'WhatsApp Messages Limit');
+    setTxt('mod-ovr-title', c.ovrTitle); setTxt('lbl-ovr-discount', c.ovrDiscount); setTxt('lbl-ovr-trial', c.ovrTrial); setTxt('btn-save-override', c.ovrBtn);
 
     window.superLang = c;
 }
@@ -865,6 +868,7 @@ function loadClinics() {
     if (window.showLoader && allClinicsList.length === 0) window.showLoader(document.body.dir === 'rtl' ? "جاري مزامنة بيانات النظام..." : "Syncing SaaS data...");
 
     db.collection("Clinics").orderBy("createdAt", "desc").onSnapshot(async (snap) => {
+        // جوه loadClinics
         allClinicsList = []; 
         let activeCount = 0;
         let suspendedCount = 0;
@@ -895,6 +899,8 @@ function loadClinics() {
         document.getElementById('stat-susp-clinics').innerText = suspendedCount;
         
         renderClinicsTable(); 
+        updateMRRStats(); // نداء المحرك المالي
+
         if (window.hideLoader) window.hideLoader();
     }, () => {
         if (window.hideLoader) window.hideLoader();
@@ -1302,4 +1308,96 @@ async function impersonateClinic() {
         // 🔴 التعديل السحري: هنبعت الـ ID في الرابط بدل ما نلوث السشن الأصلية
         window.open(`home.html?impersonate=${clinicId}`, '_blank'); 
     }
+}
+
+// فتح مودال الـ Override
+function openOverrideModal() {
+    const clinicId = document.getElementById('current-det-clinic-id').value;
+    const clinic = allClinicsList.find(c => c.id === clinicId);
+    if (!clinic) return;
+
+    document.getElementById('ovr_clinic_id').value = clinicId;
+    document.getElementById('ovr_discount').value = (clinic.overrides && clinic.overrides.discount) || 0;
+    document.getElementById('ovr_trial_days').value = 0;
+    document.getElementById('ovr_notes').value = (clinic.overrides && clinic.overrides.notes) || "";
+
+    openModal('overrideModal');
+}
+
+// حفظ التعديلات في الفايربيز
+async function saveOverride(e) {
+    e.preventDefault();
+    const clinicId = document.getElementById('ovr_clinic_id').value;
+    const discount = Number(document.getElementById('ovr_discount').value);
+    const trialDays = Number(document.getElementById('ovr_trial_days').value);
+    const notes = document.getElementById('ovr_notes').value.trim();
+    
+    const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
+    if (window.showLoader) window.showLoader(isAr ? "جاري حفظ التعديلات..." : "Saving overrides...");
+
+    try {
+        const updateData = {
+            "overrides.discount": discount,
+            "overrides.notes": notes,
+            "overrides.lastModifiedBy": "SuperAdmin",
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        // لو فيه تمديد أيام، نعدل تاريخ الدفع القادم
+        if (trialDays > 0) {
+            const clinic = allClinicsList.find(c => c.id === clinicId);
+            let currentExp = clinic.nextPaymentDate ? (clinic.nextPaymentDate.toDate ? clinic.nextPaymentDate.toDate() : new Date(clinic.nextPaymentDate)) : new Date();
+            currentExp.setDate(currentExp.getDate() + trialDays);
+            updateData.nextPaymentDate = firebase.firestore.Timestamp.fromDate(currentExp);
+        }
+
+        await db.collection("Clinics").doc(clinicId).update(updateData);
+        alert(isAr ? "✅ تم تحديث بيانات الاشتراك بنجاح!" : "✅ Subscription updated!");
+        closeModal('overrideModal');
+        closeClinicDetailsModal(); // ريفريش للقائمة
+    } catch (err) {
+        console.error(err);
+        alert("Error saving overrides");
+    } finally {
+        if (window.hideLoader) window.hideLoader();
+    }
+}
+
+// 📊 محرك الرسم البياني للأرباح (MRR Chart)
+let mrrChart = null;
+function updateMRRStats() {
+    const activeClinics = allClinicsList.filter(c => c.status === 'active');
+    let totalMRR = 0;
+    
+    const chartData = activeClinics.map(c => {
+        const price = Number(c.subPrice) || 0;
+        const discount = (c.overrides && c.overrides.discount) || 0;
+        const finalPrice = price - (price * (discount / 100));
+        totalMRR += finalPrice;
+        return { name: c.clinicName, revenue: finalPrice };
+    });
+
+    document.getElementById('stat-mrr').innerText = Math.round(totalMRR).toLocaleString();
+
+    // رسم البياني
+    const ctx = document.getElementById('mrrChart').getContext('2d');
+    if (mrrChart) mrrChart.destroy();
+    
+    mrrChart = new Chart(ctx, {
+        type: 'bar', // بار شارت بيوريك كل عيادة بتدفع كام
+        data: {
+            labels: chartData.map(d => d.name),
+            datasets: [{
+                label: 'Revenue',
+                data: chartData.map(d => d.revenue),
+                backgroundColor: '#a78bfa',
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { x: { display: false }, y: { beginAtZero: true } }
+        }
+    });
 }
