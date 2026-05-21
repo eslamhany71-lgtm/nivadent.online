@@ -1,4 +1,4 @@
-// js/portal.js - V3.3 (Smart SaaS Portal + Clinic Reviews)
+// js/portal.js - V3.3 (Smart SaaS Portal + Clinic Reviews - Modified for Notifications)
 
 const db = firebase.firestore();
 const urlParams = new URLSearchParams(window.location.search);
@@ -590,6 +590,18 @@ async function submitBooking(e) {
             status: "pending", source: "portal", 
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
+
+        // 🔴 Trigger Notification 🔴
+        try {
+            await db.collection("Notifications").add({
+                clinicId: clinicId,
+                title: currentLang === 'ar' ? "حجز جديد! 📅" : "New Appointment! 📅",
+                message: (currentLang === 'ar' ? "حجز جديد باسم: " : "New booking by: ") + finalPatientName,
+                type: "booking",
+                isRead: false,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        } catch (nErr) { console.error("Notification trigger failed:", nErr); }
 
         alert(portalDict[currentLang].msgBooked);
         cancelBooking(); 
