@@ -1,10 +1,19 @@
 // js/superadmin.js
+
+// 🔴 كود مسح الذاكرة المؤقتة (Cache) العنيدة للموبايل (حل مشكلة عدم التحديث)
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for(let registration of registrations) {
+            registration.unregister();
+        }
+    });
+}
+
 const db = firebase.firestore();
 let allClinicsList = []; 
 let clinicUsersUnsubscribe = null; 
 // 🛡️ رتبة المستخدم الحالي في لوحة السوبر أدمن
 let currentNivaRole = 'owner';
-
 let currentActiveTab = 'active'; 
 
 function updatePageContent(lang) {
@@ -41,6 +50,7 @@ function updatePageContent(lang) {
             thUDate: "تاريخ الانضمام", thUOnline: "متصل الآن؟", thULast: "آخر ظهور", txtULoad: "جاري تحميل المستخدمين...",
             
             tabActive: "🏢 العيادات النشطة والموقوفة", tabTrials: "🚀 التجارب المجانية", tabSupport: "🎧 تذاكر الدعم الفني", tabReviews: "⭐ تقييمات النظام",
+            tabChat: "💬 المراسلة (Live Chat)", tabTeam: "🛡️ فريق الإدارة (Niva Team)",
             noSupport: "لا توجد تذاكر دعم فني.", noReviews: "لا توجد تقييمات حتى الآن.", btnReply: "رد وإغلاق",
             msgReplySent: "تم إرسال الرد وإغلاق التذكرة بنجاح."
         },
@@ -75,6 +85,7 @@ function updatePageContent(lang) {
             thUDate: "Join Date", thUOnline: "Online?", thULast: "Last Seen", txtULoad: "Loading users...",
 
             tabActive: "🏢 Active & Suspended Clinics", tabTrials: "🚀 Free Trials", tabSupport: "🎧 Support Tickets", tabReviews: "⭐ System Reviews",
+            tabChat: "💬 Live Chat", tabTeam: "🛡️ Niva Team",
             noSupport: "No support tickets found.", noReviews: "No reviews yet.", btnReply: "Reply & Close",
             msgReplySent: "Reply sent and ticket closed successfully.",
             ovrTitle: "Subscription Override", ovrDiscount: "Special Discount (%)", ovrTrial: "Trial Extension (Days)", ovrBtn: "Save Financial Changes",
@@ -116,8 +127,9 @@ function updatePageContent(lang) {
     if(document.getElementById('tab-support')) document.getElementById('tab-support').innerHTML = c.tabSupport + badgeHtml;
     
     if(document.getElementById('tab-reviews')) document.getElementById('tab-reviews').innerHTML = c.tabReviews;
+    if(document.getElementById('tab-chat')) document.getElementById('tab-chat').innerHTML = c.tabChat;
+    if(document.getElementById('tab-team')) document.getElementById('tab-team').innerHTML = c.tabTeam;
 
-    // إضافة ترجمات الحصص لو مش موجودة بالـ HTML
     setTxt('lbl-c-pat-limit', lang === 'ar' ? 'سعة المرضى' : 'Patients Limit');
     setTxt('lbl-c-wa-limit', lang === 'ar' ? 'رصيد الواتس' : 'WhatsApp Balance');
     setTxt('lbl-det-pat-limit', lang === 'ar' ? 'سعة المرضى بالباقة' : 'Plan Patients Limit');
@@ -132,34 +144,28 @@ firebase.auth().onAuthStateChanged(async (user) => {
         const emailEl = document.getElementById('userEmail');
         if (emailEl) { emailEl.innerText = user.email; }
         
-        // 🛡️ قراءة رتبة الموظف من قاعدة البيانات
         try {
             const adminDoc = await db.collection("NivaAdmins").doc(user.email).get();
             if (adminDoc.exists) {
                 currentNivaRole = adminDoc.data().role; 
-            } else if (user.email === 'eslamhany71@gmail.com') { // إيميلك إنت
+            } else if (user.email === 'eslamhany71@gmail.com') { // حساب المالك الأساسي
                 currentNivaRole = 'owner'; 
             } else {
-                currentNivaRole = 'sales'; // افتراضي
+                currentNivaRole = 'sales'; 
             }
         } catch(e) { console.error("Error reading admin role", e); }
 
-        // 🔴 استدعاء الدوال اللي كانت ناقصة 🔴
         loadClinics();
         loadGlobalStats(); 
         loadSupportTickets();
         loadSystemReviews();
-        loadNivaTeam(); // استدعاء دالة فريق الدعم
+        loadNivaTeam(); 
         
-        if(document.getElementById('tab-active').classList.contains('active')){
-            // loadClinics already called above
-        }
     } else {
         window.location.href = "index.html";
     }
 });
 
-// 🔴 التنقل بين الأقسام الرئيسية (Views) 🔴
 function switchMainTab(tabName) {
     currentActiveTab = tabName;
     document.querySelectorAll('.sa-tab').forEach(t => t.classList.remove('active'));
@@ -175,13 +181,15 @@ function switchMainTab(tabName) {
     } else if (tabName === 'reviews') {
         document.getElementById('tab-reviews').classList.add('active');
         document.getElementById('view-reviews').style.display = 'block';
-    } else if (tabName === 'team') { // 🔴 التابة الجديدة لفريق الدعم 🔴
+    } else if (tabName === 'team') {
         document.getElementById('tab-team').classList.add('active');
         document.getElementById('view-team').style.display = 'block';
+    } else if (tabName === 'chat') {
+        document.getElementById('tab-chat').classList.add('active');
+        document.getElementById('view-chat').style.display = 'block';
     }
 }
 
-// 🔴 التنقل بين تابات تفاصيل العيادة الداخلية 🔴
 function switchClinicDetTab(tabName) {
     document.getElementById('cdet-info').style.display = 'none';
     document.getElementById('cdet-features').style.display = 'none';
@@ -293,8 +301,10 @@ async function submitTicketReply(e) {
             repliedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
+        // 🔴 تعديل الإشعار: إضافة branchId: 'main' لضمان وصوله للفرع الرئيسي
         await db.collection("Notifications").add({
             clinicId: clinicId,
+            branchId: 'main', 
             title: "رد على طلب الدعم الفني",
             message: replyText,
             type: "system",
@@ -353,7 +363,7 @@ function loadSystemReviews() {
     });
 }
 
-// 🔴 دالة فتح مودال العيادة وتجهيز زراير الصلاحيات وجدول الأمان والحصص 🔴
+// 🔴 دالة فتح مودال العيادة 🔴
 async function openClinicDetailsModal(clinicId) {
     const clinic = allClinicsList.find(c => c.id === clinicId);
     if (!clinic) return;
@@ -555,7 +565,6 @@ async function openClinicDetailsModal(clinicId) {
         tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: red;">حدث خطأ في تحميل البيانات.</td></tr>';
     }
 
-    // 🛡️ تطبيق صلاحيات موظف السوبر أدمن
     const overrideBtn = document.getElementById('btn-override-clinic');
     const impersonateBtn = document.getElementById('btn-impersonate-clinic');
 
@@ -568,7 +577,6 @@ async function openClinicDetailsModal(clinicId) {
     }
 }
 
-// 🔴 دوال التعديل المباشر للحصص من لوحة العيادة 🔴
 async function editClinicPatientsLimit() {
     const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
     const currentLimit = document.getElementById('det-clinic-pat-limit').innerText;
@@ -933,10 +941,38 @@ function loadClinics() {
         renderClinicsTable(); 
         updateMRRStats(); 
         updateSystemHealth(); 
+        
+        // 🔴 تعبئة دروب داون الشات والإذاعة
+        populateClinicDropdowns();
+        
         if (window.hideLoader) window.hideLoader();
     }, () => {
         if (window.hideLoader) window.hideLoader();
     });
+}
+
+function populateClinicDropdowns() {
+    const activeClinics = allClinicsList.filter(c => c.status === 'active');
+    
+    // دروب داون الإذاعة
+    const annDropdown = document.getElementById('global_announcement_target');
+    if (annDropdown) {
+        annDropdown.innerHTML = '<option value="all">🌍 إرسال لجميع العيادات النشطة</option>';
+        activeClinics.forEach(c => {
+            annDropdown.innerHTML += `<option value="${c.id}">🏢 ${c.clinicName}</option>`;
+        });
+    }
+
+    // دروب داون الشات
+    const chatDropdown = document.getElementById('chat_clinic_select');
+    if (chatDropdown) {
+        const currentSelected = chatDropdown.value;
+        chatDropdown.innerHTML = '<option value="" disabled selected>اختر عيادة لبدء المراسلة...</option>';
+        activeClinics.forEach(c => {
+            chatDropdown.innerHTML += `<option value="${c.id}">🏢 ${c.clinicName}</option>`;
+        });
+        if (currentSelected) chatDropdown.value = currentSelected;
+    }
 }
 
 function renderClinicsTable() {
@@ -1019,7 +1055,7 @@ function renderClinicsTable() {
                 ${toggleBtnHtml}
             `;
             
-            // 🛡️ المالك فقط يمكنه الحذف
+            // 🔴 تعديل مسح العيادة 🔴
             if (currentNivaRole === 'owner') {
                 actionsHtml += `<button class="btn-danger" onclick="deleteClinic('${c.id}', '${accessCode}')" style="background:#ef4444; border:none; padding:5px 10px; color:white; border-radius:5px; cursor:pointer;">🗑️ ${window.superLang.btnDelete}</button>`;
             }
@@ -1213,16 +1249,19 @@ async function toggleSubscription(clinicId, newStatus) {
     }
 }
 
+// 🔴 تعديل الدالة لتمسح العيادة نهائياً من الـ Database 🔴
 async function deleteClinic(clinicId, accessCode) {
     const code = prompt(window.superLang.msgWarnDel);
     if (code === '1234') {
         if (window.showLoader) window.showLoader(document.body.dir === 'rtl' ? "جاري مسح العيادة نهائياً..." : "Deleting clinic...");
         try {
+            // مسح العيادة من قاعدة البيانات
             await db.collection("Clinics").doc(clinicId).delete();
+            // مسح كود الدخول عشان ميقدرش يعمل Login
             if(accessCode && accessCode !== "") {
                 await db.collection("clinicId").doc(accessCode).delete();
             }
-            alert(window.superLang.msgDelSuccess);
+            alert(window.superLang.msgDelSuccess + "\n\nملاحظة: إذا كان الدكتور متصلاً الآن، سيقوم (نظام الحماية) بطرده تلقائياً بمجرد تحديث صفحته.");
         } catch (e) {
             console.error(e);
         } finally {
@@ -1429,10 +1468,12 @@ function updateMRRStats() {
     });
 }
 
+// 🔴 تعديل دالة الإذاعة المركزية (Dropdown Targeting) 🔴
 async function sendGlobalAnnouncement() {
     const msgBox = document.getElementById('global_announcement_msg');
     const msg = msgBox.value.trim();
     const type = document.getElementById('global_announcement_type').value;
+    const target = document.getElementById('global_announcement_target').value;
     const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
 
     if (!msg) {
@@ -1440,25 +1481,31 @@ async function sendGlobalAnnouncement() {
         return;
     }
 
-    if (!confirm(isAr ? "هل أنت متأكد من إرسال هذا الإشعار لجميع العيادات النشطة في نفس اللحظة؟" : "Broadcast this to all active clinics?")) {
+    if (!confirm(isAr ? "هل أنت متأكد من إرسال هذا الإشعار الآن؟" : "Broadcast this announcement?")) {
         return;
     }
 
-    if (window.showLoader) window.showLoader(isAr ? "جاري البث للعيادات..." : "Broadcasting...");
+    if (window.showLoader) window.showLoader(isAr ? "جاري الإرسال..." : "Sending...");
 
     try {
-        const activeClinics = allClinicsList.filter(c => c.status === 'active');
+        let clinicsToNotify = [];
+        if (target === 'all') {
+            clinicsToNotify = allClinicsList.filter(c => c.status === 'active');
+        } else {
+            clinicsToNotify = allClinicsList.filter(c => c.id === target);
+        }
+
         const batch = db.batch(); 
         let count = 0;
 
         const d = new Date();
         const todayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
-        activeClinics.forEach(clinic => {
+        clinicsToNotify.forEach(clinic => {
             const notifRef = db.collection("Notifications").doc(); 
             batch.set(notifRef, {
                 clinicId: clinic.id,
-                branchId: 'main', 
+                branchId: 'main', // 🔴 ضمان الوصول للفرع الرئيسي للعيادة
                 title: isAr ? "رسالة من الإدارة (NivaDent)" : "System Announcement",
                 message: msg,
                 type: type,
@@ -1471,48 +1518,92 @@ async function sendGlobalAnnouncement() {
 
         if (count > 0) {
             await batch.commit(); 
-            alert(isAr ? `✅ بوم! تم إرسال الإشعار بنجاح إلى ${count} عيادة! الجرس بيرن عندهم دلوقتي.` : `✅ Successfully sent to ${count} clinics!`);
+            alert(isAr ? `✅ بوم! تم إرسال الإشعار بنجاح إلى ${count} عيادة!` : `✅ Successfully sent to ${count} clinics!`);
             msgBox.value = ''; 
         } else {
-            alert(isAr ? "لا توجد عيادات نشطة لإرسال الإشعار لها حالياً." : "No active clinics to send to.");
+            alert(isAr ? "لا توجد عيادات لتلقي الإشعار." : "No clinics found.");
         }
 
     } catch (error) {
         console.error("Broadcast Error:", error);
-        alert(isAr ? "❌ حدث خطأ أثناء إرسال الإشعار السحابي." : "❌ Error sending announcement.");
+        alert(isAr ? "❌ حدث خطأ أثناء الإرسال." : "❌ Error sending announcement.");
     } finally {
         if (window.hideLoader) window.hideLoader();
     }
 }
 
-function updateSystemHealth() {
-    const maxCapacity = 100; 
-    const activeClinics = allClinicsList.filter(c => c.status === 'active').length;
+// 🔴 دوال الشات المباشر (المراسلة مع العيادات) 🔴
+let currentChatUnsubscribe = null;
+function loadClinicChat() {
+    const clinicId = document.getElementById('chat_clinic_select').value;
+    const chatArea = document.getElementById('chat_messages_area');
     
-    let loadPercentage = Math.round((activeClinics / maxCapacity) * 100);
-    if (loadPercentage > 100) loadPercentage = 100;
+    if(!clinicId) {
+        chatArea.innerHTML = '<div style="text-align:center; color:#94a3b8; margin: auto; font-size: 18px;">💬 اختر عيادة لبدء المحادثة</div>';
+        return;
+    }
+    
+    if(currentChatUnsubscribe) currentChatUnsubscribe();
+    
+    chatArea.innerHTML = '<div style="text-align:center; color:#94a3b8; margin: auto;">جاري تحميل المحادثة...</div>';
+    
+    currentChatUnsubscribe = db.collection("LiveChats")
+        .where("clinicId", "==", clinicId)
+        .orderBy("createdAt", "asc")
+        .onSnapshot(snap => {
+            chatArea.innerHTML = '';
+            if(snap.empty) {
+                chatArea.innerHTML = '<div style="text-align:center; color:#94a3b8; margin: auto;">لا توجد رسائل سابقة. ابدأ المحادثة الآن!</div>';
+                return;
+            }
+            snap.forEach(doc => {
+                const msg = doc.data();
+                const isSuperAdmin = msg.senderRole === 'superadmin';
+                const alignStyles = isSuperAdmin ? 'align-self: flex-end; background: #3b82f6; color: white; border-bottom-left-radius: 0;' : 'align-self: flex-start; background: white; color: #0f172a; border: 1px solid #e2e8f0; border-bottom-right-radius: 0;';
+                
+                chatArea.innerHTML += `
+                    <div style="max-width: 70%; padding: 12px 15px; border-radius: 12px; ${alignStyles} box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                        <div style="font-size: 11px; font-weight: bold; margin-bottom: 5px; opacity: 0.9;">${msg.senderName || '---'}</div>
+                        <div style="font-size: 15px; line-height: 1.4;">${msg.text}</div>
+                        <div style="font-size: 10px; opacity: 0.7; margin-top: 5px; text-align: ${isSuperAdmin?'right':'left'};">${msg.createdAt ? new Date(msg.createdAt.toDate()).toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'}) : ''}</div>
+                    </div>
+                `;
+            });
+            chatArea.scrollTop = chatArea.scrollHeight; // النزول لآخر رسالة
+        });
+}
 
-    const loadBar = document.getElementById('sys-load-bar');
-    const loadText = document.getElementById('sys-load-text');
-    const statusText = document.getElementById('sys-status-text');
-
-    if(!loadBar || !loadText) return;
-
-    loadText.innerText = `${loadPercentage}%`;
-    loadBar.style.width = `${loadPercentage}%`;
-
-    if (loadPercentage < 50) {
-        loadBar.style.background = '#10b981'; 
-        statusText.innerHTML = 'مستقر 🟢';
-        statusText.style.color = '#10b981';
-    } else if (loadPercentage < 80) {
-        loadBar.style.background = '#f59e0b'; 
-        statusText.innerHTML = 'ضغط متوسط 🟡';
-        statusText.style.color = '#f59e0b';
-    } else {
-        loadBar.style.background = '#ef4444'; 
-        statusText.innerHTML = 'خطر / اقترب للحد 🔴';
-        statusText.style.color = '#ef4444';
+async function sendAdminChatMessage() {
+    const clinicId = document.getElementById('chat_clinic_select').value;
+    const input = document.getElementById('chat_msg_input');
+    const text = input.value.trim();
+    
+    if(!clinicId || !text) return;
+    input.value = ''; // تفريغ الصندوق فوراً للشعور بالسرعة
+    
+    try {
+        await db.collection("LiveChats").add({
+            clinicId: clinicId,
+            text: text,
+            senderRole: 'superadmin',
+            senderName: 'NivaDent Support 🛡️',
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        // إرسال إشعار صامت للعيادة يبلغهم بوجود رسالة جديدة
+        await db.collection("Notifications").add({
+            clinicId: clinicId,
+            branchId: 'main',
+            title: "رسالة جديدة من الإدارة 💬",
+            message: text.length > 30 ? text.substring(0, 30) + '...' : text,
+            type: "chat",
+            isRead: false,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+    } catch(e) { 
+        console.error("Chat Error:", e); 
+        alert("حدث خطأ أثناء إرسال الرسالة."); 
     }
 }
 
