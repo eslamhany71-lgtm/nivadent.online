@@ -1688,3 +1688,34 @@ async function deleteNivaAdmin(email) {
         }
     }
 }
+// 📊 محرك صحة النظام والاستهلاك (System Health)
+function updateSystemHealth() {
+    const maxCapacity = 100; // افترض إن الباقة المجانية تستحمل 100 عيادة 
+    const activeClinics = allClinicsList.filter(c => c.status === 'active').length;
+    
+    let loadPercentage = Math.round((activeClinics / maxCapacity) * 100);
+    if (loadPercentage > 100) loadPercentage = 100;
+
+    const loadBar = document.getElementById('sys-load-bar');
+    const loadText = document.getElementById('sys-load-text');
+    const statusText = document.getElementById('sys-status-text');
+
+    if(!loadBar || !loadText) return;
+
+    loadText.innerText = `${loadPercentage}%`;
+    loadBar.style.width = `${loadPercentage}%`;
+
+    if (loadPercentage < 50) {
+        loadBar.style.background = 'linear-gradient(90deg, #10b981, #34d399)'; 
+        statusText.innerHTML = 'مستقر 🟢';
+        statusText.style.color = '#34d399';
+    } else if (loadPercentage < 80) {
+        loadBar.style.background = '#f59e0b'; 
+        statusText.innerHTML = 'ضغط متوسط 🟡';
+        statusText.style.color = '#f59e0b';
+    } else {
+        loadBar.style.background = '#ef4444'; 
+        statusText.innerHTML = 'خطر / اقترب للحد 🔴';
+        statusText.style.color = '#ef4444';
+    }
+}
