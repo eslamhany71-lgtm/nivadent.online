@@ -44,15 +44,23 @@ function updatePageContent(lang) {
             lUClinic: "العيادة التابعة لها", lUName: "اسم المستخدم", lURole: "الصلاحية الممنوحة (Role)",
             optUAdmin: "مدير نظام (Doctor/Admin)", optUDoc: "طبيب (صلاحية محدودة)", optURec: "موظف استقبال", optUNur: "مساعد / ممرضة", btnSubUser: "توليد كود الدعوة",
             
-            modDetTitle: "تفاصيل العيادة والمستخدمين", lblDetName: "اسم العيادة", lblDetCode: "كود العيادة", lblDetEmail: "إيميل الأدمن", lblDetPhone: "الموبايل",
-            lblDetPkg: "نوع الباقة", lblDetCreated: "تاريخ الإنشاء", lblDetLimit: "الحد الأقصى للمستخدمين:", lblDetPrice: "قيمة الاشتراك المتفق عليها:",
+            modDetTitle: "لوحة تحكم العيادة المتقدمة", lblDetName: "اسم العيادة", lblDetCode: "كود العيادة", lblDetEmail: "إيميل الأدمن", lblDetPhone: "الموبايل",
+            lblDetPkg: "نوع الباقة", lblDetCreated: "تاريخ الإنشاء", lblDetLimit: "الحد الأقصى للمستخدمين", lblDetPrice: "قيمة الاشتراك المتفق عليها:",
             txtTeamTitle: "👥 فريق العمل والمستخدمين", thUName: "اسم المستخدم", thUEmail: "البريد / الكود", thURole: "الصلاحية",
             thUDate: "تاريخ الانضمام", thUOnline: "متصل الآن؟", thULast: "آخر ظهور", txtULoad: "جاري تحميل المستخدمين...",
             
-            tabActive: "🏢 العيادات النشطة والموقوفة", tabTrials: "🚀 التجارب المجانية", tabSupport: "🎧 تذاكر الدعم الفني", tabReviews: "⭐ تقييمات النظام",
+            tabActive: "🏢 العيادات النشطة والموقوفة", tabTrials: "🚀 التجارب المجانية (Trials)", tabSupport: "🎧 تذاكر الدعم الفني", tabReviews: "⭐ تقييمات النظام",
             tabChat: "💬 المراسلة (Live Chat)", tabTeam: "🛡️ فريق الإدارة (Niva Team)",
             noSupport: "لا توجد تذاكر دعم فني.", noReviews: "لا توجد تقييمات حتى الآن.", btnReply: "رد وإغلاق",
-            msgReplySent: "تم إرسال الرد وإغلاق التذكرة بنجاح."
+            msgReplySent: "تم إرسال الرد وإغلاق التذكرة بنجاح.",
+            
+            // 🔴 التحديثات الجديدة لدعم اللغات 🔴
+            sysHealthTitle: "صحة السيرفر (System Health)", sysHealthDb: "حالة قواعد البيانات", sysHealthUsage: "مؤشر الاستهلاك",
+            annTitle: "📢 الإذاعة المركزية (Global Announcements)", annSub: "إرسال إشعار فوري للعيادات على النظام (سيظهر في جرس الإشعارات لديهم).",
+            annBtn: "🚀 إرسال الآن",
+            chatWith: "تواصل مع:", chatPlaceholder: "اكتب رسالتك للعيادة هنا...", chatSend: "إرسال 🚀",
+            teamAddTitle: "إضافة موظف إدارة جديد", teamEmail: "البريد الإلكتروني (جيميل)", teamRole: "الرتبة (الصلاحية)", teamAddBtn: "إضافة الموظف",
+            roleSales: "مبيعات (Sales - رؤية فقط)", roleSupport: "دعم فني (Support)"
         },
         en: {
             title: "Central SaaS Management", sub: "Owner Dashboard - Super Admin", search: "Search by clinic name...", btnAdd: "Add New Clinic", btnAddUser: "Generate User Invite",
@@ -79,8 +87,8 @@ function updatePageContent(lang) {
             lUClinic: "Select Clinic", lUName: "User Name", lURole: "Assigned Role",
             optUAdmin: "System Admin", optUDoc: "Doctor", optURec: "Receptionist", optUNur: "Nurse / Assistant", btnSubUser: "Generate Invite Code",
             
-            modDetTitle: "Clinic & Staff Details", lblDetName: "Clinic Name", lblDetCode: "Access Code", lblDetEmail: "Admin Email", lblDetPhone: "Phone",
-            lblDetPkg: "Package", lblDetCreated: "Created At", lblDetLimit: "Max Users Limit:", lblDetPrice: "Agreed Subscription Price:",
+            modDetTitle: "Advanced Clinic Dashboard", lblDetName: "Clinic Name", lblDetCode: "Access Code", lblDetEmail: "Admin Email", lblDetPhone: "Phone",
+            lblDetPkg: "Package", lblDetCreated: "Created At", lblDetLimit: "Max Users Limit", lblDetPrice: "Agreed Subscription Price:",
             txtTeamTitle: "👥 Staff & Users", thUName: "User Name", thUEmail: "Email / Code", thURole: "Role",
             thUDate: "Join Date", thUOnline: "Online?", thULast: "Last Seen", txtULoad: "Loading users...",
 
@@ -89,53 +97,118 @@ function updatePageContent(lang) {
             noSupport: "No support tickets found.", noReviews: "No reviews yet.", btnReply: "Reply & Close",
             msgReplySent: "Reply sent and ticket closed successfully.",
             ovrTitle: "Subscription Override", ovrDiscount: "Special Discount (%)", ovrTrial: "Trial Extension (Days)", ovrBtn: "Save Financial Changes",
+            
+            // 🔴 التحديثات الجديدة لدعم اللغات 🔴
+            sysHealthTitle: "System Health", sysHealthDb: "Database Status", sysHealthUsage: "Usage Indicator",
+            annTitle: "📢 Global Announcements", annSub: "Send instant notification to clinics on the system (appears in their bell).",
+            annBtn: "🚀 Send Now",
+            chatWith: "Chat with:", chatPlaceholder: "Type your message here...", chatSend: "Send 🚀",
+            teamAddTitle: "Add New Admin", teamEmail: "Email (Gmail)", teamRole: "Role (Permission)", teamAddBtn: "Add Member",
+            roleSales: "Sales (View Only)", roleSupport: "Support (Tech Support)"
         }
     };
     const c = t[lang] || t.ar;
     const setTxt = (id, txt) => { if(document.getElementById(id)) document.getElementById(id).innerText = txt; };
 
-    setTxt('txt-title', c.title); setTxt('txt-subtitle', c.sub); document.getElementById('searchInput').placeholder = c.search;
+    // --- العناوين والبحث ---
+    setTxt('txt-title', c.title); setTxt('txt-subtitle', c.sub); 
+    if(document.getElementById('searchInput')) document.getElementById('searchInput').placeholder = c.search;
     setTxt('btn-add-clinic', c.btnAdd); setTxt('btn-add-user', c.btnAddUser);
+    
+    // --- الكروت والإحصائيات ---
     setTxt('lbl-tot-clinics', c.totClinics); setTxt('lbl-tot-susp', c.totSusp); setTxt('lbl-tot-patients', c.totPatients);
+    
+    // --- الجداول ---
     setTxt('th-date', c.thDate); setTxt('th-next-pay', c.thNextPay); setTxt('th-name', c.thName); setTxt('th-email', c.thEmail); setTxt('th-status', c.thStatus); setTxt('th-action', c.thAction);
     if(document.getElementById('txt-loading')) setTxt('txt-loading', c.loading);
     
+    // --- مودال العيادة ---
     setTxt('mod-title', c.mTitle); setTxt('lbl-c-name', c.lName); setTxt('lbl-c-email', c.lEmail); setTxt('lbl-c-hint', c.lHint); setTxt('lbl-c-phone', c.lPhone); 
     setTxt('lbl-c-pkg', c.lPkg); setTxt('opt-pkg-t7', c.optPkgT7); setTxt('opt-pkg-t14', c.optPkgT14); setTxt('opt-pkg-month', c.optPkgMonth); setTxt('opt-pkg-year', c.optPkgYear);
     setTxt('lbl-c-plan', c.lPlan); setTxt('opt-active', c.optAct); setTxt('opt-susp', c.optSusp); setTxt('btn-save', c.btnSave);
     setTxt('lbl-c-limit', c.lLimit); setTxt('hint-c-limit', c.hintLimit); setTxt('lbl-c-price', c.lPrice);
     
+    // --- مودال الترقية ---
     setTxt('mod-upgrade-title', c.mUpgTitle); setTxt('mod-upgrade-sub', c.mUpgSub);
     setTxt('lbl-upg-pkg', c.lUpgPkg); setTxt('opt-upg-month', c.optUpgMonth); setTxt('opt-upg-year', c.optUpgYear);
     setTxt('lbl-upg-price', c.lUpgPrice); setTxt('lbl-upg-limit', c.lUpgLimit); setTxt('btn-confirm-upgrade', c.btnConfirmUpg);
     
+    // --- مودال الدعوة ---
     setTxt('mod-user-title', c.mUserTitle); setTxt('mod-user-sub', c.mUserSub);
     setTxt('lbl-u-clinic', c.lUClinic); setTxt('lbl-u-name', c.lUName); setTxt('lbl-u-role', c.lURole);
     setTxt('opt-u-admin', c.optUAdmin); setTxt('opt-u-doc', c.optUDoc); setTxt('opt-u-rec', c.optURec); setTxt('opt-u-nur', c.optUNur); setTxt('btn-submit-user', c.btnSubUser);
 
+    // --- مودال التفاصيل ---
     setTxt('mod-det-title', c.modDetTitle); setTxt('lbl-det-name', c.lblDetName); setTxt('lbl-det-code', c.lblDetCode); setTxt('lbl-det-email', c.lblDetEmail); setTxt('lbl-det-phone', c.lblDetPhone);
     setTxt('lbl-det-pkg', c.lblDetPkg); setTxt('lbl-det-created', c.lblDetCreated); setTxt('lbl-det-limit', c.lblDetLimit); setTxt('lbl-det-price', c.lblDetPrice);
     setTxt('txt-team-title', c.txtTeamTitle); setTxt('th-u-name', c.thUName); setTxt('th-u-email', c.thUEmail); setTxt('th-u-role', c.thURole);
     setTxt('th-u-date', c.thUDate); setTxt('th-u-online', c.thUOnline); setTxt('th-u-last', c.thULast);
     if(document.getElementById('txt-u-load')) setTxt('txt-u-load', c.txtULoad);
 
+    // --- التابات ---
     if(document.getElementById('tab-active')) document.getElementById('tab-active').innerHTML = c.tabActive;
     if(document.getElementById('tab-trials')) document.getElementById('tab-trials').innerHTML = c.tabTrials;
-    
     const supBadge = document.getElementById('badge-support');
     const badgeHtml = supBadge ? supBadge.outerHTML : '';
     if(document.getElementById('tab-support')) document.getElementById('tab-support').innerHTML = c.tabSupport + badgeHtml;
-    
     if(document.getElementById('tab-reviews')) document.getElementById('tab-reviews').innerHTML = c.tabReviews;
     if(document.getElementById('tab-chat')) document.getElementById('tab-chat').innerHTML = c.tabChat;
     if(document.getElementById('tab-team')) document.getElementById('tab-team').innerHTML = c.tabTeam;
 
+    // --- الحصص والتجاوز ---
     setTxt('lbl-c-pat-limit', lang === 'ar' ? 'سعة المرضى' : 'Patients Limit');
     setTxt('lbl-c-wa-limit', lang === 'ar' ? 'رصيد الواتس' : 'WhatsApp Balance');
     setTxt('lbl-det-pat-limit', lang === 'ar' ? 'سعة المرضى بالباقة' : 'Plan Patients Limit');
     setTxt('lbl-det-wa-limit', lang === 'ar' ? 'رصيد رسائل الواتساب' : 'WhatsApp Messages Limit');
     setTxt('mod-ovr-title', c.ovrTitle); setTxt('lbl-ovr-discount', c.ovrDiscount); setTxt('lbl-ovr-trial', c.ovrTrial); setTxt('btn-save-override', c.ovrBtn);
 
+    // --- 🔴 ترجمات الأجزاء الجديدة (الشات، الإذاعة، الفريق، الصحة) 🔴 ---
+    // صحة السيرفر
+    const sysTitleEl = document.querySelector('.stat-card h3 span');
+    if(sysTitleEl && sysTitleEl.parentElement) {
+        sysTitleEl.parentElement.innerHTML = `<span style="animation: blink 2s infinite;">⚡</span> ${c.sysHealthTitle}`;
+    }
+    const sysLabels = document.querySelectorAll('#sys-status-text, #sys-load-text');
+    if(sysLabels.length === 2) {
+        if(sysLabels[0].previousElementSibling && sysLabels[0].previousElementSibling.tagName === 'SPAN') sysLabels[0].previousElementSibling.innerText = c.sysHealthDb;
+        if(sysLabels[1].previousElementSibling && sysLabels[1].previousElementSibling.tagName === 'SPAN') sysLabels[1].previousElementSibling.innerText = c.sysHealthUsage;
+    }
+
+    // الإذاعة
+    const annH3 = document.querySelector('h3:has(+ p)');
+    if(annH3) {
+        annH3.innerHTML = `📢 ${c.annTitle}`;
+        if(annH3.nextElementSibling) annH3.nextElementSibling.innerText = c.annSub;
+    }
+    const annBtn = document.querySelector('button[onclick="sendGlobalAnnouncement()"]');
+    if(annBtn) annBtn.innerHTML = `${c.annBtn}`;
+
+    // الشات
+    const chatTitle = document.querySelector('#view-chat strong');
+    if(chatTitle) chatTitle.innerText = c.chatWith;
+    const chatInput = document.getElementById('chat_msg_input');
+    if(chatInput) chatInput.placeholder = c.chatPlaceholder;
+    const chatBtn = document.querySelector('#view-chat button');
+    if(chatBtn) chatBtn.innerHTML = c.chatSend;
+
+    // الفريق
+    const teamTitle = document.querySelector('#view-team h3');
+    if(teamTitle) teamTitle.innerText = c.teamAddTitle;
+    const teamLabels = document.querySelectorAll('#addNivaAdminForm label');
+    if(teamLabels.length >= 2) {
+        teamLabels[0].innerText = c.teamEmail;
+        teamLabels[1].innerText = c.teamRole;
+    }
+    const teamAddBtn = document.getElementById('btn-add-niva-admin');
+    if(teamAddBtn) teamAddBtn.innerText = c.teamAddBtn;
+    
+    const roleSelect = document.getElementById('niva_admin_role');
+    if(roleSelect && roleSelect.options.length >= 2) {
+        roleSelect.options[0].text = c.roleSales;
+        roleSelect.options[1].text = c.roleSupport;
+    }
+
+    // حفظ القاموس عالمياً
     window.superLang = c;
 }
 
