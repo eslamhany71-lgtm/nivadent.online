@@ -57,14 +57,14 @@ function updateLanguage(lang) {
         ar: {
             title: "الإشعارات والتنبيهات", sub: "متابعة أحداث العيادة والنواقص والمواعيد الجديدة",
             readAll: "✔️ تحديد الكل كمقروء", deleteAll: "🗑️ مسح الكل",
-            emptyTitle: "لا توجد إشعارات", emptySub: "عيادتك في أمان وكل الأمور مستقرة!",
+            emptyTitle: "لا توجد إشعارات", emptySub: "الفرع المحدد أو عيادتك في أمان وكل الأمور مستقرة!",
             justNow: "الآن", error: "حدث خطأ في جلب الإشعارات",
             optAll: "كل الفروع"
         },
         en: {
             title: "Notifications & Alerts", sub: "Track clinic events, low stock, and new appointments",
             readAll: "✔️ Mark All as Read", deleteAll: "🗑️ Clear All",
-            emptyTitle: "No Notifications", emptySub: "Your clinic is secure and everything is up to date!",
+            emptyTitle: "No Notifications", emptySub: "Selected branch or your clinic is secure!",
             justNow: "Just now", error: "Error fetching notifications",
             optAll: "All Branches"
         }
@@ -94,7 +94,12 @@ async function loadBranchesForAdmin() {
         
         select.innerHTML = optionsHtml;
         select.style.display = 'block';
-        select.value = userBranch;
+        
+        // 🔴 Trigger Re-Query on Change
+        select.addEventListener('change', () => {
+            startNotificationsListener();
+        });
+        
     } catch (e) {
         console.error("Error loading branches:", e);
     }
@@ -117,13 +122,16 @@ function startNotificationsListener() {
     if (userRole !== 'admin' && userRole !== 'superadmin') {
         queryRef = queryRef.where("branchId", "==", userBranch);
     } else {
-        const selectedBranch = document.getElementById('branch-filter').value;
+        const selectEl = document.getElementById('branch-filter');
+        const selectedBranch = selectEl ? selectEl.value : 'all';
+        
+        // لو مختار 'all' مش هنضيف شرط الفرع، وهنجيب إشعارات العيادة كلها
         if (selectedBranch && selectedBranch !== 'all') {
             queryRef = queryRef.where("branchId", "==", selectedBranch);
         }
     }
 
-    // 🔴 الحل السحري: الاعتماد على descending عشان الأحدث دايماً فوق
+    // 🔴 الاعتماد على descending عشان الأحدث دايماً فوق
     unsubscribeListener = queryRef.orderBy("createdAt", "desc").limit(50)
         .onSnapshot((snapshot) => {
             if (window.hideLoader) window.hideLoader();
@@ -138,7 +146,6 @@ function startNotificationsListener() {
                 return;
             }
 
-            // لو في إشعارات، نفضي الكونتينر ونرسمها مترتبة صح
             container.innerHTML = ''; 
             snapshot.forEach((doc) => {
                 const data = doc.data();
@@ -154,7 +161,7 @@ function startNotificationsListener() {
 
         }, (error) => {
             console.error("Notif Error:", error);
-            // لو الفايربيز طلب Index هيطبعلك لينك هنا في الكونسول تدوس عليه
+            if (window.hideLoader) window.hideLoader();
         });
 }
 
@@ -165,21 +172,26 @@ function createNotificationCard(id, data) {
     const card = document.createElement('div');
     card.className = `notif-card ${data.isRead ? '' : 'unread'}`;
     card.id = `notif-${id}`;
-    // 🔴 أنيميشن خفيف عشان الإشعار يظهر بشياكة وهو لايف
     card.style.animation = 'fadeIn 0.3s ease-out';
 
     let iconHTML = '🔔';
     let iconClass = 'icon-sys';
     
-    if (data.type === 'appointment') { iconHTML = '📅'; iconClass = 'icon-appt'; }
+    if (data.type === 'appointment' || data.type === 'booking') { iconHTML = '📅'; iconClass = 'icon-appt'; }
     else if (data.type === 'inventory') { iconHTML = '📦'; iconClass = 'icon-inv'; }
     else if (data.type === 'finance') { iconHTML = '💰'; iconClass = 'icon-fin'; }
+    else if (data.type === 'chat') { iconHTML = '💬'; iconClass = 'icon-sys'; } // دعم الشات الجديد
 
     let timeString = notifLang.justNow;
     if (data.createdAt) {
         try {
-            // توحيد قراءة التاريخ سواء Timestamp أو String
-            const dateObj = typeof data.createdAt.toDate === 'function' ? data.createdAt.toDate() : new Date(data.createdAt);
+            // توحيد قراءة التاريخ سواء Timestamp أو String (للإشعارات السحابية)
+            let dateObj;
+            if (typeof data.createdAt === 'string') {
+                dateObj = new Date(data.createdAt);
+            } else {
+                dateObj = typeof data.createdAt.toDate === 'function' ? data.createdAt.toDate() : new Date(data.createdAt);
+            }
             timeString = dateObj.toLocaleDateString() + ' - ' + dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         } catch(e){}
     }
@@ -219,7 +231,8 @@ async function markAllAsRead() {
     if (userRole !== 'admin' && userRole !== 'superadmin') {
         queryRef = queryRef.where("branchId", "==", userBranch);
     } else {
-        const selectedBranch = document.getElementById('branch-filter').value;
+        const selectEl = document.getElementById('branch-filter');
+        const selectedBranch = selectEl ? selectEl.value : 'all';
         if (selectedBranch && selectedBranch !== 'all') {
             queryRef = queryRef.where("branchId", "==", selectedBranch);
         }
@@ -248,7 +261,7 @@ async function deleteNotification(id) {
 }
 
 async function deleteAllNotifications() {
-    if(!confirm("هل أنت متأكد من مسح الإشعارات المحددة؟")) return;
+    if(!confirm("هل أنت متأكد من مسح الإشعارات المعروضة؟")) return;
     const cid = sessionStorage.getItem('clinicId');
     if (!cid) return;
     playSoundEffect('delete');
@@ -258,7 +271,8 @@ async function deleteAllNotifications() {
     if (userRole !== 'admin' && userRole !== 'superadmin') {
         queryRef = queryRef.where("branchId", "==", userBranch);
     } else {
-        const selectedBranch = document.getElementById('branch-filter').value;
+        const selectEl = document.getElementById('branch-filter');
+        const selectedBranch = selectEl ? selectEl.value : 'all';
         if (selectedBranch && selectedBranch !== 'all') {
             queryRef = queryRef.where("branchId", "==", selectedBranch);
         }
@@ -286,7 +300,8 @@ async function spawnTestNotification() {
 
     let targetBranch = userBranch;
     if (userRole === 'admin' || userRole === 'superadmin') {
-        const filterVal = document.getElementById('branch-filter').value;
+        const selectEl = document.getElementById('branch-filter');
+        const filterVal = selectEl ? selectEl.value : 'all';
         targetBranch = filterVal === 'all' ? 'main' : filterVal;
     }
 
@@ -298,7 +313,6 @@ async function spawnTestNotification() {
             message: msg,
             type: randomType,
             isRead: false,
-            // 🔴 رمي الوقت كـ Timestamp عشان الترتيب ما يبوظش أبداً
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
     } catch(e) { console.error(e); }
@@ -317,7 +331,7 @@ window.onload = async () => {
     firebase.auth().onAuthStateChanged(async (user) => {
         if (user) {
             await loadBranchesForAdmin();
-            startNotificationsListener();
+            startNotificationsListener(); // هتشتغل تلقائي وهتجيب "all" في الأول
         } else {
             document.getElementById('notificationsContainer').innerHTML = `<div style="text-align: center; color: red; font-weight: bold; padding: 20px;">الرجاء تسجيل الدخول أولاً</div>`;
         }
