@@ -395,8 +395,9 @@ firebase.auth().onAuthStateChanged(async (user) => {
                         });
                     }
                 });
-                
-                // 🚨 Death Switch (حماية الطرد النهائي للعيادة المحذوفة) 🚨
+                            
+                         // 🚨 Death Switch (حماية الطرد النهائي للعيادة المحذوفة) 🚨
+                if (clinicId && clinicId !== 'default') {
                 db.collection("Clinics").doc(clinicId).onSnapshot(doc => {
                     if (!doc.exists || doc.data().status === 'deleted') {
                         alert("🚫 تم إغلاق أو إزالة هذه العيادة من قِبل إدارة النظام. سيتم تسجيل خروجك الآن.");
@@ -406,6 +407,7 @@ firebase.auth().onAuthStateChanged(async (user) => {
                         });
                     }
                 });
+}
 
             }
         } catch (error) {
