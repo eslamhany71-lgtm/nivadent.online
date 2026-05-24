@@ -635,7 +635,7 @@ function switchSupportTab(tabName) {
         document.getElementById('support-review-view').style.display = 'block';
     } else if (tabName === 'chat') {
         document.getElementById('btn-tab-chat').classList.add('active');
-        document.getElementById('support-chat-view').style.display = 'block';
+        document.getElementById('support-chat-view').style.display = 'flex';
         startLiveChat(); // تفعيل جلب الرسائل
     }
 }
