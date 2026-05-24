@@ -1,4 +1,4 @@
-// js/home.js - NivaDent Master Shell (SaaS Routing, Dynamic Branding, Roles, Translations)
+// js/home.js - NivaDent Master Shell (SaaS Routing, Dynamic Branding, Roles, Translations, Chat & Security)
 
 const SMART_VERSION = Math.floor(Date.now() / 3600000); 
 
@@ -7,7 +7,6 @@ const urlParams = new URLSearchParams(window.location.search);
 const impersonateParam = urlParams.get('impersonate');
 if (impersonateParam) {
     sessionStorage.setItem('impersonatedClinicId', impersonateParam);
-    // تنظيف الرابط عشان يبقى شكله احترافي
     window.history.replaceState({}, document.title, window.location.pathname); 
 }
 
@@ -45,19 +44,17 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.appendChild(overlay);
 });
 
-// 🔴 دالة التوجيه المركزية (مع حارس الأمان Router Guard) 🔴
+// 🔴 دالة التوجيه المركزية 🔴
 function loadPage(pageUrl, clickedLi) {
     const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
     const role = sessionStorage.getItem('userRole');
 
-    // 1. استخراج اسم الصفحة المطلوبة بدون امتداد (مثلاً: patients.html -> patients)
     const basePage = pageUrl.split('?')[0].replace('.html', '');
 
-    // 2. خريطة ربط أسماء الصفحات بمفاتيح الصلاحيات والميزات في قاعدة البيانات
     const routeMap = {
         'patients': { perm: 'patients', feature: 'patients' },
-        'patient-profile': { perm: 'patients', feature: 'patients' }, // ثغرة ملف المريض
-        'add-patient': { perm: 'patients', feature: 'patients' },     // ثغرة إضافة مريض
+        'patient-profile': { perm: 'patients', feature: 'patients' }, 
+        'add-patient': { perm: 'patients', feature: 'patients' },      
         'calendar': { perm: 'calendar', feature: 'appointments' },
         'services': { perm: 'services', feature: 'services' },
         'contracts': { perm: 'contracts', feature: 'contracts' },
@@ -74,23 +71,20 @@ function loadPage(pageUrl, clickedLi) {
         'ticket' : { perm: 'ticket', feature: 'ticket' },
     };
 
-    // 3. التحقق الأمني (لو المستخدم مش سوبر أدمن والصفحة المطلوبة موجودة في الخريطة)
     if (role !== 'superadmin' && routeMap[basePage]) {
         const features = window.clinicFeatures || JSON.parse(sessionStorage.getItem('clinicFeatures')) || {};
         const perms = JSON.parse(sessionStorage.getItem('userPermissions')) || {};
         
         const routeData = routeMap[basePage];
-        const isFeatureEnabled = features[routeData.feature] !== false; // الافتراضي مفعل
+        const isFeatureEnabled = features[routeData.feature] !== false; 
         const isUserPermitted = perms[routeData.perm] === true;
 
         if (!isFeatureEnabled || !isUserPermitted) {
-            // رفض الدخول وعرض رسالة للمستخدم
             alert(isAr ? "⛔ عفواً، لا تملك صلاحية للوصول إلى هذا القسم، أو أن الميزة غير مفعلة لعيادتك." : "⛔ Access Denied. Feature disabled or missing permissions.");
-            return; // إيقاف تنفيذ الدالة فوراً (لن يتم تحميل الصفحة)
+            return; 
         }
     }
 
-    // 4. استكمال التحميل الطبيعي لو نجح في الاختبار
     if (window.showLoader) window.showLoader(isAr ? "جاري فتح الصفحة..." : "Loading page...");
     let finalUrl = pageUrl.includes('?') ? `${pageUrl}&v=${SMART_VERSION}` : `${pageUrl}?v=${SMART_VERSION}`;
     const frame = document.getElementById('content-frame');
@@ -103,7 +97,6 @@ function loadPage(pageUrl, clickedLi) {
     
     sessionStorage.setItem('lastOpenedPage', pageUrl);
 
-    // تظبيط شكل القائمة الجانبية
     if (clickedLi) {
         document.querySelectorAll('#nav-links li').forEach(li => li.classList.remove('active'));
         clickedLi.classList.add('active');
@@ -117,7 +110,6 @@ function loadPage(pageUrl, clickedLi) {
         }
     }
 
-    // إغلاق القائمة في الموبايل
     if (window.innerWidth <= 992) {
         document.getElementById('sidebar').classList.remove('active');
         const overlay = document.getElementById('mobile-overlay');
@@ -135,84 +127,44 @@ function switchAppLanguage(lang) {
 function updatePageContent(lang) {
     const t = {
         ar: {
-            header: "لوحة التحكم",
-            navDash: "الداشبورد", 
-            navPatients: "المرضى والأشعة", 
-            navCalendar: "المواعيد والتقويم", 
-            navServices: "الخدمات والأسعار",
-            navContracts: "التعاقدات والخصومات",
-            navInvoices: "الفواتير", 
-            navFinances: "الحسابات والمصروفات",
-            navInventory: "المخزون الطبي", 
-            navReports: "التقارير التحليلية",
-            navBranches: "إدارة الفروع",
-            navHr: "شؤون الموظفين",
-            navNotif: "الإشعارات",
-            navPortal: "بوابة العيادة (للمرضى)",
-            navSettings: "إعدادات العيادة", 
-            navSuper: "إدارة النظام المركزية", 
-            logout: "تسجيل خروج",
+            header: "لوحة التحكم", navDash: "الداشبورد", navPatients: "المرضى والأشعة", 
+            navCalendar: "المواعيد والتقويم", navServices: "الخدمات والأسعار", navContracts: "التعاقدات والخصومات",
+            navInvoices: "الفواتير", navFinances: "الحسابات والمصروفات", navInventory: "المخزون الطبي", 
+            navReports: "التقارير التحليلية", navBranches: "إدارة الفروع", navHr: "شؤون الموظفين",
+            navNotif: "الإشعارات", navPortal: "بوابة العيادة (للمرضى)", navSettings: "إعدادات العيادة", 
+            navSuper: "إدارة النظام المركزية", logout: "تسجيل خروج",
             alertText: "⚠️ تنبيه هام: اشتراك العيادة سينتهي خلال {days} أيام. يرجى التواصل مع الإدارة للتجديد.",
             alertToday: "⚠️ تنبيه هام: اشتراك العيادة ينتهي اليوم! يرجى التجديد فوراً.",
-            
-            navSupport: "الدعم الفني والتقييمات", 
-            modSupTitle: "مركز المساعدة والتقييم", 
-            tabTicket: "🎧 طلب دعم فني", tabReview: "⭐ تقييم النظام",
+            navSupport: "الدعم الفني والتقييمات", modSupTitle: "مركز المساعدة والتقييم", 
+            tabTicket: "🎧 طلب دعم فني", tabReview: "⭐ تقييم النظام", tabChat: "💬 مراسلة الإدارة (Live)",
             modSupDesc: "هل تواجه مشكلة أو تحتاج إلى إضافة ميزة جديدة للعيادة？ اكتب رسالتك وسنقوم بالرد عليك في أسرع وقت.", 
-            btnSupSend: "إرسال طلب الدعم (Ticket)",
-            
-            rateTitle: "ما تقييمك لسيستم NivaDent؟", rateSub: "رأيك يهمنا ويساعدنا على تطوير النظام.",
-            btnRevSend: "نشر التقييم ⭐",
-            
-            aiTitle: "المساعد الذكي Niva", aiWelcome: "مرحباً دكتور! 👋 أنا مساعدك الذكي Niva. كيف يمكنني مساعدتك اليوم?",
-            poweredBy: "Powered by"
+            btnSupSend: "إرسال طلب الدعم (Ticket)", rateTitle: "ما تقييمك لسيستم NivaDent؟", rateSub: "رأيك يهمنا ويساعدنا على تطوير النظام.",
+            btnRevSend: "نشر التقييم ⭐", aiTitle: "المساعد الذكي Niva", aiWelcome: "مرحباً دكتور! 👋 أنا مساعدك الذكي Niva. كيف يمكنني مساعدتك اليوم?",
+            poweredBy: "Powered by", chatInputPlaceholder: "اكتب رسالتك هنا للإدارة...", btnChatSend: "إرسال 🚀"
         },
         en: {
-            header: "Dashboard",
-            navDash: "Overview", 
-            navPatients: "Patients & X-Rays", 
-            navCalendar: "Calendar", 
-            navServices: "Services & Pricing",
-            navContracts: "Contracts & Discounts",
-            navInvoices: "Invoices", 
-            navFinances: "Finances",
-            navInventory: "Medical Inventory", 
-            navReports: "Analytical Reports",
-            navBranches: "Branches Management",
-            navHr: "Staff Management",
-            navNotif: "Notifications",
-            navPortal: "Patient Portal",
-            navSettings: "Clinic Settings", 
-            navSuper: "Super Admin", 
-            logout: "Logout",
+            header: "Dashboard", navDash: "Overview", navPatients: "Patients & X-Rays", 
+            navCalendar: "Calendar", navServices: "Services & Pricing", navContracts: "Contracts & Discounts",
+            navInvoices: "Invoices", navFinances: "Finances", navInventory: "Medical Inventory", 
+            navReports: "Analytical Reports", navBranches: "Branches Management", navHr: "Staff Management",
+            navNotif: "Notifications", navPortal: "Patient Portal", navSettings: "Clinic Settings", 
+            navSuper: "Super Admin", logout: "Logout",
             alertText: "⚠️ Important: Clinic subscription expires in {days} days. Please renew.",
             alertToday: "⚠️ Important: Clinic subscription expires TODAY! Please renew.",
-            
-            navSupport: "Support & Reviews", 
-            modSupTitle: "Help & Rating Center", 
-            tabTicket: "🎧 Support Ticket", tabReview: "⭐ System Review",
+            navSupport: "Support & Reviews", modSupTitle: "Help & Rating Center", 
+            tabTicket: "🎧 Support Ticket", tabReview: "⭐ System Review", tabChat: "💬 Live Chat",
             modSupDesc: "Facing an issue or need a new feature? Write your ticket and we'll reply ASAP.", 
-            btnSupSend: "Submit Support Ticket",
-            
-            rateTitle: "How do you rate NivaDent?", rateSub: "Your feedback helps us improve the system.",
-            btnRevSend: "Post Review ⭐",
-
-            aiTitle: "Niva Assistant", aiWelcome: "Hello Doctor! 👋 I'm Niva, your smart assistant. How can I help you today?",
-            poweredBy: "Powered by"
+            btnSupSend: "Submit Support Ticket", rateTitle: "How do you rate NivaDent?", rateSub: "Your feedback helps us improve the system.",
+            btnRevSend: "Post Review ⭐", aiTitle: "Niva Assistant", aiWelcome: "Hello Doctor! 👋 I'm Niva, your smart assistant. How can I help you today?",
+            poweredBy: "Powered by", chatInputPlaceholder: "Type your message to admin...", btnChatSend: "Send 🚀"
         }
     };
     const c = t[lang] || t.ar;
     const setTxt = (id, txt) => { if(document.getElementById(id)) document.getElementById(id).innerText = txt; };
 
-    setTxt('txt-header', c.header);
-    setTxt('nav-dash', c.navDash); 
-    setTxt('nav-patients', c.navPatients); 
-    setTxt('nav-calendar', c.navCalendar); 
-    setTxt('nav-finances', c.navFinances);
-    setTxt('nav-invoices', c.navInvoices); 
-    setTxt('nav-inventory', c.navInventory); 
-    setTxt('nav-settings', c.navSettings); 
-    setTxt('nav-super', c.navSuper); 
+    setTxt('txt-header', c.header); setTxt('nav-dash', c.navDash); setTxt('nav-patients', c.navPatients); 
+    setTxt('nav-calendar', c.navCalendar); setTxt('nav-finances', c.navFinances); setTxt('nav-invoices', c.navInvoices); 
+    setTxt('nav-inventory', c.navInventory); setTxt('nav-settings', c.navSettings); setTxt('nav-super', c.navSuper); 
     setTxt('btn-logout', c.logout);
     
     const itemsList = document.querySelectorAll('#nav-links li');
@@ -226,10 +178,11 @@ function updatePageContent(lang) {
         if (perm === 'notifications') li.querySelector('span:last-child').innerText = c.navNotif;
     });
 
-    setTxt('nav-portal', c.navPortal);
-    setTxt('nav-support', c.navSupport); setTxt('mod-support-title', c.modSupTitle);
+    setTxt('nav-portal', c.navPortal); setTxt('nav-support', c.navSupport); setTxt('mod-support-title', c.modSupTitle);
     
-    setTxt('btn-tab-ticket', c.tabTicket); setTxt('btn-tab-review', c.tabReview);
+    setTxt('btn-tab-ticket', c.tabTicket); setTxt('btn-tab-review', c.tabReview); 
+    if(document.getElementById('btn-tab-chat')) document.getElementById('btn-tab-chat').innerText = c.tabChat; // 🔴 ترجمة تابة الشات
+    
     setTxt('mod-support-desc', c.modSupDesc); setTxt('btn-support-send', c.btnSupSend);
     setTxt('txt-rate-title', c.rateTitle); setTxt('txt-rate-sub', c.rateSub); setTxt('btn-review-send', c.btnRevSend);
     
@@ -242,6 +195,12 @@ function updatePageContent(lang) {
     const revBox = document.getElementById('review_message');
     if(revBox) revBox.placeholder = lang === 'ar' ? "اكتب رأيك أو تجربتك مع السيستم (اختياري)..." : "Write your experience with the system (Optional)...";
 
+    // 🔴 ترجمة الشات 🔴
+    const chatInput = document.getElementById('live_chat_input');
+    if(chatInput) chatInput.placeholder = c.chatInputPlaceholder;
+    const chatBtn = document.getElementById('btn-chat-send');
+    if(chatBtn) chatBtn.innerText = c.btnChatSend;
+
     window.homeLang = c;
 }
 
@@ -253,21 +212,18 @@ function getDefaultPermissions(role) {
     return { patients: false, calendar: false, finances: false, invoices: false, inventory: false, reports: false, settings: false, services: false, contracts: false, branches: false, hr: false, notifications: false, portal: false, support: false };
 }
 
-// 🔴 تحديث وتطوير دالة تطبيق الصلاحيات لدعم الـ SaaS Feature Flags 🔴
 function applyPermissions(perms, role) {
     const superAdminLi = document.getElementById('nav-super-admin') || document.getElementById('nav-super-admin-li');
     if (superAdminLi) superAdminLi.style.display = (role === 'superadmin' && !sessionStorage.getItem('impersonatedClinicId')) ? 'block' : 'none';
     
     if (role === 'superadmin') return;
 
-    // جلب ميزات العيادة الحالية المشحونة من قاعدة البيانات
     const features = window.clinicFeatures || JSON.parse(sessionStorage.getItem('clinicFeatures')) || {};
 
     const restrictedItems = document.querySelectorAll('#nav-links li');
     restrictedItems.forEach(item => {
         let permKey = item.getAttribute('data-perm');
         
-        // استخلاص مفتاح الصلاحية التلقائي بناءً على معرّف العنصر إذا لم يمتلك خاصية data-perm
         if (!permKey && item.id) {
             if (item.id.includes('patients')) permKey = 'patients';
             else if (item.id.includes('calendar')) permKey = 'calendar';
@@ -283,12 +239,10 @@ function applyPermissions(perms, role) {
         if (!permKey) return; 
         if (permKey === 'dash') { item.style.display = 'block'; return; }
 
-        // ربط الصلاحيات الداخلية بأسماء الخانات المخزنة في لوحة السوبر أدمن للعيادة
         let featureKey = permKey;
         if (permKey === 'calendar') featureKey = 'appointments';
         if (permKey === 'finances') featureKey = 'accounts';
 
-        // تعتبر الميزة نشطة افتراضياً لمراعاة العيادات القديمة، وتغلق فقط في حالة إلغائها صراحة (false)
         const isFeatureEnabled = features[featureKey] !== false;
         const isUserPermitted = perms && perms[permKey] === true;
 
@@ -307,9 +261,7 @@ function applyPermissions(perms, role) {
     }
 }
 
-// ===============================================
-// 🔴 رادار الإشعارات المركزي (Global Listener) 🔴
-// ===============================================
+// 🔴 رادار الإشعارات المركزي 🔴
 let globalNotifUnsubscribe = null;
 
 function startGlobalNotificationsListener(clinicId, role, branchId) {
@@ -350,7 +302,6 @@ function startGlobalNotificationsListener(clinicId, role, branchId) {
         console.error("Global Notif Error:", err);
     });
 }
-// ===============================================
 
 firebase.auth().onAuthStateChanged(async (user) => {
     if (user) {
@@ -362,7 +313,6 @@ firebase.auth().onAuthStateChanged(async (user) => {
             if (userDoc.exists) {
                 const userData = userDoc.data();
                 
-                // 🔴 التعديل السحري هنا: لو منتحل، هنعتبره أدمن العيادة غصب عن السيستم عشان السيدبار تترسم كاملة! 🔴
                 let role = userData.role || 'reception';
                 if (sessionStorage.getItem('impersonatedClinicId')) {
                     role = 'admin'; 
@@ -371,14 +321,13 @@ firebase.auth().onAuthStateChanged(async (user) => {
                 const clinicId = sessionStorage.getItem('impersonatedClinicId') || userData.clinicId || sessionStorage.getItem('clinicId') || 'default';
                 const branchId = userData.branchId || sessionStorage.getItem('branchId') || 'main'; 
                 sessionStorage.setItem('clinicId', clinicId);
-                sessionStorage.setItem('userRole', role); // تخرين الرول حياً لاستدعائه عند تحديث الميزات
+                sessionStorage.setItem('userRole', role); 
 
                 let userPermissions = userData.permissions;
                 let defaultPerms = getDefaultPermissions(role);
                 
                 if (!userPermissions) {
                     userPermissions = defaultPerms;
-                    // لا تقم بحفظ الصلاحيات لو ده انتحال شخصية
                     if(!sessionStorage.getItem('impersonatedClinicId')) {
                         db.collection("Users").doc(user.email).update({ permissions: userPermissions }).catch(e=>{});
                     }
@@ -406,7 +355,6 @@ firebase.auth().onAuthStateChanged(async (user) => {
 
                 startGlobalNotificationsListener(clinicId, role, branchId);
 
-                // 🔴 زرار العودة السحري لمالك النظام لو إنت منتحل 🔴
                 if (sessionStorage.getItem('impersonatedClinicId')) {
                     const logoutBtn = document.getElementById('btn-logout');
                     if (logoutBtn) {
@@ -417,8 +365,8 @@ firebase.auth().onAuthStateChanged(async (user) => {
                         logoutBtn.onclick = (e) => {
                             e.preventDefault();
                             sessionStorage.removeItem('impersonatedClinicId');
-                            window.close(); // يقفل التاب خالص!
-                            window.location.href = 'home.html'; // خطة بديلة لو المتصفح رفض القفل
+                            window.close(); 
+                            window.location.href = 'home.html'; 
                         };
                     }
                 }
@@ -436,20 +384,29 @@ firebase.auth().onAuthStateChanged(async (user) => {
 
                 loadPage(pageToLoad, navToClick);
                 
-// 🔴 رادار الطرد الإجباري (Force Logout Radar) - المحدّث 🔴
-db.collection("Users").doc(user.email).onSnapshot(async (doc) => {
-    if (doc.exists && doc.data().forceLogout === true) {
-        alert("🔒 تم تسجيل خروجك إدارياً من قبل السوبر أدمن.");
-        
-        // مسح أمر الطرد من قاعدة البيانات عشان يعرف يدخل تاني!
-        await db.collection("Users").doc(user.email).update({ forceLogout: false });
-        
-        firebase.auth().signOut().then(() => {
-            sessionStorage.clear();
-            window.top.location.href = 'index.html';
-        });
-    }
-});
+                // 🔴 رادار الطرد الإجباري 🔴
+                db.collection("Users").doc(user.email).onSnapshot(async (doc) => {
+                    if (doc.exists && doc.data().forceLogout === true) {
+                        alert("🔒 تم تسجيل خروجك إدارياً من قبل السوبر أدمن.");
+                        await db.collection("Users").doc(user.email).update({ forceLogout: false });
+                        firebase.auth().signOut().then(() => {
+                            sessionStorage.clear();
+                            window.top.location.href = 'index.html';
+                        });
+                    }
+                });
+                
+                // 🚨 Death Switch (حماية الطرد النهائي للعيادة المحذوفة) 🚨
+                db.collection("Clinics").doc(clinicId).onSnapshot(doc => {
+                    if (!doc.exists || doc.data().status === 'deleted') {
+                        alert("🚫 تم إغلاق أو إزالة هذه العيادة من قِبل إدارة النظام. سيتم تسجيل خروجك الآن.");
+                        firebase.auth().signOut().then(() => {
+                            sessionStorage.clear();
+                            window.location.href = "index.html";
+                        });
+                    }
+                });
+
             }
         } catch (error) {
             console.error("خطأ في جلب بيانات المستخدم:", error);
@@ -525,7 +482,6 @@ async function checkSubscriptionAlert(clinicId) {
             if (clinicDoc.exists) {
                 const cData = clinicDoc.data();
                 
-                // 🔴 مزامنة وحقن ميزات السوبر أدمن حياً وتحديث شاشة العيادة فوراً 🔴
                 window.clinicFeatures = cData.features || {};
                 sessionStorage.setItem('clinicFeatures', JSON.stringify(window.clinicFeatures));
                 const savedPerms = sessionStorage.getItem('userPermissions');
@@ -640,8 +596,10 @@ function toggleSidebarDesktop() {
 }
 
 // ===============================================
-// 🔴 قسم הדعم الفني والتقييمات الجديد 🔴
+// 🔴 قسم الدعم الفني، التقييمات وشات الإدارة المباشر 🔴
 // ===============================================
+let liveChatUnsubscribe = null; // متغير لغلق اتصال الشات عند قفل المودال
+
 function openSupportModal() { 
     document.getElementById('support_message').value = ''; 
     document.getElementById('review_message').value = ''; 
@@ -652,20 +610,100 @@ function openSupportModal() {
 
 function closeSupportModal() { 
     document.getElementById('supportModal').style.display = 'none'; 
+    if (liveChatUnsubscribe) {
+        liveChatUnsubscribe();
+        liveChatUnsubscribe = null;
+    }
 }
 
 function switchSupportTab(tabName) {
     document.getElementById('btn-tab-ticket').classList.remove('active');
     document.getElementById('btn-tab-review').classList.remove('active');
+    if(document.getElementById('btn-tab-chat')) document.getElementById('btn-tab-chat').classList.remove('active');
+    
     document.getElementById('support-ticket-view').style.display = 'none';
     document.getElementById('support-review-view').style.display = 'none';
+    if(document.getElementById('support-chat-view')) document.getElementById('support-chat-view').style.display = 'none';
 
     if (tabName === 'ticket') {
         document.getElementById('btn-tab-ticket').classList.add('active');
         document.getElementById('support-ticket-view').style.display = 'block';
-    } else {
+    } else if (tabName === 'review') {
         document.getElementById('btn-tab-review').classList.add('active');
         document.getElementById('support-review-view').style.display = 'block';
+    } else if (tabName === 'chat') {
+        document.getElementById('btn-tab-chat').classList.add('active');
+        document.getElementById('support-chat-view').style.display = 'block';
+        startLiveChat(); // تفعيل جلب الرسائل
+    }
+}
+
+// 🔴 دالة جلب الشات المباشر (للدكتور) 🔴
+function startLiveChat() {
+    const clinicId = sessionStorage.getItem('clinicId');
+    const chatArea = document.getElementById('live_chat_area');
+    const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
+    
+    if(!clinicId || !chatArea) return;
+    
+    if(liveChatUnsubscribe) liveChatUnsubscribe(); // قفل القديم لو موجود
+    
+    chatArea.innerHTML = `<div style="text-align:center; color:#94a3b8; padding: 20px;">${isAr?'جاري الاتصال بالإدارة...':'Connecting to support...'}</div>`;
+    
+    liveChatUnsubscribe = db.collection("LiveChats")
+        .where("clinicId", "==", clinicId)
+        .orderBy("createdAt", "asc")
+        .onSnapshot(snap => {
+            chatArea.innerHTML = '';
+            if(snap.empty) {
+                chatArea.innerHTML = `<div style="text-align:center; color:#94a3b8; padding: 20px;">${isAr?'مرحباً بك! يمكنك مراسلة الإدارة المباشرة من هنا.':'Hello! You can chat with live support here.'}</div>`;
+                return;
+            }
+            snap.forEach(doc => {
+                const msg = doc.data();
+                const isSuperAdmin = msg.senderRole === 'superadmin';
+                
+                // لو السوبر أدمن هو اللي باعت (يبان على الشمال لونه مختلف)
+                // لو الدكتور هو اللي باعت (يبان على اليمين لونه أزرق)
+                const alignStyles = isSuperAdmin 
+                    ? 'align-self: flex-start; background: #f1f5f9; color: #0f172a; border-bottom-left-radius: 0; border: 1px solid #cbd5e1;' 
+                    : 'align-self: flex-end; background: #0284c7; color: white; border-bottom-right-radius: 0;';
+                
+                chatArea.innerHTML += `
+                    <div style="max-width: 80%; padding: 10px 15px; border-radius: 12px; ${alignStyles} box-shadow: 0 1px 2px rgba(0,0,0,0.05); margin-bottom: 5px;">
+                        <div style="font-size: 11px; font-weight: bold; margin-bottom: 4px; opacity: 0.9;">${msg.senderName || '---'}</div>
+                        <div style="font-size: 14px; line-height: 1.4;">${msg.text}</div>
+                        <div style="font-size: 10px; opacity: 0.7; margin-top: 5px; text-align: ${isSuperAdmin?'left':'right'};">${msg.createdAt ? new Date(msg.createdAt.toDate()).toLocaleTimeString(isAr?'ar-EG':'en-US', {hour: '2-digit', minute:'2-digit'}) : ''}</div>
+                    </div>
+                `;
+            });
+            chatArea.scrollTop = chatArea.scrollHeight; // النزول للأسفل
+        });
+}
+
+// 🔴 دالة إرسال رسالة شات للإدارة 🔴
+async function sendClinicChatMessage() {
+    const clinicId = sessionStorage.getItem('clinicId');
+    const input = document.getElementById('live_chat_input');
+    const text = input.value.trim();
+    
+    if(!clinicId || !text) return;
+    input.value = ''; // تفريغ الخانة فوراً
+    
+    const docName = document.getElementById('userEmail') ? document.getElementById('userEmail').innerText.split('@')[0] : 'Dr';
+    
+    try {
+        await db.collection("LiveChats").add({
+            clinicId: clinicId,
+            text: text,
+            senderRole: 'clinic',
+            senderName: docName,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    } catch(e) { 
+        console.error("Chat Send Error:", e); 
+        const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
+        alert(isAr ? "حدث خطأ أثناء إرسال الرسالة." : "Error sending message."); 
     }
 }
 
@@ -921,7 +959,7 @@ window.openPortalSettings = openPortalSettings;
 window.copyPortalLink = copyPortalLink;
 window.printClinicQR = printClinicQR;
 
-// 🔴 استقبال الإشارات من الداشبورد (لحل مشكلة السيدبار المختفية) 🔴
+// 🔴 استقبال الإشارات من الداشبورد 🔴
 window.addEventListener('message', function(event) {
     if (event.data && event.data.type === 'REFRESH_SIDEBAR') {
         console.log("الداشبورد بتنبهنا لتحديث العيادة:", event.data.clinicId);
