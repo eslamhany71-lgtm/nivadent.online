@@ -595,6 +595,7 @@ async function submitBooking(e) {
         try {
             await db.collection("Notifications").add({
                 clinicId: clinicId,
+                branchId: selectedBranch, // 👈 هو ده السطر اللي كان ناقص يا بطل!
                 title: currentLang === 'ar' ? "حجز جديد! 📅" : "New Appointment! 📅",
                 message: (currentLang === 'ar' ? "حجز جديد باسم: " : "New booking by: ") + finalPatientName,
                 type: "booking",
