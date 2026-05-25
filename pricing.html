@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ترقية الحساب | NivaDent SaaS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0ea5e9;
+            --primary-dark: #0284c7;
+            --secondary: #8b5cf6;
+            --dark: #0f172a;
+            --gray: #64748b;
+            --light: #f8fafc;
+            --success: #10b981;
+            --gold: #f59e0b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
+        
+        body { background-color: var(--light); color: var(--dark); padding-bottom: 50px; }
+
+        /* 🔴 الهيدر */
+        .pricing-header {
+            text-align: center;
+            padding: 80px 20px 60px;
+            background: linear-gradient(135deg, var(--dark) 0%, #1e293b 100%);
+            color: white;
+            border-bottom-left-radius: 50px;
+            border-bottom-right-radius: 50px;
+            margin-bottom: -50px;
+        }
+        .pricing-header h1 { font-size: 42px; font-weight: 900; margin-bottom: 15px; }
+        .pricing-header p { font-size: 18px; color: #cbd5e1; max-width: 600px; margin: 0 auto; line-height: 1.6; }
+
+        /* 🔴 حاوية الباقات */
+        .pricing-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 25px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* 🔴 كارت الباقة الأساسي */
+        .pricing-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .pricing-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.1); border-color: var(--primary); }
+
+        /* 🔴 كارت الـ Growth (الأكثر مبيعاً) */
+        .pricing-card.popular {
+            border: 2px solid var(--primary);
+            transform: scale(1.05);
+            box-shadow: 0 20px 40px -5px rgba(14, 165, 233, 0.2);
+        }
+        .pricing-card.popular:hover { transform: scale(1.05) translateY(-10px); }
+        
+        .popular-badge {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: 5px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 6px rgba(14, 165, 233, 0.3);
+        }
+
+        /* 🔴 تفاصيل الباقة */
+        .plan-name { font-size: 22px; font-weight: 800; color: var(--dark); margin-bottom: 10px; }
+        .plan-desc { font-size: 14px; color: var(--gray); margin-bottom: 25px; min-height: 40px; }
+        
+        .plan-price { font-size: 46px; font-weight: 900; color: var(--dark); margin-bottom: 5px; display: flex; align-items: baseline; gap: 5px; justify-content: center;}
+        .plan-currency { font-size: 18px; font-weight: bold; color: var(--gray); }
+        .plan-duration { font-size: 14px; color: var(--gray); font-weight: 500; }
+
+        .plan-features { list-style: none; margin: 30px 0; flex: 1; }
+        .plan-features li { font-size: 15px; color: #475569; margin-bottom: 15px; display: flex; align-items: flex-start; gap: 10px; line-height: 1.4; }
+        .plan-features li::before { content: '✔️'; color: var(--success); font-size: 14px; }
+        .plan-features li.unlimited::before { content: '♾️'; }
+
+        /* 🔴 أزرار الشراء */
+        .btn-subscribe {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 800;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+            border: none;
+        }
+        .btn-light { background: #f1f5f9; color: var(--dark); }
+        .btn-light:hover { background: #e2e8f0; }
+        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(14, 165, 233, 0.3); }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-elite { background: var(--dark); color: white; }
+        .btn-elite:hover { background: #1e293b; }
+
+        /* 🔴 باقة مدى الحياة (الوحش) */
+        .lifetime-card {
+            margin-top: 50px;
+            background: linear-gradient(135deg, #111827 0%, #000000 100%);
+            border-radius: 24px;
+            padding: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid #334155;
+            position: relative;
+            overflow: hidden;
+        }
+        .lifetime-card::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(245, 158, 11, 0.1) 0%, transparent 60%);
+            z-index: 1; pointer-events: none;
+        }
+        .lifetime-info { color: white; position: relative; z-index: 2; flex: 1; }
+        .lifetime-info h2 { color: var(--gold); font-size: 32px; font-weight: 900; margin-bottom: 10px; display: flex; align-items: center; gap: 10px;}
+        .lifetime-features { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .lifetime-features li { color: #cbd5e1; font-size: 16px; display: flex; align-items: center; gap: 10px; }
+        .lifetime-features li::before { content: '👑'; }
+        
+        .lifetime-action { text-align: center; position: relative; z-index: 2; min-width: 250px; margin-right: 40px; }
+        .lifetime-price { font-size: 50px; font-weight: 900; color: white; margin-bottom: 20px; }
+        .btn-gold { background: linear-gradient(90deg, #f59e0b, #d97706); color: white; padding: 18px 30px; font-size: 18px; border-radius: 12px; font-weight: 900; width: 100%; border: none; cursor: pointer; box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3); transition: 0.3s; }
+        .btn-gold:hover { transform: scale(1.05); }
+
+        @media (max-width: 992px) {
+            .pricing-card.popular { transform: none; }
+            .pricing-card.popular:hover { transform: translateY(-10px); }
+            .lifetime-card { flex-direction: column; text-align: center; padding: 30px; }
+            .lifetime-features { grid-template-columns: 1fr; text-align: right; }
+            .lifetime-action { margin-right: 0; margin-top: 30px; width: 100%; }
+        }
+        
+        .back-btn { position: absolute; top: 30px; right: 30px; color: white; text-decoration: none; font-weight: bold; font-size: 16px; display: flex; align-items: center; gap: 5px; transition: 0.3s;}
+        .back-btn:hover { opacity: 0.8; }
+    </style>
+</head>
+<body>
+
+    <header class="pricing-header">
+        <a href="home.html" class="back-btn">▶ العودة للعيادة</a>
+        <h1>ارتقِ بعيادتك إلى المستوى التالي 🚀</h1>
+        <p>اختر الباقة التي تناسب حجم عيادتك. بدون رسوم مخفية، وبشفافية تامة، استثمر في التكنولوجيا لتضاعف أرباحك وتوفر وقتك.</p>
+    </header>
+
+    <div class="pricing-container">
+        <div class="pricing-grid">
+            
+            <div class="pricing-card">
+                <h3 class="plan-name">Start</h3>
+                <p class="plan-desc">اكسر الخوف وجرب النظام بالكامل بدون أي مخاطرة.</p>
+                <div class="plan-price">0<span class="plan-currency">ج.م</span></div>
+                <div class="plan-duration" style="text-align:center;">مجاناً لمدة 7 أيام</div>
+                <ul class="plan-features">
+                    <li>إدارة فرع واحد للعيادة</li>
+                    <li>حتى 3 مستخدمين (شامل الإدارة)</li>
+                    <li>سعة حتى 500 مريض</li>
+                    <li>50 رسالة واتساب (للتجربة)</li>
+                    <li>دعم فني أساسي (تيكت)</li>
+                </ul>
+                <button class="btn-subscribe btn-light" onclick="selectPlan('start', 'trial_7', 0, 'مجاني 7 أيام', 1, 3, 500, 50)">جرب الآن مجاناً</button>
+            </div>
+
+            <div class="pricing-card">
+                <h3 class="plan-name">Clinic Pro</h3>
+                <p class="plan-desc">ممتازة للعيادات الناشئة لضبط الحجوزات والملفات.</p>
+                <div class="plan-price">999<span class="plan-currency">ج.م</span></div>
+                <div class="plan-duration" style="text-align:center;">/ شهرياً</div>
+                <ul class="plan-features">
+                    <li>إدارة فرع واحد للعيادة</li>
+                    <li>حتى 5 مستخدمين</li>
+                    <li>سعة مرضى 10,000 مريض</li>
+                    <li>500 رسالة واتساب آلية شهرياً</li>
+                    <li>تقارير مالية وتحليلية أساسية</li>
+                    <li>بوابة إلكترونية مبسطة للمرضى</li>
+                </ul>
+                <button class="btn-subscribe btn-light" style="border: 1px solid var(--primary); color: var(--primary);" onclick="selectPlan('clinic_pro', 'monthly', 999, 'شهرياً', 1, 5, 10000, 500)">اشترك الآن</button>
+            </div>
+
+            <div class="pricing-card popular">
+                <div class="popular-badge">الأكثر طلباً وتوفيراً 🔥</div>
+                <h3 class="plan-name">Growth</h3>
+                <p class="plan-desc">استقرار أكبر وتوفير ضخم للعيادة التي تعتمد على النظام.</p>
+                <div class="plan-price" style="color: var(--primary-dark);">1,999<span class="plan-currency">ج.م</span></div>
+                <div class="plan-duration" style="text-align:center;">/ كل 3 شهور (ربع سنوي)</div>
+                <ul class="plan-features">
+                    <li>إدارة حتى 3 فروع</li>
+                    <li>حتى 10 مستخدمين</li>
+                    <li>سعة مرضى 20,000 مريض</li>
+                    <li>2,000 رسالة واتساب (خلال الفترة)</li>
+                    <li>تقارير جرد ومصروفات دقيقة</li>
+                    <li>تحكم دقيق في الصلاحيات (IAM)</li>
+                    <li style="font-weight:bold; color:var(--dark);">أولوية في الدعم الفني (Priority)</li>
+                </ul>
+                <button class="btn-subscribe btn-primary" onclick="selectPlan('growth', 'quarterly', 1999, 'ربع سنوي', 3, 10, 20000, 2000)">اختيار الباقة 🚀</button>
+            </div>
+
+            <div class="pricing-card">
+                <h3 class="plan-name">Elite</h3>
+                <p class="plan-desc">للعيادات الاحترافية التي تبحث عن أقصى قوة إدارة سنوية.</p>
+                <div class="plan-price">5,999<span class="plan-currency">ج.م</span></div>
+                <div class="plan-duration" style="text-align:center;">/ سنوياً</div>
+                <ul class="plan-features">
+                    <li>إدارة حتى 5 فروع</li>
+                    <li>حتى 25 مستخدم</li>
+                    <li>سعة مرضى 50,000 مريض</li>
+                    <li>5,000 رسالة واتساب (شهرياً)</li>
+                    <li>تفعيل المساعد الذكي Niva AI</li>
+                    <li>بوابة مرضى + نظام تقييمات</li>
+                    <li>تدريب أونلاين مجاني لفريقك</li>
+                </ul>
+                <button class="btn-subscribe btn-elite" onclick="selectPlan('elite', 'yearly', 5999, 'سنوياً', 5, 25, 50000, 5000)">اشتراك سنوي</button>
+            </div>
+
+        </div>
+
+        <div class="lifetime-card">
+            <div class="lifetime-info">
+                <h2>👑 Lifetime Partner</h2>
+                <p style="color: #94a3b8; font-size: 18px; margin-bottom: 10px;">ادفع مرة واحدة فقط، وامتلك النظام كشريك نجاح دائم بدون أي تجديدات مستديمة.</p>
+                <ul class="lifetime-features">
+                    <li>إدارة 10 فروع للمركز الطبي</li>
+                    <li>حتى 50 مستخدم (أطباء وموظفين)</li>
+                    <li>سعة 100,000 ملف مريض إلكتروني</li>
+                    <li>10,000 رسالة واتساب مجانية شهرياً</li>
+                    <li>كافة التحديثات المستقبلية مجاناً للأبد</li>
+                    <li>سيرفرات VIP + مدير حساب مخصص لك</li>
+                </ul>
+            </div>
+            <div class="lifetime-action">
+                <div class="lifetime-price">14,999 <span style="font-size: 20px; color:#cbd5e1;">ج.م</span></div>
+                <button class="btn-gold" onclick="selectPlan('lifetime', 'lifetime', 14999, 'مدى الحياة', 10, 50, 100000, 10000)">امتلك النظام للأبد 💎</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // 🔴 دالة الاختيار (الكوبري لصفحة الدفع) 🔴
+        function selectPlan(planId, packageType, price, durationText, maxBranches, maxUsers, maxPatients, maxWhatsapp) {
+            
+            // إنشاء كائن (Object) شايل كل تفاصيل الباقة اللي الدكتور اختارها
+            const selectedPackageInfo = {
+                planId: planId,                 // مثلاً: growth
+                packageType: packageType,       // مثلاً: quarterly
+                price: price,                   // 1999
+                durationText: durationText,     // "ربع سنوي"
+                limits: {
+                    branches: maxBranches,
+                    users: maxUsers,
+                    patients: maxPatients,
+                    whatsapp: maxWhatsapp
+                }
+            };
+
+            // تخزينها في متصفح الدكتور مؤقتاً عشان صفحة الدفع تقرأها
+            sessionStorage.setItem('selectedCheckoutPlan', JSON.stringify(selectedPackageInfo));
+
+            // توجيه الدكتور لصفحة الدفع الآلية
+            window.location.href = 'checkout.html';
+        }
+
+        // حماية: التأكد إن الدكتور داخل بحساب عيادة مش داخل يتفرج من بره
+        window.onload = () => {
+            const clinicId = sessionStorage.getItem('clinicId');
+            if (!clinicId || clinicId === 'default') {
+                alert("يرجى تسجيل الدخول بحساب العيادة لتتمكن من الترقية.");
+                window.location.href = 'index.html';
+            }
+        };
+    </script>
+</body>
+</html>
