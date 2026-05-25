@@ -1,6 +1,6 @@
-// js/superadmin.js
+// js/super-admin.js - Master Cloud Logic (SaaS)
 
-// 🔴 كود مسح الذاكرة المؤقتة (Cache) العنيدة للموبايل (حل مشكلة عدم التحديث)
+// 🔴 كود مسح الذاكرة المؤقتة (Cache) العنيدة للموبايل
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.getRegistrations().then(function(registrations) {
         for(let registration of registrations) {
@@ -32,7 +32,7 @@ function updatePageContent(lang) {
             btnPaid: "تم الدفع", btnCancelSub: "إيقاف الحساب", btnRenew: "تفعيل الحساب", btnDelete: "حذف العيادة",
             msgSuccess: "تم إنشاء العيادة بنجاح!\n\nكود الدخول: {id}\nإيميل الأدمن: {email}\n\nيرجى إرسال الكود للدكتور لتفعيل الحساب.",
             msgError: "حدث خطأ أثناء الإنشاء!", msgConfirmToggle: "هل متأكد من تغيير حالة العيادة؟",
-            msgConfirmPaid: "هل تريد تأكيد استلام الدفعة وتجديد الاشتراك لمدة شهر؟",
+            msgConfirmPaid: "هل تريد تأكيد استلام الدفعة وتجديد الاشتراك؟",
             msgWarnDel: "تحذير: هذا سيحذف العيادة تماماً ولن يمكن استرجاعها! اكتب '1234' للتأكيد:", msgDelSuccess: "تم حذف العيادة بنجاح.", btnSaving: "جاري الإنشاء...",
             ovrTitle: "تحكم يدوي في الاشتراك", ovrDiscount: "نسبة خصم خاصة (%)", ovrTrial: "تمديد تجربة (أيام إضافية)", ovrBtn: "حفظ التعديلات المالية",
             
@@ -54,13 +54,17 @@ function updatePageContent(lang) {
             noSupport: "لا توجد تذاكر دعم فني.", noReviews: "لا توجد تقييمات حتى الآن.", btnReply: "رد وإغلاق",
             msgReplySent: "تم إرسال الرد وإغلاق التذكرة بنجاح.",
             
-            // 🔴 التحديثات الجديدة لدعم اللغات 🔴
             sysHealthTitle: "صحة السيرفر (System Health)", sysHealthDb: "حالة قواعد البيانات", sysHealthUsage: "مؤشر الاستهلاك",
             annTitle: "📢 الإذاعة المركزية (Global Announcements)", annSub: "إرسال إشعار فوري للعيادات على النظام (سيظهر في جرس الإشعارات لديهم).",
             annBtn: "🚀 إرسال الآن",
             chatWith: "تواصل مع:", chatPlaceholder: "اكتب رسالتك للعيادة هنا...", chatSend: "إرسال 🚀",
             teamAddTitle: "إضافة موظف إدارة جديد", teamEmail: "البريد الإلكتروني (جيميل)", teamRole: "الرتبة (الصلاحية)", teamAddBtn: "إضافة الموظف",
-            roleSales: "مبيعات (Sales - رؤية فقط)", roleSupport: "دعم فني (Support)"
+            roleSales: "مبيعات (Sales - رؤية فقط)", roleSupport: "دعم فني (Support)",
+            
+            // 🔴 باقات النظام 🔴
+            pkgStart: "تجريبي (7 أيام)", pkgPro: "شهري (Clinic Pro)", pkgGrowth: "ربع سنوي (Growth)", pkgElite: "سنوي (Elite)", pkgLife: "مدى الحياة (Lifetime)",
+            msgPkgChanged: "✅ تم تغيير باقة العيادة وتحديث الحصص وتاريخ الانتهاء بنجاح!", msgPkgErr: "❌ حدث خطأ أثناء تغيير الباقة", btnPkgChange: "تغيير الباقة",
+            lblSelectPkg: "اختر الباقة الجديدة", btnSavePkg: "حفظ وتفعيل الباقة 🚀"
         },
         en: {
             title: "Central SaaS Management", sub: "Owner Dashboard - Super Admin", search: "Search by clinic name...", btnAdd: "Add New Clinic", btnAddUser: "Generate User Invite",
@@ -76,7 +80,7 @@ function updatePageContent(lang) {
             btnPaid: "Paid", btnCancelSub: "Suspend Acc", btnRenew: "Activate Acc", btnDelete: "Delete Clinic",
             msgSuccess: "Clinic created successfully!\n\nAccess Code: {id}\nAdmin Email: {email}\n\nPlease send code to the doctor.",
             msgError: "Error creating clinic!", msgConfirmToggle: "Are you sure you want to change the status?",
-            msgConfirmPaid: "Confirm payment receipt and renew subscription for one month?",
+            msgConfirmPaid: "Confirm payment receipt and renew subscription?",
             msgWarnDel: "WARNING: Type '1234' to confirm permanent deletion:", msgDelSuccess: "Clinic deleted successfully.", btnSaving: "Creating...",
             
             mUpgTitle: "🚀 Upgrade Trial Clinic", mUpgSub: "Select package and price to generate a new access code.",
@@ -98,54 +102,50 @@ function updatePageContent(lang) {
             msgReplySent: "Reply sent and ticket closed successfully.",
             ovrTitle: "Subscription Override", ovrDiscount: "Special Discount (%)", ovrTrial: "Trial Extension (Days)", ovrBtn: "Save Financial Changes",
             
-            // 🔴 التحديثات الجديدة لدعم اللغات 🔴
             sysHealthTitle: "System Health", sysHealthDb: "Database Status", sysHealthUsage: "Usage Indicator",
             annTitle: "📢 Global Announcements", annSub: "Send instant notification to clinics on the system (appears in their bell).",
             annBtn: "🚀 Send Now",
             chatWith: "Chat with:", chatPlaceholder: "Type your message here...", chatSend: "Send 🚀",
             teamAddTitle: "Add New Admin", teamEmail: "Email (Gmail)", teamRole: "Role (Permission)", teamAddBtn: "Add Member",
-            roleSales: "Sales (View Only)", roleSupport: "Support (Tech Support)"
+            roleSales: "Sales (View Only)", roleSupport: "Support (Tech Support)",
+            
+            // 🔴 Packages 🔴
+            pkgStart: "Trial (7 Days)", pkgPro: "Monthly (Clinic Pro)", pkgGrowth: "Quarterly (Growth)", pkgElite: "Yearly (Elite)", pkgLife: "Lifetime Partner",
+            msgPkgChanged: "✅ Package changed and limits updated successfully!", msgPkgErr: "❌ Error changing package", btnPkgChange: "Change Package",
+            lblSelectPkg: "Select New Package", btnSavePkg: "Save & Activate 🚀"
         }
     };
     const c = t[lang] || t.ar;
     const setTxt = (id, txt) => { if(document.getElementById(id)) document.getElementById(id).innerText = txt; };
 
-    // --- العناوين والبحث ---
     setTxt('txt-title', c.title); setTxt('txt-subtitle', c.sub); 
     if(document.getElementById('searchInput')) document.getElementById('searchInput').placeholder = c.search;
     setTxt('btn-add-clinic', c.btnAdd); setTxt('btn-add-user', c.btnAddUser);
     
-    // --- الكروت والإحصائيات ---
     setTxt('lbl-tot-clinics', c.totClinics); setTxt('lbl-tot-susp', c.totSusp); setTxt('lbl-tot-patients', c.totPatients);
     
-    // --- الجداول ---
     setTxt('th-date', c.thDate); setTxt('th-next-pay', c.thNextPay); setTxt('th-name', c.thName); setTxt('th-email', c.thEmail); setTxt('th-status', c.thStatus); setTxt('th-action', c.thAction);
     if(document.getElementById('txt-loading')) setTxt('txt-loading', c.loading);
     
-    // --- مودال العيادة ---
     setTxt('mod-title', c.mTitle); setTxt('lbl-c-name', c.lName); setTxt('lbl-c-email', c.lEmail); setTxt('lbl-c-hint', c.lHint); setTxt('lbl-c-phone', c.lPhone); 
     setTxt('lbl-c-pkg', c.lPkg); setTxt('opt-pkg-t7', c.optPkgT7); setTxt('opt-pkg-t14', c.optPkgT14); setTxt('opt-pkg-month', c.optPkgMonth); setTxt('opt-pkg-year', c.optPkgYear);
     setTxt('lbl-c-plan', c.lPlan); setTxt('opt-active', c.optAct); setTxt('opt-susp', c.optSusp); setTxt('btn-save', c.btnSave);
     setTxt('lbl-c-limit', c.lLimit); setTxt('hint-c-limit', c.hintLimit); setTxt('lbl-c-price', c.lPrice);
     
-    // --- مودال الترقية ---
     setTxt('mod-upgrade-title', c.mUpgTitle); setTxt('mod-upgrade-sub', c.mUpgSub);
     setTxt('lbl-upg-pkg', c.lUpgPkg); setTxt('opt-upg-month', c.optUpgMonth); setTxt('opt-upg-year', c.optUpgYear);
     setTxt('lbl-upg-price', c.lUpgPrice); setTxt('lbl-upg-limit', c.lUpgLimit); setTxt('btn-confirm-upgrade', c.btnConfirmUpg);
     
-    // --- مودال الدعوة ---
     setTxt('mod-user-title', c.mUserTitle); setTxt('mod-user-sub', c.mUserSub);
     setTxt('lbl-u-clinic', c.lUClinic); setTxt('lbl-u-name', c.lUName); setTxt('lbl-u-role', c.lURole);
     setTxt('opt-u-admin', c.optUAdmin); setTxt('opt-u-doc', c.optUDoc); setTxt('opt-u-rec', c.optURec); setTxt('opt-u-nur', c.optUNur); setTxt('btn-submit-user', c.btnSubUser);
 
-    // --- مودال التفاصيل ---
     setTxt('mod-det-title', c.modDetTitle); setTxt('lbl-det-name', c.lblDetName); setTxt('lbl-det-code', c.lblDetCode); setTxt('lbl-det-email', c.lblDetEmail); setTxt('lbl-det-phone', c.lblDetPhone);
     setTxt('lbl-det-pkg', c.lblDetPkg); setTxt('lbl-det-created', c.lblDetCreated); setTxt('lbl-det-limit', c.lblDetLimit); setTxt('lbl-det-price', c.lblDetPrice);
     setTxt('txt-team-title', c.txtTeamTitle); setTxt('th-u-name', c.thUName); setTxt('th-u-email', c.thUEmail); setTxt('th-u-role', c.thURole);
     setTxt('th-u-date', c.thUDate); setTxt('th-u-online', c.thUOnline); setTxt('th-u-last', c.thULast);
     if(document.getElementById('txt-u-load')) setTxt('txt-u-load', c.txtULoad);
 
-    // --- التابات ---
     if(document.getElementById('tab-active')) document.getElementById('tab-active').innerHTML = c.tabActive;
     if(document.getElementById('tab-trials')) document.getElementById('tab-trials').innerHTML = c.tabTrials;
     const supBadge = document.getElementById('badge-support');
@@ -155,15 +155,12 @@ function updatePageContent(lang) {
     if(document.getElementById('tab-chat')) document.getElementById('tab-chat').innerHTML = c.tabChat;
     if(document.getElementById('tab-team')) document.getElementById('tab-team').innerHTML = c.tabTeam;
 
-    // --- الحصص والتجاوز ---
     setTxt('lbl-c-pat-limit', lang === 'ar' ? 'سعة المرضى' : 'Patients Limit');
     setTxt('lbl-c-wa-limit', lang === 'ar' ? 'رصيد الواتس' : 'WhatsApp Balance');
     setTxt('lbl-det-pat-limit', lang === 'ar' ? 'سعة المرضى بالباقة' : 'Plan Patients Limit');
     setTxt('lbl-det-wa-limit', lang === 'ar' ? 'رصيد رسائل الواتساب' : 'WhatsApp Messages Limit');
     setTxt('mod-ovr-title', c.ovrTitle); setTxt('lbl-ovr-discount', c.ovrDiscount); setTxt('lbl-ovr-trial', c.ovrTrial); setTxt('btn-save-override', c.ovrBtn);
 
-    // --- 🔴 ترجمات الأجزاء الجديدة (الشات، الإذاعة، الفريق، الصحة) 🔴 ---
-    // صحة السيرفر
     const sysTitleEl = document.querySelector('.stat-card h3 span');
     if(sysTitleEl && sysTitleEl.parentElement) {
         sysTitleEl.parentElement.innerHTML = `<span style="animation: blink 2s infinite;">⚡</span> ${c.sysHealthTitle}`;
@@ -174,7 +171,6 @@ function updatePageContent(lang) {
         if(sysLabels[1].previousElementSibling && sysLabels[1].previousElementSibling.tagName === 'SPAN') sysLabels[1].previousElementSibling.innerText = c.sysHealthUsage;
     }
 
-    // الإذاعة
     const annH3 = document.querySelector('h3:has(+ p)');
     if(annH3) {
         annH3.innerHTML = `📢 ${c.annTitle}`;
@@ -183,7 +179,6 @@ function updatePageContent(lang) {
     const annBtn = document.querySelector('button[onclick="sendGlobalAnnouncement()"]');
     if(annBtn) annBtn.innerHTML = `${c.annBtn}`;
 
-    // الشات
     const chatTitle = document.querySelector('#view-chat strong');
     if(chatTitle) chatTitle.innerText = c.chatWith;
     const chatInput = document.getElementById('chat_msg_input');
@@ -191,7 +186,6 @@ function updatePageContent(lang) {
     const chatBtn = document.querySelector('#view-chat button');
     if(chatBtn) chatBtn.innerHTML = c.chatSend;
 
-    // الفريق
     const teamTitle = document.querySelector('#view-team h3');
     if(teamTitle) teamTitle.innerText = c.teamAddTitle;
     const teamLabels = document.querySelectorAll('#addNivaAdminForm label');
@@ -208,7 +202,6 @@ function updatePageContent(lang) {
         roleSelect.options[1].text = c.roleSupport;
     }
 
-    // حفظ القاموس عالمياً
     window.superLang = c;
 }
 
@@ -374,7 +367,6 @@ async function submitTicketReply(e) {
             repliedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        // 🔴 تعديل الإشعار: إضافة branchId: 'main' لضمان وصوله للفرع الرئيسي
         await db.collection("Notifications").add({
             clinicId: clinicId,
             branchId: 'main', 
@@ -436,20 +428,21 @@ function loadSystemReviews() {
     });
 }
 
-// 🔴 دالة فتح مودال العيادة 🔴
 async function openClinicDetailsModal(clinicId) {
     const clinic = allClinicsList.find(c => c.id === clinicId);
     if (!clinic) return;
 
     const lang = localStorage.getItem('preferredLang') || 'ar';
     const isAr = lang === 'ar';
+    const cLang = window.superLang;
 
+    // 🔴 استخدام الترجمة الذكية للباقات
     let pkgLabel = '';
-    if(clinic.package === 'trial_7') pkgLabel = isAr ? 'تجريبي 7 أيام' : 'Trial 7 Days';
-    else if(clinic.package === 'trial_14') pkgLabel = isAr ? 'تجريبي 14 يوم' : 'Trial 14 Days';
-    else if(clinic.planType === 'trial_29_days' || clinic.planType === 'trial_3_days') pkgLabel = isAr ? 'تجريبي (29 يوم)' : 'Trial (29 Days)'; 
-    else if(clinic.package === 'yearly') pkgLabel = isAr ? 'اشتراك سنوي' : 'Yearly';
-    else pkgLabel = isAr ? 'اشتراك شهري' : 'Monthly';
+    if(clinic.package === 'trial_7') pkgLabel = cLang.pkgStart || 'Trial 7 Days';
+    else if(clinic.package === 'quarterly') pkgLabel = cLang.pkgGrowth || 'Quarterly';
+    else if(clinic.package === 'yearly') pkgLabel = cLang.pkgElite || 'Yearly';
+    else if(clinic.package === 'lifetime') pkgLabel = cLang.pkgLife || 'Lifetime';
+    else pkgLabel = cLang.pkgPro || 'Monthly';
 
     const detPhone = document.getElementById('det-clinic-phone');
     let phoneFound = clinic.phone1 || clinic.adminPhone || null;
@@ -509,7 +502,7 @@ async function openClinicDetailsModal(clinicId) {
     const tbody = document.getElementById('det-users-body');
     const secTbody = document.getElementById('det-security-body');
     tbody.innerHTML = `<tr><td colspan="6" style="text-align: center;">${isAr ? 'جاري تجميع بيانات المستخدمين...' : 'Fetching users...'}</td></tr>`;
-    if(secTbody) secTbody.innerHTML = `<tr><td colspan="3" style="text-align: center;">جاري تجميع البيانات الأمنية...</td></tr>`;
+    if(secTbody) secTbody.innerHTML = `<tr><td colspan="3" style="text-align: center;">${isAr ? 'جاري تجميع البيانات الأمنية...' : 'Fetching security data...'}</td></tr>`;
 
     try {
         const [adminCodesSnap, invitesSnap] = await Promise.all([
@@ -524,7 +517,7 @@ async function openClinicDetailsModal(clinicId) {
             const a = doc.data();
             if (!a.activated) {
                 pendingUsers.push({ 
-                    name: 'مدير العيادة (الأدمن)', identifier: `كود التفعيل: ${doc.id}`, 
+                    name: isAr ? 'مدير العيادة (الأدمن)' : 'Clinic Admin', identifier: `${isAr ? 'كود التفعيل' : 'Code'}: ${doc.id}`, 
                     role: 'admin', status: 'pending', isOnline: false, lastLogin: null, createdAt: fallbackDate 
                 });
             }
@@ -535,7 +528,7 @@ async function openClinicDetailsModal(clinicId) {
             if (!inv.activated) {
                 let invDate = inv.createdAt ? (typeof inv.createdAt.toDate === 'function' ? inv.createdAt.toDate() : new Date(inv.createdAt)) : fallbackDate;
                 pendingUsers.push({ 
-                    name: inv.name || 'موظف مجهول', identifier: `كود الدعوة: ${doc.id}`, 
+                    name: inv.name || (isAr ? 'موظف مجهول' : 'Unknown Staff'), identifier: `${isAr ? 'كود الدعوة' : 'Invite'}: ${doc.id}`, 
                     role: inv.role, status: 'pending', isOnline: false, lastLogin: null, createdAt: invDate 
                 });
             }
@@ -563,11 +556,11 @@ async function openClinicDetailsModal(clinicId) {
                 if(secTbody) secTbody.innerHTML = '';
                 
                 if (staffList.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #64748b;">لا يوجد مستخدمين.</td></tr>';
-                    if(secTbody) secTbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #64748b;">لا يوجد مستخدمين.</td></tr>';
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #64748b;">${isAr ? 'لا يوجد مستخدمين.' : 'No users found.'}</td></tr>`;
+                    if(secTbody) secTbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #64748b;">${isAr ? 'لا يوجد مستخدمين.' : 'No users found.'}</td></tr>`;
                 } else {
                     staffList.forEach(u => {
-                        let roleAr = u.role === 'admin' ? 'أدمن (مدير)' : (u.role === 'nurse' ? 'ممرضة' : (u.role === 'receptionist' ? 'استقبال' : (u.role === 'doctor' ? 'طبيب' : u.role)));
+                        let roleAr = u.role === 'admin' ? (isAr ? 'أدمن (مدير)' : 'Admin') : (u.role === 'nurse' ? (isAr ? 'ممرضة' : 'Nurse') : (u.role === 'receptionist' ? (isAr ? 'استقبال' : 'Reception') : (u.role === 'doctor' ? (isAr ? 'طبيب' : 'Doctor') : u.role)));
                         let roleColor = u.role === 'admin' ? '#dc2626' : (u.role === 'doctor' ? '#0284c7' : '#d97706');
                         let roleBg = u.role === 'admin' ? '#fee2e2' : (u.role === 'doctor' ? '#e0f2fe' : '#fef3c7');
                         
@@ -575,13 +568,13 @@ async function openClinicDetailsModal(clinicId) {
                         let onlineHtml = ''; let lastSeenHtml = '---';
 
                         if (u.status === 'pending') {
-                            onlineHtml = `<span style="color:#d97706; font-size:12px;">⏳ لم يفعل</span>`;
+                            onlineHtml = `<span style="color:#d97706; font-size:12px;">⏳ ${isAr ? 'لم يفعل' : 'Pending'}</span>`;
                         } else {
                             if (u.isOnline) {
                                 onlineHtml = `<span class="status-online">${isAr ? 'أونلاين' : 'Online'}</span>`;
                                 lastSeenHtml = `<span style="color:#10b981; font-weight:bold;">${isAr ? 'الآن' : 'Now'}</span>`;
                             } else {
-                                onlineHtml = `<span style="color:#94a3b8; font-size:20px;" title="أوفلاين">💤</span>`;
+                                onlineHtml = `<span style="color:#94a3b8; font-size:20px;" title="${isAr ? 'أوفلاين' : 'Offline'}">💤</span>`;
                                 if (u.lastLogin) {
                                     try {
                                         const d = typeof u.lastLogin.toDate === 'function' ? u.lastLogin.toDate() : new Date(u.lastLogin);
@@ -605,19 +598,19 @@ async function openClinicDetailsModal(clinicId) {
 
                         if (secTbody) {
                             let isRealEmail = u.identifier.includes('@');
-                            let secStatusHtml = u.status === 'suspended' ? `<span style="color:#ef4444; font-weight:bold; background:#fee2e2; padding:4px 8px; border-radius:4px;">موقوف 🚫</span>` : 
-                                               (u.status === 'pending' ? `<span style="color:#d97706; font-weight:bold;">معلق ⏳</span>` : `<span style="color:#10b981; font-weight:bold;">نشط ✅</span>`);
+                            let secStatusHtml = u.status === 'suspended' ? `<span style="color:#ef4444; font-weight:bold; background:#fee2e2; padding:4px 8px; border-radius:4px;">${isAr ? 'موقوف 🚫' : 'Suspended 🚫'}</span>` : 
+                                               (u.status === 'pending' ? `<span style="color:#d97706; font-weight:bold;">${isAr ? 'معلق ⏳' : 'Pending ⏳'}</span>` : `<span style="color:#10b981; font-weight:bold;">${isAr ? 'نشط ✅' : 'Active ✅'}</span>`);
                             
-                            let resetBtn = isRealEmail ? `<button onclick="sendUserPasswordReset('${u.identifier}')" style="background:#3b82f6; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold;" title="إرسال رابط لتغيير الباسوورد">🔑 باسوورد</button>` : '';
+                            let resetBtn = isRealEmail ? `<button onclick="sendUserPasswordReset('${u.identifier}')" style="background:#3b82f6; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold;" title="إرسال رابط لتغيير الباسوورد">🔑 ${isAr ? 'باسوورد' : 'Reset Pass'}</button>` : '';
                             let suspendBtn = '';
                             if (isRealEmail && u.role !== 'admin') { 
                                 if (u.status === 'suspended') {
-                                    suspendBtn = `<button onclick="toggleUserAccountStatus('${u.identifier}', 'active')" style="background:#10b981; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold;">▶️ تفعيل</button>`;
+                                    suspendBtn = `<button onclick="toggleUserAccountStatus('${u.identifier}', 'active')" style="background:#10b981; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold;">▶️ ${isAr ? 'تفعيل' : 'Activate'}</button>`;
                                 } else {
-                                    suspendBtn = `<button onclick="toggleUserAccountStatus('${u.identifier}', 'suspended')" style="background:#f59e0b; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold;">⏸️ إيقاف</button>`;
+                                    suspendBtn = `<button onclick="toggleUserAccountStatus('${u.identifier}', 'suspended')" style="background:#f59e0b; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold;">⏸️ ${isAr ? 'إيقاف' : 'Suspend'}</button>`;
                                 }
                             }
-                            let forceLogoutBtn = (isRealEmail && u.isOnline) ? `<button onclick="forceUserLogout('${u.identifier}')" style="background:#ef4444; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold;" title="طرد من النظام حالاً">🚪 طرد</button>` : `<button style="background:#cbd5e1; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:not-allowed;" disabled>🚪 أوفلاين</button>`;
+                            let forceLogoutBtn = (isRealEmail && u.isOnline) ? `<button onclick="forceUserLogout('${u.identifier}')" style="background:#ef4444; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:bold;" title="طرد من النظام حالاً">🚪 ${isAr ? 'طرد' : 'Kick'}</button>` : `<button style="background:#cbd5e1; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:not-allowed;" disabled>🚪 ${isAr ? 'أوفلاين' : 'Offline'}</button>`;
 
                             secTbody.innerHTML += `<tr>
                                 <td><strong style="color:#334155; font-size:15px;">${u.name}</strong><br><small dir="ltr" style="color:#64748b;">${u.identifier}</small></td>
@@ -635,7 +628,7 @@ async function openClinicDetailsModal(clinicId) {
 
     } catch (e) {
         console.error(e);
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: red;">حدث خطأ في تحميل البيانات.</td></tr>';
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: red;">${isAr ? 'حدث خطأ في تحميل البيانات.' : 'Error loading data.'}</td></tr>`;
     }
 
     const overrideBtn = document.getElementById('btn-override-clinic');
@@ -813,15 +806,16 @@ async function openUserModal() {
     document.getElementById('userForm').reset();
     const clinicSelect = document.getElementById('user_clinic');
     const branchSelect = document.getElementById('user_branch');
+    const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
     
-    clinicSelect.innerHTML = '<option value="">جاري تحميل العيادات...</option>';
-    branchSelect.innerHTML = '<option value="main">الفرع الرئيسي</option>';
+    clinicSelect.innerHTML = `<option value="">${isAr ? 'جاري تحميل العيادات...' : 'Loading clinics...'}</option>`;
+    branchSelect.innerHTML = `<option value="main">${isAr ? 'الفرع الرئيسي' : 'Main Branch'}</option>`;
     
     document.getElementById('userModal').style.display = 'flex';
 
     try {
         const snap = await db.collection("Clinics").where("status", "==", "active").get();
-        clinicSelect.innerHTML = '<option value="" disabled selected>اختر العيادة...</option>';
+        clinicSelect.innerHTML = `<option value="" disabled selected>${isAr ? 'اختر العيادة...' : 'Select clinic...'}</option>`;
         snap.forEach(doc => {
             const c = doc.data();
             clinicSelect.innerHTML += `<option value="${doc.id}">${c.clinicName}</option>`;
@@ -829,22 +823,22 @@ async function openUserModal() {
 
         clinicSelect.onchange = async function() {
             const selectedClinicId = this.value;
-            branchSelect.innerHTML = '<option value="">جاري التحميل...</option>';
+            branchSelect.innerHTML = `<option value="">${isAr ? 'جاري التحميل...' : 'Loading...'}</option>`;
             try {
                 const branchSnap = await db.collection("Branches").where("clinicId", "==", selectedClinicId).get();
-                branchSelect.innerHTML = '<option value="main">الفرع الرئيسي</option>';
+                branchSelect.innerHTML = `<option value="main">${isAr ? 'الفرع الرئيسي' : 'Main Branch'}</option>`;
                 branchSnap.forEach(bDoc => {
                     branchSelect.innerHTML += `<option value="${bDoc.id}">${bDoc.data().name}</option>`;
                 });
             } catch(err) {
                 console.error("Error fetching branches:", err);
-                branchSelect.innerHTML = '<option value="main">الفرع الرئيسي</option>';
+                branchSelect.innerHTML = `<option value="main">${isAr ? 'الفرع الرئيسي' : 'Main Branch'}</option>`;
             }
         };
 
     } catch(e) {
         console.error(e);
-        clinicSelect.innerHTML = '<option value="">خطأ في تحميل العيادات</option>';
+        clinicSelect.innerHTML = `<option value="">${isAr ? 'خطأ في تحميل العيادات' : 'Error loading clinics'}</option>`;
     }
 }
 
@@ -852,18 +846,19 @@ function closeUserModal() { document.getElementById('userModal').style.display =
 
 async function saveNewUser(e) {
     e.preventDefault();
+    const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
     const btn = e.target.querySelector('button');
     btn.disabled = true;
-    btn.innerText = "جاري توليد الكود...";
+    btn.innerText = isAr ? "جاري توليد الكود..." : "Generating...";
 
     const userName = document.getElementById('user_name').value.trim();
     const clinicId = document.getElementById('user_clinic').value;
     const branchId = document.getElementById('user_branch').value; 
     const role = document.getElementById('user_role').value; 
 
-    if (!clinicId) { alert("برجاء اختيار العيادة أولاً."); btn.disabled = false; btn.innerText = window.superLang.btnSubUser; return; }
+    if (!clinicId) { alert(isAr ? "برجاء اختيار العيادة أولاً." : "Select clinic first."); btn.disabled = false; btn.innerText = window.superLang.btnSubUser; return; }
 
-    if (window.showLoader) window.showLoader(document.body.dir === 'rtl' ? "جاري إنشاء كود الدعوة..." : "Generating invite code...");
+    if (window.showLoader) window.showLoader(isAr ? "جاري إنشاء كود الدعوة..." : "Generating invite code...");
 
     try {
         const inviteCode = Math.floor(10000 + Math.random() * 90000).toString();
@@ -877,11 +872,11 @@ async function saveNewUser(e) {
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        alert(`✅ تم توليد كود الدعوة بنجاح!\n\nالكود: ${inviteCode}\nالاسم: ${userName}\nالوظيفة: ${role}\nالفرع: ${branchId === 'main' ? 'الرئيسي' : 'فرع إضافي'}\n\nيرجى إعطاء هذا الكود للموظف لتفعيل حسابه من شاشة تسجيل الدخول.`);
+        alert(isAr ? `✅ تم توليد كود الدعوة بنجاح!\n\nالكود: ${inviteCode}\nالاسم: ${userName}\nالوظيفة: ${role}\nالفرع: ${branchId === 'main' ? 'الرئيسي' : 'فرع إضافي'}\n\nيرجى إعطاء هذا الكود للموظف لتفعيل حسابه.` : `✅ Invite Code Generated!\n\nCode: ${inviteCode}\nName: ${userName}\nRole: ${role}`);
         closeUserModal();
     } catch (error) {
         console.error("Error generating code:", error);
-        alert("حدث خطأ أثناء توليد الكود!");
+        alert(isAr ? "حدث خطأ أثناء توليد الكود!" : "Error generating code!");
     } finally {
         btn.disabled = false;
         btn.innerText = window.superLang.btnSubUser;
@@ -906,10 +901,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function saveNewClinic(e) {
     e.preventDefault();
+    const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
     const btn = document.getElementById('btn-save');
     btn.disabled = true; btn.innerText = window.superLang.btnSaving;
 
-    if (window.showLoader) window.showLoader(document.body.dir === 'rtl' ? "جاري تجهيز مساحة العيادة على السيرفر..." : "Setting up new clinic...");
+    if (window.showLoader) window.showLoader(isAr ? "جاري تجهيز مساحة العيادة على السيرفر..." : "Setting up new clinic...");
 
     const clinicName = document.getElementById('clinic_name').value.trim();
     const adminEmail = document.getElementById('clinic_admin_email').value.trim().toLowerCase();
@@ -937,7 +933,9 @@ async function saveNewClinic(e) {
 
         const nextPayDate = new Date();
         if (packageType === 'monthly') { nextPayDate.setMonth(nextPayDate.getMonth() + 1); } 
+        else if (packageType === 'quarterly') { nextPayDate.setMonth(nextPayDate.getMonth() + 3); } 
         else if (packageType === 'yearly') { nextPayDate.setFullYear(nextPayDate.getFullYear() + 1); } 
+        else if (packageType === 'lifetime') { nextPayDate.setFullYear(nextPayDate.getFullYear() + 100); } 
         else if (packageType === 'trial_7') { nextPayDate.setDate(nextPayDate.getDate() + 7); } 
         else if (packageType === 'trial_14') { nextPayDate.setDate(nextPayDate.getDate() + 14); }
 
@@ -979,7 +977,8 @@ async function saveNewClinic(e) {
 }
 
 function loadClinics() {
-    if (window.showLoader && allClinicsList.length === 0) window.showLoader(document.body.dir === 'rtl' ? "جاري مزامنة بيانات النظام..." : "Syncing SaaS data...");
+    const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
+    if (window.showLoader && allClinicsList.length === 0) window.showLoader(isAr ? "جاري مزامنة بيانات النظام..." : "Syncing SaaS data...");
 
     db.collection("Clinics").orderBy("createdAt", "desc").onSnapshot(async (snap) => {
         allClinicsList = []; 
@@ -1014,8 +1013,6 @@ function loadClinics() {
         renderClinicsTable(); 
         updateMRRStats(); 
         updateSystemHealth(); 
-        
-        // 🔴 تعبئة دروب داون الشات والإذاعة
         populateClinicDropdowns();
         
         if (window.hideLoader) window.hideLoader();
@@ -1025,12 +1022,13 @@ function loadClinics() {
 }
 
 function populateClinicDropdowns() {
+    const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
     const activeClinics = allClinicsList.filter(c => c.status === 'active');
     
     // دروب داون الإذاعة
     const annDropdown = document.getElementById('global_announcement_target');
     if (annDropdown) {
-        annDropdown.innerHTML = '<option value="all">🌍 إرسال لجميع العيادات النشطة</option>';
+        annDropdown.innerHTML = `<option value="all">🌍 ${isAr ? 'إرسال لجميع العيادات النشطة' : 'Send to all active clinics'}</option>`;
         activeClinics.forEach(c => {
             annDropdown.innerHTML += `<option value="${c.id}">🏢 ${c.clinicName}</option>`;
         });
@@ -1040,7 +1038,7 @@ function populateClinicDropdowns() {
     const chatDropdown = document.getElementById('chat_clinic_select');
     if (chatDropdown) {
         const currentSelected = chatDropdown.value;
-        chatDropdown.innerHTML = '<option value="" disabled selected>اختر عيادة لبدء المراسلة...</option>';
+        chatDropdown.innerHTML = `<option value="" disabled selected>${isAr ? 'اختر عيادة لبدء المراسلة...' : 'Select clinic to chat...'}</option>`;
         activeClinics.forEach(c => {
             chatDropdown.innerHTML += `<option value="${c.id}">🏢 ${c.clinicName}</option>`;
         });
@@ -1053,23 +1051,23 @@ function renderClinicsTable() {
     if(!tbody) return;
     tbody.innerHTML = '';
     const lang = localStorage.getItem('preferredLang') || 'ar';
+    const isAr = lang === 'ar';
     const now = new Date();
+    const cLang = window.superLang;
 
-const filteredClinics = allClinicsList.filter(c => {
-        // الفلتر دلوقتي بقى بيشوف بس الـ trial_7
+    const filteredClinics = allClinicsList.filter(c => {
         const isTrial = c.package === 'trial_7'; 
-        
         if (currentActiveTab === 'trials') return isTrial;
         return !isTrial; 
     });
 
     if (filteredClinics.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center;">${window.superLang.empty}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center;">${cLang.empty}</td></tr>`;
         return;
     }
 
     filteredClinics.forEach(c => {
-        const dateStr = c.createdAt ? c.createdAt.toDate().toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US') : '---';
+        const dateStr = c.createdAt ? c.createdAt.toDate().toLocaleDateString(isAr ? 'ar-EG' : 'en-US') : '---';
         
         let nextPayStr = "---";
         let payStyle = "";
@@ -1077,17 +1075,17 @@ const filteredClinics = allClinicsList.filter(c => {
 
         if (c.nextPaymentDate) {
             const npDate = typeof c.nextPaymentDate.toDate === 'function' ? c.nextPaymentDate.toDate() : new Date(c.nextPaymentDate);
-            nextPayStr = npDate.toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-US');
+            nextPayStr = npDate.toLocaleDateString(isAr ? 'ar-EG' : 'en-US');
             
             const diffTime = npDate - now;
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
 
             if (diffDays < 0 && c.status !== 'suspended') {
                 payStyle = "color: red; font-weight: bold;";
-                alertBadge = `<span style="background: red; color: white; padding: 2px 5px; border-radius: 4px; font-size: 10px; margin-right: 5px;">منتهي</span>`;
+                alertBadge = `<span style="background: red; color: white; padding: 2px 5px; border-radius: 4px; font-size: 10px; margin-right: 5px;">${isAr?'منتهي':'Expired'}</span>`;
             } else if (diffDays >= 0 && diffDays <= 3 && c.status === 'active') {
                 payStyle = "color: #d97706; font-weight: bold;";
-                alertBadge = `<span style="background: #fef3c7; color: #d97706; padding: 2px 5px; border-radius: 4px; font-size: 10px; margin-right: 5px; border: 1px solid #fde68a;">⚠️ قريباً</span>`;
+                alertBadge = `<span style="background: #fef3c7; color: #d97706; padding: 2px 5px; border-radius: 4px; font-size: 10px; margin-right: 5px; border: 1px solid #fde68a;">⚠️ ${isAr?'قريباً':'Soon'}</span>`;
             } else {
                 payStyle = "color: green;";
             }
@@ -1097,43 +1095,42 @@ const filteredClinics = allClinicsList.filter(c => {
         let accessCode = c.accessCode || ""; 
 
         let pkgLabel = '';
-        if(c.package === 'trial_7') pkgLabel = lang==='ar'?'تجريبي 7 أيام':'Trial 7';
-        else if(c.package === 'quarterly') pkgLabel = lang==='ar'?'ربع سنوي':'Quarterly';
-        else if(c.package === 'yearly') pkgLabel = lang==='ar'?'سنوي':'Yearly';
-        else if(c.package === 'lifetime') pkgLabel = lang==='ar'?'مدى الحياة':'Lifetime';
-        else pkgLabel = lang==='ar'?'شهري':'Monthly';
+        if(c.package === 'trial_7') pkgLabel = cLang.pkgStart || 'Trial 7';
+        else if(c.package === 'quarterly') pkgLabel = cLang.pkgGrowth || 'Quarterly';
+        else if(c.package === 'yearly') pkgLabel = cLang.pkgElite || 'Yearly';
+        else if(c.package === 'lifetime') pkgLabel = cLang.pkgLife || 'Lifetime';
+        else pkgLabel = cLang.pkgPro || 'Monthly';
 
         let statusHtml = '';
-        if(c.status === 'active') statusHtml = `<span class="status-badge status-active">${window.superLang.sAct}</span>`;
-        else if(c.status === 'expired') statusHtml = `<span class="status-badge" style="background:#fee2e2; color:#ef4444; border:1px solid #fca5a5;">${window.superLang.sExpired}</span>`;
-        else statusHtml = `<span class="status-badge status-suspended">${window.superLang.sSusp}</span>`;
+        if(c.status === 'active') statusHtml = `<span class="status-badge status-active">${cLang.sAct}</span>`;
+        else if(c.status === 'expired') statusHtml = `<span class="status-badge" style="background:#fee2e2; color:#ef4444; border:1px solid #fca5a5;">${cLang.sExpired}</span>`;
+        else statusHtml = `<span class="status-badge status-suspended">${cLang.sSusp}</span>`;
 
         let toggleBtnHtml = '';
         if (c.status === 'suspended' || c.status === 'expired') {
-            toggleBtnHtml = `<button class="btn-primary" onclick="toggleSubscription('${c.id}', 'active')" style="background:#3b82f6; border:none; padding:5px 10px; color:white; border-radius:5px; cursor:pointer;">▶️ ${window.superLang.btnRenew}</button>`;
+            toggleBtnHtml = `<button class="btn-primary" onclick="toggleSubscription('${c.id}', 'active')" style="background:#3b82f6; border:none; padding:5px 10px; color:white; border-radius:5px; cursor:pointer;">▶️ ${cLang.btnRenew}</button>`;
         } else {
-            toggleBtnHtml = `<button class="btn-warning" onclick="toggleSubscription('${c.id}', 'suspended')" style="background:#f59e0b; border:none; padding:5px 10px; color:white; border-radius:5px; cursor:pointer;">⏸️ ${window.superLang.btnCancelSub}</button>`;
+            toggleBtnHtml = `<button class="btn-warning" onclick="toggleSubscription('${c.id}', 'suspended')" style="background:#f59e0b; border:none; padding:5px 10px; color:white; border-radius:5px; cursor:pointer;">⏸️ ${cLang.btnCancelSub}</button>`;
         }
 
-        let btnPkgTxt = lang === 'ar' ? "تغيير الباقة" : "Package";
+        let btnPkgTxt = cLang.btnPkgChange || (isAr ? "تغيير الباقة" : "Package");
 
         let actionsHtml = '';
         
         if (currentActiveTab === 'trials') {
             actionsHtml = `
-                <button onclick="openUpgradeTrialModal('${c.id}', '${c.clinicName}', '${adminEmail}', '${c.phone1}', ${c.maxUsers||3}, ${c.maxPatients||500}, ${c.maxWhatsapp||100})" style="background:#10b981; border:none; padding:5px 10px; color:white; border-radius:5px; cursor:pointer; font-weight: bold; width: 100%;">🚀 ترقية العيادة ودفع الاشتراك</button>
+                <button onclick="openUpgradeTrialModal('${c.id}', '${c.clinicName.replace(/'/g,"\\'")}', '${adminEmail}', '${c.phone1||''}', ${c.maxUsers||3}, ${c.maxPatients||500}, ${c.maxWhatsapp||100})" style="background:#10b981; border:none; padding:5px 10px; color:white; border-radius:5px; cursor:pointer; font-weight: bold; width: 100%;">🚀 ${isAr ? 'ترقية العيادة ودفع الاشتراك' : 'Upgrade & Pay'}</button>
             `;
         } 
         else {
             actionsHtml = `
-                <button onclick="markAsPaid('${c.id}')" style="background:#10b981; border:none; padding:5px 10px; color:white; border-radius:5px; cursor:pointer;" title="إضافة شهر جديد">💰 ${window.superLang.btnPaid}</button>
+                <button onclick="markAsPaid('${c.id}')" style="background:#10b981; border:none; padding:5px 10px; color:white; border-radius:5px; cursor:pointer;" title="${isAr ? 'إضافة شهر جديد' : 'Renew'}">💰 ${cLang.btnPaid}</button>
                 <button onclick="openChangePackageModal('${c.id}')" style="background:#8b5cf6; border:none; padding:5px 10px; color:white; border-radius:5px; cursor:pointer;" title="${btnPkgTxt}">📦 ${btnPkgTxt}</button>
                 ${toggleBtnHtml}
             `;
             
-            // 🔴 تعديل مسح العيادة 🔴
             if (currentNivaRole === 'owner') {
-                actionsHtml += `<button class="btn-danger" onclick="deleteClinic('${c.id}', '${accessCode}')" style="background:#ef4444; border:none; padding:5px 10px; color:white; border-radius:5px; cursor:pointer;">🗑️ ${window.superLang.btnDelete}</button>`;
+                actionsHtml += `<button class="btn-danger" onclick="deleteClinic('${c.id}', '${accessCode}')" style="background:#ef4444; border:none; padding:5px 10px; color:white; border-radius:5px; cursor:pointer;">🗑️ ${cLang.btnDelete}</button>`;
             }
         }
 
@@ -1143,7 +1140,7 @@ const filteredClinics = allClinicsList.filter(c => {
             <td style="${payStyle}" dir="ltr">${nextPayStr} ${alertBadge}</td>
             <td>
                 <a class="clinic-link" onclick="openClinicDetailsModal('${c.id}')">🏢 ${c.clinicName}</a><br>
-                <small style="color:gray;">الكود: ${accessCode || 'بدون'} | الباقة: <span style="color:#3b82f6;">${pkgLabel}</span> | السعة: <strong>${c.maxUsers||1}</strong></small>
+                <small style="color:gray;">${isAr?'الكود':'Code'}: ${accessCode || '---'} | ${isAr?'الباقة':'Plan'}: <span style="color:#3b82f6;">${pkgLabel}</span> | ${isAr?'السعة':'Limit'}: <strong>${c.maxUsers||1}</strong></small>
             </td>
             <td dir="ltr" style="text-align:start;">${adminEmail}</td>
             <td>${statusHtml}</td>
@@ -1196,7 +1193,9 @@ async function confirmUpgradeTrial(e) {
         const accessCode = Math.floor(10000 + Math.random() * 90000).toString();
         const nextPayDate = new Date();
         if (packageType === 'monthly') nextPayDate.setMonth(nextPayDate.getMonth() + 1);
+        else if (packageType === 'quarterly') nextPayDate.setMonth(nextPayDate.getMonth() + 3);
         else if (packageType === 'yearly') nextPayDate.setFullYear(nextPayDate.getFullYear() + 1);
+        else if (packageType === 'lifetime') nextPayDate.setFullYear(nextPayDate.getFullYear() + 100);
 
         await db.collection("Clinics").doc(clinicId).update({
             planType: firebase.firestore.FieldValue.delete(), 
@@ -1223,58 +1222,50 @@ async function confirmUpgradeTrial(e) {
         closeUpgradeTrialModal();
     } catch (error) {
         console.error(error);
-        alert("حدث خطأ أثناء الترقية");
+        alert(isAr ? "حدث خطأ أثناء الترقية" : "Upgrade error");
     } finally {
         btn.disabled = false;
         if (window.hideLoader) window.hideLoader();
     }
 }
 
+// 🔴 مودال تغيير الباقة الموحد والديناميكي (الدمج الجذري لضمان الترابط) 🔴
 function openChangePackageModal(clinicId) {
     const lang = localStorage.getItem('preferredLang') || 'ar';
     const isAr = lang === 'ar';
-    
+    const c = window.superLang; 
+
     let modal = document.getElementById('dynamicPkgModal');
     if (!modal) {
         modal = document.createElement('div');
         modal.id = 'dynamicPkgModal';
         modal.className = 'modal no-print';
-        modal.innerHTML = `
-            <div class="modal-content" style="max-width: 400px; text-align: ${isAr ? 'right' : 'left'}; direction: ${isAr ? 'rtl' : 'ltr'};">
-                <span class="close-modal" onclick="document.getElementById('dynamicPkgModal').style.display='none'" style="${isAr ? 'left: 25px; right: auto;' : 'right: 25px; left: auto;'}">&times;</span>
-                <h2 style="margin-bottom: 20px;">${isAr ? 'تغيير باقة العيادة' : 'Change Clinic Package'}</h2>
-                <input type="hidden" id="pkg_change_clinic_id">
-                <div class="form-group">
-                    <label>${isAr ? 'اختر الباقة الجديدة' : 'Select New Package'}</label>
-                    <select id="new_pkg_select" class="search-box" style="direction: ${isAr ? 'rtl' : 'ltr'}; margin-bottom: 20px;">
-                        <option value="trial_7">${isAr ? 'تجريبي 7 أيام' : 'Trial (7 Days)'}</option>
-                        <option value="trial_14">${isAr ? 'تجريبي 14 يوم' : 'Trial (14 Days)'}</option>
-                        <option value="monthly">${isAr ? 'شهري (Monthly)' : 'Monthly'}</option>
-                        <option value="yearly">${isAr ? 'سنوي (Yearly)' : 'Yearly'}</option>
-                    </select>
-                </div>
-                <button class="btn-primary" style="width: 100%; justify-content: center; background: #8b5cf6;" onclick="confirmPackageChange()">${isAr ? 'حفظ وتفعيل الباقة' : 'Save & Activate'}</button>
-            </div>
-        `;
         document.body.appendChild(modal);
     }
-    document.getElementById('pkg_change_clinic_id').value = clinicId;
+    
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 400px; text-align: ${isAr ? 'right' : 'left'}; direction: ${isAr ? 'rtl' : 'ltr'};">
+            <span class="close-modal" onclick="document.getElementById('dynamicPkgModal').style.display='none'" style="${isAr ? 'left: 25px; right: auto;' : 'right: 25px; left: auto;'}">&times;</span>
+            <h2 style="margin-bottom: 20px; color: #0f172a;">📦 ${c.btnPkgChange || (isAr ? 'تغيير باقة العيادة' : 'Change Clinic Package')}</h2>
+            <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">${isAr ? 'سيتم تحديث الحصص (المستخدمين، المرضى) وتاريخ الانتهاء تلقائياً بناءً على الباقة الجديدة.' : 'Limits and expiration date will update automatically.'}</p>
+            
+            <input type="hidden" id="edit_pkg_clinic_id" value="${clinicId}">
+            
+            <div class="form-group">
+                <label style="font-weight: bold; margin-bottom: 5px; display: block;">${c.lblSelectPkg || (isAr ? 'اختر الباقة الجديدة' : 'Select New Package')}</label>
+                <select id="new_pkg_select" class="search-box" style="direction: ${isAr ? 'rtl' : 'ltr'}; margin-bottom: 20px; width: 100%;">
+                    <option value="trial_7">${c.pkgStart || 'تجريبي (7 أيام)'}</option>
+                    <option value="monthly">${c.pkgPro || 'شهري (Clinic Pro)'}</option>
+                    <option value="quarterly">${c.pkgGrowth || 'ربع سنوي (Growth)'}</option>
+                    <option value="yearly">${c.pkgElite || 'سنوي (Elite)'}</option>
+                    <option value="lifetime">${c.pkgLife || 'مدى الحياة (Lifetime)'}</option>
+                </select>
+            </div>
+            
+            <button class="btn-primary" style="width: 100%; justify-content: center; background: #8b5cf6; border: none; font-size: 16px;" onclick="saveNewPackage()">${c.btnSavePkg || (isAr ? 'حفظ وتفعيل الباقة 🚀' : 'Save & Activate 🚀')}</button>
+        </div>
+    `;
     modal.style.display = 'flex';
-}
-
-// ==========================================
-// 🔴 دوال مودال تغيير الباقة 🔴
-// ==========================================
-function openChangePackageModal(clinicId) {
-    document.getElementById('edit_pkg_clinic_id').value = clinicId;
-    // التأكد إن المودال هيفتح
-    const modal = document.getElementById('changePackageModal');
-    if(modal) modal.style.display = 'flex';
-}
-
-function closeChangePackageModal() {
-    const modal = document.getElementById('changePackageModal');
-    if(modal) modal.style.display = 'none';
 }
 
 async function saveNewPackage() {
@@ -1282,30 +1273,28 @@ async function saveNewPackage() {
     const newPkg = document.getElementById('new_pkg_select').value;
     if(!clinicId || !newPkg) return;
 
-    if(window.showLoader) window.showLoader("جاري تغيير الباقة وتحديث الحصص...");
+    const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
+    if(window.showLoader) window.showLoader(isAr ? "جاري تغيير الباقة وتحديث الحصص..." : "Updating package & limits...");
     
     try {
-        // 1. تحديد الحصص الجديدة بناءً على الباقة المختارة
         let maxU = 3, maxP = 500, maxW = 50, monthsToAdd = 0;
         
         if(newPkg === 'trial_7') { maxU = 3; maxP = 500; maxW = 50; } 
         else if(newPkg === 'monthly') { maxU = 5; maxP = 10000; maxW = 500; monthsToAdd = 1; }
         else if(newPkg === 'quarterly') { maxU = 10; maxP = 20000; maxW = 2000; monthsToAdd = 3; }
         else if(newPkg === 'yearly') { maxU = 25; maxP = 50000; maxW = 5000; monthsToAdd = 12; }
-        else if(newPkg === 'lifetime') { maxU = 50; maxP = 100000; maxW = 10000; monthsToAdd = 1200; } // 100 سنة
+        else if(newPkg === 'lifetime') { maxU = 50; maxP = 100000; maxW = 10000; monthsToAdd = 1200; } 
 
-        // 2. حساب تاريخ الانتهاء الجديد
         const nextPayDate = new Date();
         if(newPkg === 'trial_7') {
-            nextPayDate.setDate(nextPayDate.getDate() + 7); // إضافة 7 أيام فقط
+            nextPayDate.setDate(nextPayDate.getDate() + 7); 
         } else {
-            nextPayDate.setMonth(nextPayDate.getMonth() + monthsToAdd); // إضافة الشهور
+            nextPayDate.setMonth(nextPayDate.getMonth() + monthsToAdd); 
         }
 
-        // 3. تحديث الفايربيز
         await db.collection("Clinics").doc(clinicId).update({
             package: newPkg,
-            planType: firebase.firestore.FieldValue.delete(), // تنظيف أي داتا قديمة متعارضة
+            planType: firebase.firestore.FieldValue.delete(), 
             maxUsers: maxU,
             maxPatients: maxP,
             maxWhatsapp: maxW,
@@ -1313,28 +1302,37 @@ async function saveNewPackage() {
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        closeChangePackageModal();
+        document.getElementById('dynamicPkgModal').style.display = 'none';
         if(window.hideLoader) window.hideLoader();
-        alert("✅ تم تغيير باقة العيادة وتحديث الحصص وتاريخ الانتهاء بنجاح!");
+        alert(window.superLang.msgPkgChanged || (isAr ? "✅ تم تغيير باقة العيادة وتحديث الحصص وتاريخ الانتهاء بنجاح!" : "✅ Package changed and limits updated successfully!"));
         
     } catch(e) {
         console.error("Error updating package:", e);
         if(window.hideLoader) window.hideLoader();
-        alert("❌ حدث خطأ أثناء تغيير الباقة");
+        alert(window.superLang.msgPkgErr || (isAr ? "❌ حدث خطأ أثناء تغيير الباقة" : "❌ Error changing package"));
     }
 }
 
 async function markAsPaid(clinicId) {
     if(confirm(window.superLang.msgConfirmPaid)) {
-        if (window.showLoader) window.showLoader(document.body.dir === 'rtl' ? "جاري التجديد..." : "Renewing...");
+        const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
+        if (window.showLoader) window.showLoader(isAr ? "جاري التجديد..." : "Renewing...");
         try {
+            const clinic = allClinicsList.find(c => c.id === clinicId);
+            let monthsToAdd = 1;
+            if(clinic) {
+                if(clinic.package === 'quarterly') monthsToAdd = 3;
+                else if(clinic.package === 'yearly') monthsToAdd = 12;
+                else if(clinic.package === 'lifetime') monthsToAdd = 1200;
+            }
+            
             const newNextPay = new Date();
-            newNextPay.setMonth(newNextPay.getMonth() + 1); 
+            newNextPay.setMonth(newNextPay.getMonth() + monthsToAdd); 
             
             await db.collection("Clinics").doc(clinicId).update({ 
                 status: 'active',
                 nextPaymentDate: newNextPay,
-                package: 'monthly' 
+                package: clinic ? clinic.package : 'monthly' 
             });
         } catch (e) {
             console.error(e);
@@ -1346,7 +1344,8 @@ async function markAsPaid(clinicId) {
 
 async function toggleSubscription(clinicId, newStatus) {
     if(confirm(window.superLang.msgConfirmToggle)) {
-        if (window.showLoader) window.showLoader(document.body.dir === 'rtl' ? "جاري تغيير الحالة..." : "Updating status...");
+        const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
+        if (window.showLoader) window.showLoader(isAr ? "جاري تغيير الحالة..." : "Updating status...");
         try {
             await db.collection("Clinics").doc(clinicId).update({ status: newStatus });
         } catch (e) {
@@ -1357,19 +1356,17 @@ async function toggleSubscription(clinicId, newStatus) {
     }
 }
 
-// 🔴 تعديل الدالة لتمسح العيادة نهائياً من الـ Database 🔴
 async function deleteClinic(clinicId, accessCode) {
     const code = prompt(window.superLang.msgWarnDel);
     if (code === '1234') {
-        if (window.showLoader) window.showLoader(document.body.dir === 'rtl' ? "جاري مسح العيادة نهائياً..." : "Deleting clinic...");
+        const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
+        if (window.showLoader) window.showLoader(isAr ? "جاري مسح العيادة نهائياً..." : "Deleting clinic...");
         try {
-            // مسح العيادة من قاعدة البيانات
             await db.collection("Clinics").doc(clinicId).delete();
-            // مسح كود الدخول عشان ميقدرش يعمل Login
             if(accessCode && accessCode !== "") {
                 await db.collection("clinicId").doc(accessCode).delete();
             }
-            alert(window.superLang.msgDelSuccess + "\n\nملاحظة: إذا كان الدكتور متصلاً الآن، سيقوم (نظام الحماية) بطرده تلقائياً بمجرد تحديث صفحته.");
+            alert(window.superLang.msgDelSuccess + (isAr ? "\n\nملاحظة: إذا كان الدكتور متصلاً الآن، سيقوم (نظام الحماية) بطرده تلقائياً بمجرد تحديث صفحته." : "\n\nNote: If doctor is online, they will be force logged out automatically."));
         } catch (e) {
             console.error(e);
         } finally {
@@ -1530,7 +1527,7 @@ async function saveOverride(e) {
         closeClinicDetailsModal(); 
     } catch (err) {
         console.error(err);
-        alert("Error saving overrides");
+        alert(isAr ? "حدث خطأ أثناء الحفظ" : "Error saving overrides");
     } finally {
         if (window.hideLoader) window.hideLoader();
     }
@@ -1576,7 +1573,6 @@ function updateMRRStats() {
     });
 }
 
-// 🔴 تعديل دالة الإذاعة المركزية (Dropdown Targeting) 🔴
 async function sendGlobalAnnouncement() {
     const msgBox = document.getElementById('global_announcement_msg');
     const msg = msgBox.value.trim();
@@ -1613,7 +1609,7 @@ async function sendGlobalAnnouncement() {
             const notifRef = db.collection("Notifications").doc(); 
             batch.set(notifRef, {
                 clinicId: clinic.id,
-                branchId: 'main', // 🔴 ضمان الوصول للفرع الرئيسي للعيادة
+                branchId: 'main', 
                 title: isAr ? "رسالة من الإدارة (NivaDent)" : "System Announcement",
                 message: msg,
                 type: type,
@@ -1640,20 +1636,20 @@ async function sendGlobalAnnouncement() {
     }
 }
 
-// 🔴 دوال الشات المباشر (المراسلة مع العيادات) 🔴
 let currentChatUnsubscribe = null;
 function loadClinicChat() {
+    const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
     const clinicId = document.getElementById('chat_clinic_select').value;
     const chatArea = document.getElementById('chat_messages_area');
     
     if(!clinicId) {
-        chatArea.innerHTML = '<div style="text-align:center; color:#94a3b8; margin: auto; font-size: 18px;">💬 اختر عيادة لبدء المحادثة</div>';
+        chatArea.innerHTML = `<div style="text-align:center; color:#94a3b8; margin: auto; font-size: 18px;">💬 ${isAr?'اختر عيادة لبدء المحادثة':'Select a clinic to chat'}</div>`;
         return;
     }
     
     if(currentChatUnsubscribe) currentChatUnsubscribe();
     
-    chatArea.innerHTML = '<div style="text-align:center; color:#94a3b8; margin: auto;">جاري تحميل المحادثة...</div>';
+    chatArea.innerHTML = `<div style="text-align:center; color:#94a3b8; margin: auto;">${isAr?'جاري تحميل المحادثة...':'Loading chat...'}</div>`;
     
     currentChatUnsubscribe = db.collection("LiveChats")
         .where("clinicId", "==", clinicId)
@@ -1661,7 +1657,7 @@ function loadClinicChat() {
         .onSnapshot(snap => {
             chatArea.innerHTML = '';
             if(snap.empty) {
-                chatArea.innerHTML = '<div style="text-align:center; color:#94a3b8; margin: auto;">لا توجد رسائل سابقة. ابدأ المحادثة الآن!</div>';
+                chatArea.innerHTML = `<div style="text-align:center; color:#94a3b8; margin: auto;">${isAr?'لا توجد رسائل سابقة. ابدأ المحادثة الآن!':'No previous messages. Start chatting now!'}</div>`;
                 return;
             }
             snap.forEach(doc => {
@@ -1673,36 +1669,36 @@ function loadClinicChat() {
                     <div style="max-width: 70%; padding: 12px 15px; border-radius: 12px; ${alignStyles} box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
                         <div style="font-size: 11px; font-weight: bold; margin-bottom: 5px; opacity: 0.9;">${msg.senderName || '---'}</div>
                         <div style="font-size: 15px; line-height: 1.4;">${msg.text}</div>
-                        <div style="font-size: 10px; opacity: 0.7; margin-top: 5px; text-align: ${isSuperAdmin?'right':'left'};">${msg.createdAt ? new Date(msg.createdAt.toDate()).toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'}) : ''}</div>
+                        <div style="font-size: 10px; opacity: 0.7; margin-top: 5px; text-align: ${isSuperAdmin?'right':'left'};">${msg.createdAt ? new Date(msg.createdAt.toDate()).toLocaleTimeString(isAr?'ar-EG':'en-US', {hour: '2-digit', minute:'2-digit'}) : ''}</div>
                     </div>
                 `;
             });
-            chatArea.scrollTop = chatArea.scrollHeight; // النزول لآخر رسالة
+            chatArea.scrollTop = chatArea.scrollHeight; 
         });
 }
 
 async function sendAdminChatMessage() {
+    const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
     const clinicId = document.getElementById('chat_clinic_select').value;
     const input = document.getElementById('chat_msg_input');
     const text = input.value.trim();
     
     if(!clinicId || !text) return;
-    input.value = ''; // تفريغ الصندوق فوراً للشعور بالسرعة
+    input.value = ''; 
     
     try {
         await db.collection("LiveChats").add({
             clinicId: clinicId,
             text: text,
             senderRole: 'superadmin',
-            senderName: 'NivaDent Support 🛡️',
+            senderName: isAr ? 'دعم NivaDent 🛡️' : 'NivaDent Support 🛡️',
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         
-        // إرسال إشعار صامت للعيادة يبلغهم بوجود رسالة جديدة
         await db.collection("Notifications").add({
             clinicId: clinicId,
             branchId: 'main',
-            title: "رسالة جديدة من الإدارة 💬",
+            title: isAr ? "رسالة جديدة من الإدارة 💬" : "New message from Support 💬",
             message: text.length > 30 ? text.substring(0, 30) + '...' : text,
             type: "chat",
             isRead: false,
@@ -1711,13 +1707,10 @@ async function sendAdminChatMessage() {
         
     } catch(e) { 
         console.error("Chat Error:", e); 
-        alert("حدث خطأ أثناء إرسال الرسالة."); 
+        alert(isAr ? "حدث خطأ أثناء إرسال الرسالة." : "Error sending message."); 
     }
 }
 
-// ==========================================
-// 🛡️ إدارة فريق نظام NivaDent (Super Admin Roles)
-// ==========================================
 function loadNivaTeam() {
     if (currentNivaRole !== 'owner') {
         const teamTab = document.getElementById('tab-team');
@@ -1727,23 +1720,24 @@ function loadNivaTeam() {
 
     db.collection("NivaAdmins").onSnapshot(snap => {
         const tbody = document.getElementById('nivaTeamBody');
+        const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
         if (!tbody) return;
         tbody.innerHTML = '';
 
         if (snap.empty) {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #64748b;">لا يوجد موظفين حالياً.</td></tr>';
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #64748b;">${isAr?'لا يوجد موظفين حالياً.':'No staff members.'}</td></tr>`;
             return;
         }
 
         snap.forEach(doc => {
             const admin = doc.data();
             const email = doc.id;
-            let roleStr = admin.role === 'sales' ? 'مبيعات (Sales)' : (admin.role === 'support' ? 'دعم فني (Support)' : 'مدير (Owner)');
+            let roleStr = admin.role === 'sales' ? (isAr?'مبيعات (Sales)':'Sales') : (admin.role === 'support' ? (isAr?'دعم فني (Support)':'Support') : (isAr?'مدير (Owner)':'Owner'));
             
             let dateStr = '---';
             if(admin.addedAt) {
                 const d = typeof admin.addedAt.toDate === 'function' ? admin.addedAt.toDate() : new Date(admin.addedAt);
-                dateStr = d.toLocaleDateString('ar-EG');
+                dateStr = d.toLocaleDateString(isAr?'ar-EG':'en-US');
             }
 
             tbody.innerHTML += `
@@ -1752,7 +1746,7 @@ function loadNivaTeam() {
                     <td><span style="background:#e0f2fe; color:#0284c7; padding:4px 8px; border-radius:6px; font-size:13px; font-weight:bold;">${roleStr}</span></td>
                     <td style="text-align: center;">${dateStr}</td>
                     <td style="text-align: center;">
-                        <button class="btn-danger" onclick="deleteNivaAdmin('${email}')" style="background:#ef4444; border:none; padding:5px 10px; color:white; border-radius:5px; cursor:pointer;">🗑️ إزالة</button>
+                        <button class="btn-danger" onclick="deleteNivaAdmin('${email}')" style="background:#ef4444; border:none; padding:5px 10px; color:white; border-radius:5px; cursor:pointer;">🗑️ ${isAr?'إزالة':'Remove'}</button>
                     </td>
                 </tr>
             `;
@@ -1762,33 +1756,35 @@ function loadNivaTeam() {
 
 async function addNivaAdmin(e) {
     e.preventDefault();
-    if (currentNivaRole !== 'owner') { alert("غير مصرح لك!"); return; }
+    const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
+    if (currentNivaRole !== 'owner') { alert(isAr?"غير مصرح لك!":"Unauthorized!"); return; }
 
     const email = document.getElementById('niva_admin_email').value.trim().toLowerCase();
     const role = document.getElementById('niva_admin_role').value;
     const btn = document.getElementById('btn-add-niva-admin');
     
-    btn.disabled = true; btn.innerText = "جاري الإضافة...";
+    btn.disabled = true; btn.innerText = isAr?"جاري الإضافة...":"Adding...";
     try {
         await db.collection("NivaAdmins").doc(email).set({
             role: role,
             addedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
-        alert("✅ تم إضافة الموظف بنجاح للوحة السوبر أدمن!");
+        alert(isAr?"✅ تم إضافة الموظف بنجاح للوحة السوبر أدمن!":"✅ Admin added successfully!");
         document.getElementById('addNivaAdminForm').reset();
     } catch (err) {
         console.error(err);
-        alert("حدث خطأ أثناء الإضافة.");
+        alert(isAr?"حدث خطأ أثناء الإضافة.":"Error adding admin.");
     } finally {
-        btn.disabled = false; btn.innerText = "إضافة الموظف";
+        btn.disabled = false; btn.innerText = window.superLang.teamAddBtn || (isAr?"إضافة الموظف":"Add Admin");
     }
 }
 
 async function deleteNivaAdmin(email) {
+    const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
     if (currentNivaRole !== 'owner') return;
-    if (email === 'eslamhany71@gmail.com') { alert("لا يمكن حذف المالك الأساسي للنظام!"); return; }
+    if (email === 'eslamhany71@gmail.com') { alert(isAr?"لا يمكن حذف المالك الأساسي للنظام!":"Cannot delete main owner!"); return; }
 
-    if (confirm(`هل أنت متأكد من سحب الصلاحيات وإزالة الموظف (${email})؟`)) {
+    if (confirm(isAr?`هل أنت متأكد من سحب الصلاحيات وإزالة الموظف (${email})؟`:`Are you sure you want to remove admin (${email})?`)) {
         try {
             await db.collection("NivaAdmins").doc(email).delete();
         } catch (err) {
@@ -1796,9 +1792,9 @@ async function deleteNivaAdmin(email) {
         }
     }
 }
-// 📊 محرك صحة النظام والاستهلاك (System Health)
+
 function updateSystemHealth() {
-    const maxCapacity = 100; // افترض إن الباقة المجانية تستحمل 100 عيادة 
+    const maxCapacity = 100; 
     const activeClinics = allClinicsList.filter(c => c.status === 'active').length;
     
     let loadPercentage = Math.round((activeClinics / maxCapacity) * 100);
@@ -1812,18 +1808,19 @@ function updateSystemHealth() {
 
     loadText.innerText = `${loadPercentage}%`;
     loadBar.style.width = `${loadPercentage}%`;
+    const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
 
     if (loadPercentage < 50) {
         loadBar.style.background = 'linear-gradient(90deg, #10b981, #34d399)'; 
-        statusText.innerHTML = 'مستقر 🟢';
+        statusText.innerHTML = isAr ? 'مستقر 🟢' : 'Stable 🟢';
         statusText.style.color = '#34d399';
     } else if (loadPercentage < 80) {
         loadBar.style.background = '#f59e0b'; 
-        statusText.innerHTML = 'ضغط متوسط 🟡';
+        statusText.innerHTML = isAr ? 'ضغط متوسط 🟡' : 'Medium Load 🟡';
         statusText.style.color = '#f59e0b';
     } else {
         loadBar.style.background = '#ef4444'; 
-        statusText.innerHTML = 'خطر / اقترب للحد 🔴';
+        statusText.innerHTML = isAr ? 'خطر / اقترب للحد 🔴' : 'Critical Load 🔴';
         statusText.style.color = '#ef4444';
     }
 }
