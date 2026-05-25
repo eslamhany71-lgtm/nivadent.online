@@ -589,6 +589,28 @@
         </form>
     </div>
 </div>
+    <div id="changePackageModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <span class="close-modal" onclick="closeChangePackageModal()">&times;</span>
+            <h2 style="margin-top: 0; color: #0f172a;">📦 تغيير باقة العيادة</h2>
+            <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">سيتم تحديث الحصص (المستخدمين، المرضى) وتاريخ الانتهاء تلقائياً بناءً على الباقة الجديدة.</p>
+            
+            <input type="hidden" id="edit_pkg_clinic_id">
+            
+            <div class="form-group">
+                <label style="font-weight: bold; margin-bottom: 5px; display: block;">اختر الباقة الجديدة</label>
+                <select id="new_pkg_select" class="search-box" style="width: 100%;">
+                    <option value="trial_7">تجريبي (7 أيام)</option>
+                    <option value="monthly">شهري (Clinic Pro)</option>
+                    <option value="quarterly">ربع سنوي (Growth)</option>
+                    <option value="yearly">سنوي (Elite)</option>
+                    <option value="lifetime">مدى الحياة (Lifetime Partner)</option>
+                </select>
+            </div>
+            
+            <button class="btn-primary" onclick="saveNewPackage()" style="width: 100%; justify-content: center; background: #8b5cf6; border: none; margin-top: 15px;">حفظ وتفعيل الباقة 🚀</button>
+        </div>
+    </div>
 
     <script src="js/firebase-config.js"></script>
     <script src="js/super-admin.js"></script>
