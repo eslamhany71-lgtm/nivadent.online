@@ -184,15 +184,42 @@
                   لغرض جعل الواجهة تعمل فوراً وتنتظر رد السيرفر بأمان بنكي كامل:
                 */
                 
-                // هنا سنقوم بمحاكاة نداء السيرفر السحابي المحمي (نستبدله برابط الـ Webhook الفعلي لاحقاً)
-                const mockPaymentKeyRequest = await new Promise((resolve) => {
-                    setTimeout(() => {
-                        // كود الـ Token المولد من بوابة بيموب الإلكترونية الرسمية
-                        resolve({ success: true, token: "ZXlKaGJHY2lPaUpTVXpJMU5pSjku..." });
-                    }, 2500);
-                });
+const paymentResponse = await fetch(
+'https://nivadent-payments.eslamhany71.workers.dev/',
+{
+    method:'POST',
 
-                if (mockPaymentKeyRequest.success) {
+    headers:{
+        'Content-Type':'application/json'
+    },
+
+    body:JSON.stringify({
+
+        amount:plan.price,
+
+        clinicId:clinicId,
+
+        email:userEmail,
+
+        planId:plan.planId
+
+    })
+});
+
+const paymentData = await paymentResponse.json();
+
+console.log("PAYMENT RESPONSE:", paymentData);
+
+if(!paymentData.success){
+
+throw new Error(
+paymentData.error ||
+"Failed generating payment session"
+);
+
+}
+
+                if (paymentData.success) {
                     // إخفاء شاشة الانتظار
                     document.getElementById('gateway-loading-screen').style.display = 'none';
                     
@@ -201,7 +228,7 @@
                     
                     // هنا يتم وضع رابط الـ iframe الخاص بحساب Paymob وتمرير الـ token المولد
                     // مثال لرابط بيموب: https://egypt.paymob.com/api/acceptance/iframes/{{IFRAME_ID}}?payment_token={{TOKEN}}
-                    iframeContainer.src = `https://egypt.paymob.com/api/acceptance/iframes/123456?payment_token=${mockPaymentKeyRequest.token}`;
+                    iframeContainer.src = `https://accept.paymob.com/api/acceptance/iframes/${paymentData.iframeId}?payment_token=${paymentData.paymentToken}`;
                     iframeContainer.style.display = 'block';
                 }
 
