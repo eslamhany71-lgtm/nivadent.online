@@ -1229,7 +1229,7 @@ async function confirmUpgradeTrial(e) {
     }
 }
 
-// 🔴 مودال تغيير الباقة الموحد والديناميكي (الدمج الجذري لضمان الترابط) 🔴
+// 🔴 مودال تغيير الباقة الموحد والديناميكي 🔴
 function openChangePackageModal(clinicId) {
     const lang = localStorage.getItem('preferredLang') || 'ar';
     const isAr = lang === 'ar';
@@ -1249,11 +1249,11 @@ function openChangePackageModal(clinicId) {
             <h2 style="margin-bottom: 20px; color: #0f172a;">📦 ${c.btnPkgChange || (isAr ? 'تغيير باقة العيادة' : 'Change Clinic Package')}</h2>
             <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">${isAr ? 'سيتم تحديث الحصص (المستخدمين، المرضى) وتاريخ الانتهاء تلقائياً بناءً على الباقة الجديدة.' : 'Limits and expiration date will update automatically.'}</p>
             
-            <input type="hidden" id="edit_pkg_clinic_id" value="${clinicId}">
+            <input type="hidden" id="dyn_edit_pkg_clinic_id" value="${clinicId}">
             
             <div class="form-group">
                 <label style="font-weight: bold; margin-bottom: 5px; display: block;">${c.lblSelectPkg || (isAr ? 'اختر الباقة الجديدة' : 'Select New Package')}</label>
-                <select id="new_pkg_select" class="search-box" style="direction: ${isAr ? 'rtl' : 'ltr'}; margin-bottom: 20px; width: 100%;">
+                <select id="dyn_new_pkg_select" class="search-box" style="direction: ${isAr ? 'rtl' : 'ltr'}; margin-bottom: 20px; width: 100%;">
                     <option value="trial_7">${c.pkgStart || 'تجريبي (7 أيام)'}</option>
                     <option value="monthly">${c.pkgPro || 'شهري (Clinic Pro)'}</option>
                     <option value="quarterly">${c.pkgGrowth || 'ربع سنوي (Growth)'}</option>
@@ -1269,8 +1269,9 @@ function openChangePackageModal(clinicId) {
 }
 
 async function saveNewPackage() {
-    const clinicId = document.getElementById('edit_pkg_clinic_id').value;
-    const newPkg = document.getElementById('new_pkg_select').value;
+    // 🔴 بيقرا من الـ ID الجديد عشان مياخدش القيمة الفاضية
+    const clinicId = document.getElementById('dyn_edit_pkg_clinic_id').value;
+    const newPkg = document.getElementById('dyn_new_pkg_select').value;
     if(!clinicId || !newPkg) return;
 
     const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
