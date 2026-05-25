@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إتمام الدفع الآمن | NivaDent Gate</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0ea5e9;
+            --primary-dark: #0284c7;
+            --dark: #0f172a;
+            --slate: #1e293b;
+            --gray: #64748b;
+            --light-bg: #f8fafc;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --lock: #gbf7d0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
+        body { background-color: var(--light-bg); color: var(--dark); padding: 40px 20px; }
+
+        .checkout-wrapper { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 400px; gap: 30px; }
+
+        /* 🔒 الجزء الأيمن: الفاتورة والملخص */
+        .summary-box { background: white; border-radius: 16px; padding: 30px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); height: fit-content; }
+        .summary-title { font-size: 20px; font-weight: 800; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid var(--light-bg); display: flex; align-items: center; gap: 8px; }
+        
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 15px; color: var(--slate); }
+        .summary-row.total { font-size: 22px; font-weight: 900; color: var(--dark); padding-top: 15px; border-top: 2px dashed var(--border); margin-top: 15px; }
+
+        .limits-list { list-style: none; margin-top: 20px; background: var(--light-bg); padding: 15px; border-radius: 10px; font-size: 13px; color: var(--gray); }
+        .limits-list li { margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+
+        /* 💳 الجزء الأيسر: شاشة البنك وبوابة الدفع */
+        .payment-box { background: white; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column; }
+        .payment-header { background: var(--dark); color: white; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .payment-header h2 { font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+        .secure-badge { background: rgba(16, 185, 129, 0.2); color: var(--success); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; border: 1px solid var(--success); }
+
+        .payment-body { padding: 40px 30px; flex: 1; }
+
+        /* شاشة التحميل الافتراضية أثناء توليد جلسة الدفع البنكية */
+        .gateway-loader { text-align: center; padding: 60px 20px; display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        .spinner { width: 50px; height: 50px; border: 5px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+
+        /* حاوية الـ Iframe الخاص بـ Paymob */
+        #payment-iframe-container { width: 100%; height: 550px; display: none; border: none; }
+
+        /* 🛡️ شريط الأمان السفلي */
+        .security-footer { grid-column: 1 / -1; display: flex; justify-content: center; gap: 40px; margin-top: 20px; border-top: 1px solid var(--border); padding-top: 20px; flex-wrap: wrap; }
+        .security-item { display: flex; align-items: center; gap: 10px; color: var(--gray); font-size: 13px; font-weight: 500; }
+        .security-icon { font-size: 20px; color: var(--success); }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 992px) {
+            .checkout-wrapper { grid-template-columns: 1fr; }
+            .summary-box { order: -1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="checkout-wrapper">
+        
+        <div class="payment-box">
+            <div class="payment-header">
+                <h2>🔒 بوابة الدفع الإلكتروني المشفرة</h2>
+                <span class="secure-badge">اتصال آمن 256-bit SSL</span>
+            </div>
+            
+            <div class="payment-body">
+                <div class="gateway-loader" id="gateway-loading-screen">
+                    <div class="spinner"></div>
+                    <h3 style="font-weight: 800; color: var(--dark);">جاري إنشاء اتصال آمن بـ البنك...</h3>
+                    <p style="color: var(--gray); font-size: 14px;">يرجى عدم إغلاق الشاشة أو عمل تحديث، يتم الآن فحص وتأمين قنوات تحويل الأموال.</p>
+                </div>
+
+                <iframe id="payment-iframe-container" src=""></iframe>
+            </div>
+        </div>
+
+        <div class="summary-box">
+            <h3 class="summary-title">📄 ملخص الفاتورة</h3>
+            
+            <div class="summary-row">
+                <span>اسم الباقة المختارة:</span>
+                <strong id="chk-plan-name" style="color: var(--primary-dark);">---</strong>
+            </div>
+            <div class="summary-row">
+                <span>نوع الاشتراك:</span>
+                <span id="chk-plan-duration">---</span>
+            </div>
+            <div class="summary-row">
+                <span>رقم مرجع العيادة (ID):</span>
+                <span id="chk-clinic-id" style="font-family: monospace; font-weight: bold;">---</span>
+            </div>
+
+            <div class="summary-row total">
+                <span>الإجمالي المستحق:</span>
+                <div>
+                    <span id="chk-plan-price">0</span>
+                    <span style="font-size: 14px; color: var(--gray);">ج.م</span>
+                </div>
+            </div>
+
+            <ul class="limits-list">
+                <li style="font-weight: bold; color: var(--dark); margin-bottom: 10px;">📊 حدود وصلاحيات الحساب الفورية:</li>
+                <li>فروع العيادة المتاحة: <strong id="lim-branches" style="color:var(--dark);">0</strong></li>
+                <li>الحد الأقصى للمستخدمين: <strong id="lim-users" style="color:var(--dark);">0</strong></li>
+                <li>السعة الاستيعابية للمرضى: <strong id="lim-patients" style="color:var(--dark);">0</strong></li>
+                <li>رصيد رسائل الواتساب الممنوح: <strong id="lim-whatsapp" style="color:var(--dark);">0</strong></li>
+            </ul>
+        </div>
+
+        <div class="security-footer">
+            <div class="security-item">
+                <span class="security-icon">🛡️</span>
+                <span>معيار أمان البيانات العالمي <strong>PCI-DSS Certified</strong></span>
+            </div>
+            <div class="security-item">
+                <span class="security-icon">🔑</span>
+                <span>نظام التحقق الثلاثي الذكي <strong>3D Secure v2</strong></span>
+            </div>
+            <div class="security-item">
+                <span class="security-icon">💳</span>
+                <span>تشفير بيانات البطاقات بالكامل <strong>Tokenization System</strong></span>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        window.onload = async () => {
+            const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
+            
+            // 1. جلب بيانات العيادة المخزنة حالياً في المتصفح للحساب المفتوح
+            const clinicId = sessionStorage.getItem('clinicId');
+            const userEmail = sessionStorage.getItem('userEmail') || 'info@nivadent.com';
+            
+            // 2. قراءة كرتونة البيانات القادمة من صفحة الأسعارpricing.html
+            const cachedPlanData = sessionStorage.getItem('selectedCheckoutPlan');
+
+            if (!clinicId || clinicId === 'default' || !cachedPlanData) {
+                alert(isAr ? "⚠️ خطأ أمني: لم يتم العثور على جلسة اشتراك صالحة. يرجى إعادة اختيار الباقة." : "Invalid session.");
+                window.location.href = 'pricing.html';
+                return;
+            }
+
+            const plan = JSON.parse(cachedPlanData);
+
+            // 3. عرض وتعبئة تفاصيل الفاتورة على واجهة المستخدم
+            document.getElementById('chk-plan-name').innerText = plan.planId.toUpperCase();
+            document.getElementById('chk-plan-duration').innerText = plan.durationText;
+            document.getElementById('chk-clinic-id').innerText = clinicId;
+            document.getElementById('chk-plan-price').innerText = plan.price.toLocaleString();
+
+            document.getElementById('lim-branches').innerText = plan.limits.branches;
+            document.getElementById('lim-users').innerText = plan.limits.users;
+            document.getElementById('lim-patients').innerText = plan.limits.patients.toLocaleString();
+            document.getElementById('lim-whatsapp').innerText = plan.limits.whatsapp.toLocaleString();
+
+            // 4. دمج وحساب المعالج التلقائي لبوابة الدفع (Paymob Workflow Bridge)
+            if (plan.price === 0) {
+                // باقة تريال مجانية - لا داعي لتشغيل محرك البنك الإجباري
+                setTimeout(() => {
+                    alert(isAr ? "🎁 تم اختيار الباقة التجريبية بنجاح! جاري تحويلك لتفعيل الحساب..." : "Trial selected.");
+                    // سنقوم بتوجيه الطبيب لصفحة النجاح مباشرة لتحديث الـ Firestore تلقائياً
+                    window.location.href = `subscription.html?status=success&plan=${plan.planId}&pkg=${plan.packageType}&price=0`;
+                }, 1500);
+                return;
+            }
+
+            // 🔴 محرك الاتصال بـ الـ API لـ Paymob (هنا يتم إطلاق عملية الدمج الصارمة)
+            try {
+                /*
+                  خطوات الـ API لـ Paymob تتطلب حماية عالية (عبر كود Cloud Function أو سيرفر محمي):
+                  1. طلب Authentication Token باستخدام الـ API Key الخاص بحسابك في بيموب.
+                  2. إنشاء Order Registration بمرجع السعر و الـ clinicId.
+                  3. توليد Payment Key يشمل بيانات الطبيب (إيميله، الباقة المختارة، معرّف واجهة الفيزا الكود 1234 مثلاً).
+                  
+                  لغرض جعل الواجهة تعمل فوراً وتنتظر رد السيرفر بأمان بنكي كامل:
+                */
+                
+                // هنا سنقوم بمحاكاة نداء السيرفر السحابي المحمي (نستبدله برابط الـ Webhook الفعلي لاحقاً)
+                const mockPaymentKeyRequest = await new Promise((resolve) => {
+                    setTimeout(() => {
+                        // كود الـ Token المولد من بوابة بيموب الإلكترونية الرسمية
+                        resolve({ success: true, token: "ZXlKaGJHY2lPaUpTVXpJMU5pSjku..." });
+                    }, 2500);
+                });
+
+                if (mockPaymentKeyRequest.success) {
+                    // إخفاء شاشة الانتظار
+                    document.getElementById('gateway-loading-screen').style.display = 'none';
+                    
+                    // شحن وإظهار الـ Iframe المخصص للفيزا والماستركارد المؤمن التابع لـ Paymob
+                    const iframeContainer = document.getElementById('payment-iframe-container');
+                    
+                    // هنا يتم وضع رابط الـ iframe الخاص بحساب Paymob وتمرير الـ token المولد
+                    // مثال لرابط بيموب: https://egypt.paymob.com/api/acceptance/iframes/{{IFRAME_ID}}?payment_token={{TOKEN}}
+                    iframeContainer.src = `https://egypt.paymob.com/api/acceptance/iframes/123456?payment_token=${mockPaymentKeyRequest.token}`;
+                    iframeContainer.style.display = 'block';
+                }
+
+            } catch (err) {
+                console.error("Payment Gateway Connection Failed:", err);
+                alert(isAr ? "❌ فشل الاتصال بخوادم البنك المحمية. يرجى التحقق من الشبكة وإعادة المحاولة." : "Bank connection failure.");
+                window.location.href = 'pricing.html';
+            }
+        };
+    </script>
+</body>
+</html>
