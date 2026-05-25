@@ -1055,9 +1055,12 @@ function renderClinicsTable() {
     const lang = localStorage.getItem('preferredLang') || 'ar';
     const now = new Date();
 
-    const filteredClinics = allClinicsList.filter(c => {
-        if (currentActiveTab === 'trials') return c.planType === 'trial_29_days' || c.planType === 'trial_3_days';
-        return c.planType !== 'trial_29_days' && c.planType !== 'trial_3_days'; 
+const filteredClinics = allClinicsList.filter(c => {
+        // الفلتر دلوقتي بقى بيشوف بس الـ trial_7
+        const isTrial = c.package === 'trial_7'; 
+        
+        if (currentActiveTab === 'trials') return isTrial;
+        return !isTrial; 
     });
 
     if (filteredClinics.length === 0) {
@@ -1095,9 +1098,9 @@ function renderClinicsTable() {
 
         let pkgLabel = '';
         if(c.package === 'trial_7') pkgLabel = lang==='ar'?'تجريبي 7 أيام':'Trial 7';
-        else if(c.package === 'trial_14') pkgLabel = lang==='ar'?'تجريبي 14 يوم':'Trial 14';
-        else if(c.planType === 'trial_3_days') pkgLabel = lang==='ar'?'تجريبي (3 أيام)':'Trial 3';
+        else if(c.package === 'quarterly') pkgLabel = lang==='ar'?'ربع سنوي':'Quarterly';
         else if(c.package === 'yearly') pkgLabel = lang==='ar'?'سنوي':'Yearly';
+        else if(c.package === 'lifetime') pkgLabel = lang==='ar'?'مدى الحياة':'Lifetime';
         else pkgLabel = lang==='ar'?'شهري':'Monthly';
 
         let statusHtml = '';
