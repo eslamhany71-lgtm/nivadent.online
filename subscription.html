@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الاشتراك والحصص | NivaDent SaaS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0ea5e9;
+            --primary-bg: #f0f9ff;
+            --dark: #0f172a;
+            --slate: #1e293b;
+            --gray: #64748b;
+            --light-bg: #f8fafc;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --success-bg: #dcfce7;
+            --warning: #f59e0b;
+            --warning-bg: #fef3c7;
+            --danger: #ef4444;
+            --danger-bg: #fee2e2;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
+        body { background-color: var(--light-bg); color: var(--dark); padding: 30px 20px; }
+
+        .sub-container { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 25px; }
+
+        /* 👑 كارت الحالة الرئيسي */
+        .status-hero {
+            background: linear-gradient(135deg, var(--dark) 0%, #1e293b 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        .status-info h1 { font-size: 28px; font-weight: 900; margin-bottom: 5px; }
+        .status-info p { color: #94a3b8; font-size: 14px; }
+        
+        .badge-status { padding: 6px 16px; border-radius: 30px; font-size: 14px; font-weight: bold; text-transform: uppercase; }
+        .badge-active { background: var(--success-bg); color: var(--success); }
+        .badge-expired { background: var(--danger-bg); color: var(--danger); }
+        .badge-trial { background: var(--warning-bg); color: var(--warning); }
+
+        /* 📊 شبكة عدادات الحصص (Fair Usage Cards) */
+        .quota-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+        .quota-card { background: white; border-radius: 16px; padding: 25px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 12px; }
+        
+        .quota-header { display: flex; justify-content: space-between; align-items: center; color: var(--gray); font-size: 14px; font-weight: 700; }
+        .quota-icon { font-size: 20px; padding: 8px; background: var(--light-bg); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
+        
+        .quota-counter { font-size: 24px; font-weight: 900; color: var(--dark); }
+        .quota-counter span { font-size: 14px; color: var(--gray); font-weight: bold; }
+
+        /* شريط التحميل المخصص للاستهلاك */
+        .progress-bar-wrapper { width: 100%; background: #e2e8f0; height: 8px; border-radius: 10px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; width: 0%; background: var(--primary); border-radius: 10px; transition: width 1s ease-in-out; }
+
+        /* ⚙️ قسم الإجراءات السفلي */
+        .actions-box { background: white; border-radius: 16px; padding: 30px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
+        .actions-text h3 { font-size: 18px; font-weight: 800; margin-bottom: 5px; }
+        .actions-text p { font-size: 14px; color: var(--gray); }
+        
+        .btn-upgrade { background: var(--primary); color: white; border: none; padding: 14px 28px; border-radius: 12px; font-weight: bold; font-size: 15px; cursor: pointer; transition: 0.3s; text-decoration: none; box-shadow: 0 4px 10px rgba(14, 165, 233, 0.2); }
+        .btn-upgrade:hover { background: var(--primary-dark); transform: translateY(-2px); }
+
+        .back-link { display: inline-flex; align-items: center; gap: 5px; color: var(--gray); text-decoration: none; font-weight: bold; font-size: 14px; width: fit-content; transition: 0.2s; }
+        .back-link:hover { color: var(--dark); }
+
+        /* شاشة التحميل المركزية */
+        .loading-overlay { position: fixed; inset: 0; background: white; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; }
+        .spinner { width: 50px; height: 50px; border: 5px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+    <div class="loading-overlay" id="sub-loading-screen">
+        <div class="spinner"></div>
+        <h3 id="loader-text" style="font-weight: 800;">جاري قراءة وتحديث بيانات الاشتراك...</h3>
+    </div>
+
+    <div class="sub-container">
+        <a href="home.html" class="back-link">▶ العودة للوحة تحكم العيادة</a>
+
+        <div class="status-hero">
+            <div class="status-info">
+                <p style="text-transform: uppercase; letter-spacing: 1px; font-weight: bold; color: var(--primary); margin-bottom: 5px;">باقة الحساب الحالية</p>
+                <h1 id="sub-plan-title">جاري الفحص...</h1>
+                <p id="sub-expire-date">تاريخ انتهاء الاشتراك: ---</p>
+            </div>
+            <span id="sub-status-badge" class="badge-status">---</span>
+        </div>
+
+        <div class="quota-grid">
+            
+            <div class="quota-card">
+                <div class="quota-header">
+                    <span>إدارة الفروع</span>
+                    <span class="quota-icon">🏢</span>
+                </div>
+                <div class="quota-counter"><span id="cnt-branches">0</span> / <span id="max-branches">0</span> <span>فرع</span></div>
+                <div class="progress-bar-wrapper"><div class="progress-bar-fill" id="bar-branches"></div></div>
+            </div>
+
+            <div class="quota-card">
+                <div class="quota-header">
+                    <span>فريق العمل</span>
+                    <span class="quota-icon">👥</span>
+                </div>
+                <div class="quota-counter"><span id="cnt-users">0</span> / <span id="max-users">0</span> <span>موظف</span></div>
+                <div class="progress-bar-wrapper"><div class="progress-bar-fill" id="bar-users"></div></div>
+            </div>
+
+            <div class="quota-card">
+                <div class="quota-header">
+                    <span>ملفات المرضى</span>
+                    <span class="quota-icon">🩻</span>
+                </div>
+                <div class="quota-counter"><span id="cnt-patients">0</span> / <span id="max-patients">0</span> <span>مريض</span></div>
+                <div class="progress-bar-wrapper"><div class="progress-bar-fill" id="bar-patients"></div></div>
+            </div>
+
+            <div class="quota-card">
+                <div class="quota-header">
+                    <span>رسائل الواتساب</span>
+                    <span class="quota-icon">💬</span>
+                </div>
+                <div class="quota-counter"><span id="cnt-whatsapp">0</span> / <span id="max-whatsapp">0</span> <span>رسالة</span></div>
+                <div class="progress-bar-wrapper"><div class="progress-bar-fill" id="bar-whatsapp"></div></div>
+            </div>
+
+        </div>
+
+        <div class="actions-box">
+            <div class="actions-text">
+                <h3>هل كبر حجم نشاطك الطبي وتجاوزت الحصص؟</h3>
+                <p>يمكنك الترقية إلى باقة أعلى في أي وقت، وسيتم ترحيل رصيدك وأيامك الحالية تلقائياً وبأمان بنكي تام.</p>
+            </div>
+            <a href="pricing.html" class="btn-upgrade">🛡️ ترقية / تغيير الباقة الحالية</a>
+        </div>
+
+    </div>
+
+    <script src="js/firebase-config.js"></script>
+    <script>
+        const db = firebase.firestore();
+
+        window.onload = () => {
+            firebase.auth().onAuthStateChanged(async (user) => {
+                if (user) {
+                    const clinicId = sessionStorage.getItem('clinicId');
+                    if (!clinicId || clinicId === 'default') {
+                        window.location.href = 'index.html';
+                        return;
+                    }
+
+                    // 🔴 خطوة المايسترو السحرية: فحص ما إذا كان الدكتور راجع من بوابة الدفع بنجاح 🔴
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const status = urlParams.get('status');
+
+                    if (status === 'success') {
+                        document.getElementById('loader-text').innerText = "🎉 تم استلام أمر الدفع بنجاح! جاري شحن الحصص وتحديث السيرفر السحابي...";
+                        await executeAutomatedUpgrade(clinicId);
+                    }
+
+                    // شحن وقراءة البيانات وعرض العدادات الحية
+                    await renderSubscriptionDashboard(clinicId);
+                } else {
+                    window.location.href = 'index.html';
+                }
+            });
+        };
+
+        // 🔴 دالة الترقية التلقائية الفورية وتعديل الـ Firestore بدون تدخلك 🔴
+        async function executeAutomatedUpgrade(clinicId) {
+            try {
+                const cachedPlan = sessionStorage.getItem('selectedCheckoutPlan');
+                if (!cachedPlan) return;
+
+                const plan = JSON.parse(cachedPlan);
+                
+                // حساب تاريخ الانتهاء الجديد بناءً على نوع الباقة المشتراة
+                const nextPayDate = new Date();
+                if (plan.packageType === 'monthly') nextPayDate.setMonth(nextPayDate.getMonth() + 1);
+                else if (plan.packageType === 'quarterly') nextPayDate.setMonth(nextPayDate.getMonth() + 3);
+                else if (plan.packageType === 'yearly') nextPayDate.setFullYear(nextPayDate.getFullYear() + 1);
+                else if (plan.packageType === 'trial_7') nextPayDate.setDate(nextPayDate.getDate() + 7);
+                else if (plan.packageType === 'lifetime') nextPayDate.setFullYear(nextPayDate.getFullYear() + 99); // مدى الحياة
+
+                // ⚡ تحديث وثيقة العيادة بالحصص والباقة الجديدة فوراً ⚡
+                await db.collection("Clinics").doc(clinicId).update({
+                    package: plan.packageType,
+                    status: 'active',
+                    subPrice: plan.price,
+                    maxUsers: plan.limits.users,
+                    maxPatients: plan.limits.patients,
+                    maxWhatsapp: plan.limits.whatsapp,
+                    nextPaymentDate: nextPayDate,
+                    planType: firebase.firestore.FieldValue.delete(), // تنظيف حقل التريال القديم لو موجود
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                // إرسال إشعار فوري للفرع الرئيسي للعيادة للترحيب بالترقية
+                await db.collection("Notifications").add({
+                    clinicId: clinicId,
+                    branchId: 'main',
+                    title: "تم ترقية باقة العيادة بنجاح! 👑",
+                    message: `مرحباً بك في باقة ${plan.planId.toUpperCase()}! تم شحن وتحديث صلاحيات وحصص حسابك تلقائياً.`,
+                    type: "system",
+                    isRead: false,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                // تنظيف الكرتونة لمنع تكرار العملية عند عمل Refresh
+                sessionStorage.removeItem('selectedCheckoutPlan');
+                
+                // تنظيف الرابط لشكل احترافي
+                window.history.replaceState({}, document.title, window.location.pathname);
+
+            } catch (err) {
+                console.error("Automated Upgrade Engine Failure:", err);
+                alert("حدث خطأ أثناء تحديث الحصص بالسيرفر السحابي، برجاء التواصل مع الدعم الفني فوراً.");
+            }
+        }
+
+        // 📊 دالة جلب العدادات الحية وعمل الـ Count الحقيقي من قاعدة البيانات 📊
+        async function renderSubscriptionDashboard(clinicId) {
+            try {
+                // 1. قراءة وثيقة العيادة لمعرفة السعة المسموحة (Max Limits)
+                const clinicDoc = await db.collection("Clinics").doc(clinicId).get();
+                if (!clinicDoc.exists) return;
+                const cData = clinicDoc.data();
+
+                // 2. عمل جرد حقيقي وحي (Real-time Counts) من الكولكشنز لمعرفة الحالي (Current Usage)
+                const [branchesSnap, usersSnap, patientsSnap] = await Promise.all([
+                    db.collection("Branches").where("clinicId", "==", clinicId).get(),
+                    db.collection("Users").where("clinicId", "==", clinicId).get(),
+                    db.collection("Patients").where("clinicId", "==", clinicId).get()
+                ]);
+
+                const maxB = cData.maxBranches || cData.package === 'growth' ? 3 : (cData.package === 'yearly' ? 5 : (cData.package === 'lifetime' ? 10 : 1));
+                const maxU = cData.maxUsers || 3;
+                const maxP = cData.maxPatients || 500;
+                const maxW = cData.maxWhatsapp || 100;
+
+                const currentB = branchesSnap.size + 1; // +1 لحساب الفرع الرئيسي التلقائي
+                const currentU = usersSnap.size;
+                const currentP = patientsSnap.size;
+                const currentW = cData.usedWhatsapp || 0; // يتم زيادته برمجياً مع كل رسالة واتساب تطير
+
+                // 3. طباعة وتعبئة النصوص على الشاشة بجدارة واحترافية
+                let pkgName = cData.package ? cData.package.toUpperCase() : 'TRIAL';
+                if(cData.package === 'trial_7') pkgName = 'START (TRIAL)';
+                document.getElementById('sub-plan-title').innerText = `باقة ${pkgName}`;
+                
+                if (cData.nextPaymentDate) {
+                    const exp = typeof cData.nextPaymentDate.toDate === 'function' ? cData.nextPaymentDate.toDate() : new Date(cData.nextPaymentDate);
+                    document.getElementById('sub-expire-date').innerText = `تاريخ انتهاء وتجديد الاشتراك: ${exp.toLocaleDateString('ar-EG')}`;
+                }
+
+                // إدارة شارات الحساب (Active / Expired)
+                const badge = document.getElementById('sub-status-badge');
+                if (cData.status === 'active') {
+                    badge.innerText = "نشط ومؤمن ✅";
+                    badge.className = "badge-status badge-active";
+                } else if (cData.status === 'expired') {
+                    badge.innerText = "منتهي الاشتراك ⚠️";
+                    badge.className = "badge-status badge-expired";
+                } else {
+                    badge.innerText = "فترة تجريبية ⏳";
+                    badge.className = "badge-status badge-trial";
+                }
+
+                // 4. تعبئة العدادات الحية وحساب نسب الـ Progress Bars بدقة رياضية
+                const setQuota = (id, current, max, barId) => {
+                    document.getElementById(`cnt-${id}`).innerText = current.toLocaleString();
+                    document.getElementById(`max-${id}`).innerText = max.toLocaleString();
+                    let percent = Math.round((current / max) * 100);
+                    if (percent > 100) percent = 100;
+                    const fill = document.getElementById(barId);
+                    fill.style.width = `${percent}%`;
+                    
+                    // تغيير لون شريط التحميل لو الاستهلاك دخل في منطقة الخطر (أكبر من 85%)
+                    if (percent >= 85) fill.style.background = 'var(--danger)';
+                    else if (percent >= 60) fill.style.background = 'var(--warning)';
+                };
+
+                setQuota('branches', currentB, maxB, 'bar-branches');
+                setQuota('users', currentU, maxU, 'bar-users');
+                setQuota('patients', currentP, maxP, 'bar-patients');
+                setQuota('whatsapp', currentW, maxW, 'bar-whatsapp');
+
+                // إخفاء شاشة التحميل الكبرى بالكامل لتبهر عين العميل بالبيانات الحية
+                document.getElementById('sub-loading-screen').style.display = 'none';
+
+            } catch (err) {
+                console.error("Dashboard Render Error:", err);
+            }
+        }
+    </script>
+</body>
+</html>
