@@ -1262,33 +1262,65 @@ function openChangePackageModal(clinicId) {
     modal.style.display = 'flex';
 }
 
-async function confirmPackageChange() {
-    const clinicId = document.getElementById('pkg_change_clinic_id').value;
+// ==========================================
+// 🔴 دوال مودال تغيير الباقة 🔴
+// ==========================================
+function openChangePackageModal(clinicId) {
+    document.getElementById('edit_pkg_clinic_id').value = clinicId;
+    // التأكد إن المودال هيفتح
+    const modal = document.getElementById('changePackageModal');
+    if(modal) modal.style.display = 'flex';
+}
+
+function closeChangePackageModal() {
+    const modal = document.getElementById('changePackageModal');
+    if(modal) modal.style.display = 'none';
+}
+
+async function saveNewPackage() {
+    const clinicId = document.getElementById('edit_pkg_clinic_id').value;
     const newPkg = document.getElementById('new_pkg_select').value;
-    if(!clinicId) return;
+    if(!clinicId || !newPkg) return;
 
-    if (window.showLoader) window.showLoader(document.body.dir === 'rtl' ? "جاري تحديث الباقة وتفعيل العيادة..." : "Updating package...");
+    if(window.showLoader) window.showLoader("جاري تغيير الباقة وتحديث الحصص...");
+    
     try {
-        const nextPayDate = new Date();
-        if (newPkg === 'trial_7') nextPayDate.setDate(nextPayDate.getDate() + 7);
-        else if (newPkg === 'trial_14') nextPayDate.setDate(nextPayDate.getDate() + 14);
-        else if (newPkg === 'monthly') nextPayDate.setMonth(nextPayDate.getMonth() + 1);
-        else if (newPkg === 'yearly') nextPayDate.setFullYear(nextPayDate.getFullYear() + 1);
+        // 1. تحديد الحصص الجديدة بناءً على الباقة المختارة
+        let maxU = 3, maxP = 500, maxW = 50, monthsToAdd = 0;
+        
+        if(newPkg === 'trial_7') { maxU = 3; maxP = 500; maxW = 50; } 
+        else if(newPkg === 'monthly') { maxU = 5; maxP = 10000; maxW = 500; monthsToAdd = 1; }
+        else if(newPkg === 'quarterly') { maxU = 10; maxP = 20000; maxW = 2000; monthsToAdd = 3; }
+        else if(newPkg === 'yearly') { maxU = 25; maxP = 50000; maxW = 5000; monthsToAdd = 12; }
+        else if(newPkg === 'lifetime') { maxU = 50; maxP = 100000; maxW = 10000; monthsToAdd = 1200; } // 100 سنة
 
+        // 2. حساب تاريخ الانتهاء الجديد
+        const nextPayDate = new Date();
+        if(newPkg === 'trial_7') {
+            nextPayDate.setDate(nextPayDate.getDate() + 7); // إضافة 7 أيام فقط
+        } else {
+            nextPayDate.setMonth(nextPayDate.getMonth() + monthsToAdd); // إضافة الشهور
+        }
+
+        // 3. تحديث الفايربيز
         await db.collection("Clinics").doc(clinicId).update({
             package: newPkg,
+            planType: firebase.firestore.FieldValue.delete(), // تنظيف أي داتا قديمة متعارضة
+            maxUsers: maxU,
+            maxPatients: maxP,
+            maxWhatsapp: maxW,
             nextPaymentDate: nextPayDate,
-            status: 'active'
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        document.getElementById('dynamicPkgModal').style.display = 'none';
-        closeClinicDetailsModal(); 
-        alert(document.body.dir === 'rtl' ? "✅ تم تحديث الباقة وتفعيل العيادة بنجاح!" : "✅ Package updated successfully!");
+        closeChangePackageModal();
+        if(window.hideLoader) window.hideLoader();
+        alert("✅ تم تغيير باقة العيادة وتحديث الحصص وتاريخ الانتهاء بنجاح!");
+        
     } catch(e) {
-        console.error(e);
-        alert("حدث خطأ");
-    } finally {
-        if (window.hideLoader) window.hideLoader();
+        console.error("Error updating package:", e);
+        if(window.hideLoader) window.hideLoader();
+        alert("❌ حدث خطأ أثناء تغيير الباقة");
     }
 }
 
