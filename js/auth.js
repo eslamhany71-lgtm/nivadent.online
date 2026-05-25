@@ -189,16 +189,20 @@ async function registerTrialAccount(e) {
         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
         const actualEmail = userCredential.user.email;
 
+        // 🔴 تعيين فترة التجربة لـ 7 أيام فقط
         const expirationDate = new Date();
-        expirationDate.setDate(expirationDate.getDate() + 29); 
+        expirationDate.setDate(expirationDate.getDate() + 7); 
 
+        // 🔴 برمجة العيادة على باقة trial_7 وإعطاء حصص باقة Start
         const clinicRef = await db.collection("Clinics").add({
             clinicName: clinicName,
             adminEmail: actualEmail,
             phone1: phone,
             status: 'active',
-            planType: 'trial_29_days', 
-            maxUsers: 2, 
+            package: 'trial_7', // ربطها بنفس نظام السوبر أدمن
+            maxUsers: 3,        // 3 مستخدمين
+            maxPatients: 500,   // 500 مريض
+            maxWhatsapp: 50,    // 50 رسالة واتساب
             nextPaymentDate: firebase.firestore.Timestamp.fromDate(expirationDate),
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
@@ -507,12 +511,12 @@ function updatePageContent(lang) {
             brandActDesc: "يسعدنا انضمامك. قم بتفعيل حسابك للوصول إلى لوحة تحكم عيادتك وإدارة مواعيدك وملفات مرضاك بكل سهولة.", actEmail: "البريد الإلكتروني للعيادة",
             
             staffInvite: "🔑 لدي كود دعوة (تفعيل حساب موظف)",
-            btnTrialTxt: "ابدأ فترة تجريبية مجانية (29 أيام)",
+            btnTrialTxt: "ابدأ فترة تجريبية مجانية (7 أيام)", // 🔴 تعديل 7 أيام
             copyright: `© ${currentYear} Start Online Agency. جميع الحقوق محفوظة.`,
             privacy: "سياسة الخصوصية والتأمين (Privacy Policy)",
             poweredBy: "Powered by",
             mTrialTitle: "🚀 إنشاء حساب تجريبي",
-            mTrialSub: "جرب النظام بكامل مميزاته مجاناً لمدة 29 أيام",
+            mTrialSub: "جرب النظام بكامل مميزاته مجاناً لمدة 7 أيام", // 🔴 تعديل 7 أيام
             lTClinic: "اسم العيادة", pTClinic: "مثال: عيادة النور لطب الأسنان",
             lTAdmin: "اسم الطبيب / المدير", pTAdmin: "الاسم بالكامل",
             lTPhone: "رقم الموبايل للتواصل", pTPhone: "01xxxxxxxxx",
@@ -544,12 +548,12 @@ function updatePageContent(lang) {
             brandActDesc: "We are glad you joined. Activate your account to access your clinic's dashboard, manage appointments, and track patient files easily.", actEmail: "Clinic Email Address",
             
             staffInvite: "🔑 I have an invite code (Staff)",
-            btnTrialTxt: "Start Free Trial (29 Days)",
+            btnTrialTxt: "Start Free Trial (7 Days)", // 🔴 تعديل 7 أيام
             copyright: `© ${currentYear} Start Online Agency. All rights reserved.`,
             privacy: "Privacy Policy & Security",
             poweredBy: "Powered by",
             mTrialTitle: "🚀 Create Trial Account",
-            mTrialSub: "Try full features free for 29 days",
+            mTrialSub: "Try full features free for 7 days", // 🔴 تعديل 7 أيام
             lTClinic: "Clinic Name", pTClinic: "e.g., Al-Nour Dental Clinic",
             lTAdmin: "Doctor / Admin Name", pTAdmin: "Full Name",
             lTPhone: "Contact Phone", pTPhone: "01xxxxxxxxx",
