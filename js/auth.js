@@ -187,6 +187,16 @@ async function registerTrialAccount(e) {
     if (window.hideLoader) window.hideLoader();
     return; // يوقف الدالة فوراً وميخليهاش ترفع لفايربيز
 }
+    // 🔴 حارس الباسورد: منع التسجيل إذا كانت كلمة المرور لا تستوفي الشروط 🔴
+    const strongRegex = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,}$");
+    if (!strongRegex.test(password)) {
+        const isAr = document.body.dir === 'rtl';
+        alert(isAr ? "❌ كلمة المرور ضعيفة! يجب ألا تقل عن 8 أحرف، وتحتوي على حرف كبير، حرف صغير، رقم، ورمز (مثل @#$)." : "❌ Password is weak! Must be at least 8 chars, include uppercase, lowercase, number, and special character.");
+        btn.disabled = false;
+        btn.innerText = isAr ? "إنشاء الحساب وبدء التجربة" : "Create Account & Start Trial";
+        if (window.hideLoader) window.hideLoader();
+        return; 
+    }
 
     if (window.showLoader) window.showLoader("جاري تجهيز النظام لك...");
 
@@ -634,5 +644,53 @@ function togglePasswordVisibility() {
             passInput.type = 'password';
             toggleIcon.innerText = '👁️';
         }
+    }
+}
+// ==========================================
+// 🔴 دالة فحص قوة كلمة المرور الحية 🔴
+// ==========================================
+function checkPasswordStrength(password) {
+    const bar = document.getElementById('pass-strength-bar');
+    const label = document.getElementById('pass-strength-label');
+    const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
+    
+    if (!password) {
+        bar.style.width = '0%';
+        label.innerText = '';
+        return;
+    }
+
+    let strength = 0;
+    
+    // شروط القوة
+    if (password.length >= 8) strength += 1;
+    if (password.match(/[a-z]/)) strength += 1; // حرف صغير
+    if (password.match(/[A-Z]/)) strength += 1; // حرف كبير
+    if (password.match(/[0-9]/)) strength += 1; // رقم
+    if (password.match(/[^a-zA-Z0-9]/)) strength += 1; // رمز (Special Character)
+
+    // تغيير الألوان والكلمات بناءً على النتيجة
+    switch (strength) {
+        case 0:
+        case 1:
+        case 2:
+            bar.style.width = '33%';
+            bar.style.background = '#ef4444'; // أحمر
+            label.innerText = isAr ? 'ضعيفة 🔴' : 'Weak 🔴';
+            label.style.color = '#ef4444';
+            break;
+        case 3:
+        case 4:
+            bar.style.width = '66%';
+            bar.style.background = '#f59e0b'; // برتقالي
+            label.innerText = isAr ? 'متوسطة 🟡' : 'Medium 🟡';
+            label.style.color = '#f59e0b';
+            break;
+        case 5:
+            bar.style.width = '100%';
+            bar.style.background = '#10b981'; // أخضر
+            label.innerText = isAr ? 'قوية ✅' : 'Strong ✅';
+            label.style.color = '#10b981';
+            break;
     }
 }
