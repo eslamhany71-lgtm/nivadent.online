@@ -168,8 +168,11 @@ function updatePageContent(lang) {
     setTxt('nav-calendar', c.navCalendar); setTxt('nav-finances', c.navFinances); setTxt('nav-invoices', c.navInvoices); 
     setTxt('nav-inventory', c.navInventory); setTxt('nav-settings', c.navSettings); setTxt('nav-super', c.navSuper); 
     setTxt('btn-logout', c.logout);
-   const upgradeBtn = document.getElementById('btn-upgrade-header');
-    if (upgradeBtn) upgradeBtn.innerText = t.btnUpgradeHeader;
+  const upgradeBtn = document.getElementById('btn-upgrade-header');
+if (upgradeBtn) {
+    // استخدمنا || عشان لو ملقاش الكلمة في القاموس يكتب Upgrade وميكتبش undefined أبداً
+    upgradeBtn.innerText = t.btnUpgradeHeader || "Upgrade"; 
+}
     
     const itemsList = document.querySelectorAll('#nav-links li');
     itemsList.forEach(li => {
