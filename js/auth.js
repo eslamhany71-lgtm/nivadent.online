@@ -179,6 +179,15 @@ async function registerTrialAccount(e) {
     const email = document.getElementById('trial_email').value.trim().toLowerCase();
     const password = document.getElementById('trial_password').value;
 
+    if (phone.length !== 11) {
+    const isAr = document.body.dir === 'rtl';
+    alert(isAr ? "❌ رقم الموبايل يجب أن يكون 11 رقم بالضبط." : "❌ Phone number must be exactly 11 digits.");
+    btn.disabled = false;
+    btn.innerText = isAr ? "إنشاء الحساب وبدء التجربة" : "Create Account & Start Trial";
+    if (window.hideLoader) window.hideLoader();
+    return; // يوقف الدالة فوراً وميخليهاش ترفع لفايربيز
+}
+
     if (window.showLoader) window.showLoader("جاري تجهيز النظام لك...");
 
     isLoginInProgress = true;
