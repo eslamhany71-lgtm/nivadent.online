@@ -140,7 +140,8 @@ function updatePageContent(lang) {
             modSupDesc: "هل تواجه مشكلة أو تحتاج إلى إضافة ميزة جديدة للعيادة？ اكتب رسالتك وسنقوم بالرد عليك في أسرع وقت.", 
             btnSupSend: "إرسال طلب الدعم (Ticket)", rateTitle: "ما تقييمك لسيستم NivaDent؟", rateSub: "رأيك يهمنا ويساعدنا على تطوير النظام.",
             btnRevSend: "نشر التقييم ⭐", aiTitle: "المساعد الذكي Niva", aiWelcome: "مرحباً دكتور! 👋 أنا مساعدك الذكي Niva. كيف يمكنني مساعدتك اليوم?",
-            poweredBy: "Powered by", chatInputPlaceholder: "اكتب رسالتك هنا للإدارة...", btnChatSend: "إرسال 🚀"
+            poweredBy: "Powered by", chatInputPlaceholder: "اكتب رسالتك هنا للإدارة...", btnChatSend: "إرسال 🚀",
+            btnUpgradeHeader: "إدارة الاشتراك",
         },
         en: {
             header: "Dashboard", navDash: "Overview", navPatients: "Patients & X-Rays", 
@@ -156,7 +157,8 @@ function updatePageContent(lang) {
             modSupDesc: "Facing an issue or need a new feature? Write your ticket and we'll reply ASAP.", 
             btnSupSend: "Submit Support Ticket", rateTitle: "How do you rate NivaDent?", rateSub: "Your feedback helps us improve the system.",
             btnRevSend: "Post Review ⭐", aiTitle: "Niva Assistant", aiWelcome: "Hello Doctor! 👋 I'm Niva, your smart assistant. How can I help you today?",
-            poweredBy: "Powered by", chatInputPlaceholder: "Type your message to admin...", btnChatSend: "Send 🚀"
+            poweredBy: "Powered by", chatInputPlaceholder: "Type your message to admin...", btnChatSend: "Send 🚀",
+            btnUpgradeHeader: "Upgrade",
         }
     };
     const c = t[lang] || t.ar;
@@ -166,6 +168,7 @@ function updatePageContent(lang) {
     setTxt('nav-calendar', c.navCalendar); setTxt('nav-finances', c.navFinances); setTxt('nav-invoices', c.navInvoices); 
     setTxt('nav-inventory', c.navInventory); setTxt('nav-settings', c.navSettings); setTxt('nav-super', c.navSuper); 
     setTxt('btn-logout', c.logout);
+    safeSetText('btn-upgrade-header', t.btnUpgradeHeader);
     
     const itemsList = document.querySelectorAll('#nav-links li');
     itemsList.forEach(li => {
