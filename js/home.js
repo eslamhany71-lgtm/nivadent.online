@@ -168,7 +168,8 @@ function updatePageContent(lang) {
     setTxt('nav-calendar', c.navCalendar); setTxt('nav-finances', c.navFinances); setTxt('nav-invoices', c.navInvoices); 
     setTxt('nav-inventory', c.navInventory); setTxt('nav-settings', c.navSettings); setTxt('nav-super', c.navSuper); 
     setTxt('btn-logout', c.logout);
-    safeSetText('btn-upgrade-header', t.btnUpgradeHeader);
+   const upgradeBtn = document.getElementById('btn-upgrade-header');
+    if (upgradeBtn) upgradeBtn.innerText = t.btnUpgradeHeader;
     
     const itemsList = document.querySelectorAll('#nav-links li');
     itemsList.forEach(li => {
