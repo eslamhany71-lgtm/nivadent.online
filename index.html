@@ -182,10 +182,20 @@
                     <label id="lbl-t-email" style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155; font-size: 14px;">البريد الإلكتروني (للدخول)</label>
                     <input type="email" id="trial_email" required dir="ltr" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; text-align: left; font-family: inherit;">
                 </div>
-                <div class="form-group" style="margin-bottom: 25px;">
-                    <label id="lbl-t-pass" style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155; font-size: 14px;">كلمة المرور (6 أحرف أو أكثر)</label>
-                    <input type="password" id="trial_password" required dir="ltr" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; text-align: left; font-family: inherit;">
-                </div>
+<div class="form-group" style="margin-bottom: 25px;">
+    <label id="lbl-t-pass" style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155; font-size: 14px;">كلمة المرور (يجب أن تكون قوية)</label>
+    <!-- ضفنا oninput عشان يفحص الباسورد مع كل حرف بيتكتب -->
+    <input type="password" id="trial_password" required dir="ltr" oninput="checkPasswordStrength(this.value)" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; text-align: left; font-family: inherit;">
+    
+    <!-- 🔴 شريط ومؤشر قوة الباسورد 🔴 -->
+    <div style="height: 4px; background: #e2e8f0; border-radius: 4px; margin-top: 8px; overflow: hidden;">
+        <div id="pass-strength-bar" style="height: 100%; width: 0%; transition: 0.3s ease-in-out;"></div>
+    </div>
+    <div style="font-size: 11px; color: #64748b; margin-top: 5px; display: flex; justify-content: space-between; align-items: flex-start;">
+        <span style="flex: 1;">8 أحرف الأقل، وتحتوي على: (حرف كبير، حرف صغير، رقم، ورمز مثل @#$)</span>
+        <span id="pass-strength-label" style="font-weight: bold; margin-inline-start: 10px;"></span>
+    </div>
+</div>
                 
                 <input type="hidden" id="trial_max_users" value="3">
                 
