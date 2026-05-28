@@ -166,13 +166,34 @@
                     }
 
                     // 🔴 خطوة المايسترو السحرية: فحص ما إذا كان الدكتور راجع من بوابة الدفع بنجاح 🔴
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const status = urlParams.get('status');
+const urlParams = new URLSearchParams(window.location.search);
 
-                    if (status === 'success') {
-                        document.getElementById('loader-text').innerText = "🎉 تم استلام أمر الدفع بنجاح! جاري شحن الحصص وتحديث السيرفر السحابي...";
-                        await executeAutomatedUpgrade(clinicId);
-                    }
+const status = urlParams.get('status');
+
+const transactionId =
+urlParams.get('id') ||
+urlParams.get('tx_id');
+
+if(status==='success' && transactionId){
+
+    document.getElementById('loader-text').innerText =
+    "🎉 جاري التحقق البنكي وتأمين المعاملة...";
+
+    await executeAutomatedUpgrade(
+        clinicId,
+        transactionId
+    );
+
+}else if(status==='success' && !transactionId){
+
+    alert(
+    "⚠️ خطأ أمني: رقم المعاملة غير موجود."
+    );
+
+    window.location.href='pricing.html';
+
+    return;
+}
 
                     // شحن وقراءة البيانات وعرض العدادات الحية
                     await renderSubscriptionDashboard(clinicId);
@@ -183,12 +204,44 @@
         };
 
         // 🔴 دالة الترقية التلقائية الفورية وتعديل الـ Firestore بدون تدخلك 🔴
-        async function executeAutomatedUpgrade(clinicId) {
+        async function executeAutomatedUpgrade(
+    clinicId,
+    transactionId
+) {
             try {
                 const cachedPlan = sessionStorage.getItem('selectedCheckoutPlan');
                 if (!cachedPlan) return;
 
                 const plan = JSON.parse(cachedPlan);
+                const verifyResponse = await fetch(
+'https://nivadent-payments.eslamhany71.workers.dev/verify',
+{
+    method:'POST',
+
+    headers:{
+        'Content-Type':'application/json'
+    },
+
+    body:JSON.stringify({
+
+        transactionId:transactionId,
+
+        clinicId:clinicId
+    })
+}
+);
+
+const verifyData =
+await verifyResponse.json();
+
+if(!verifyData.success){
+
+    throw new Error(
+    verifyData.message ||
+    "Payment verification failed"
+    );
+
+}
                 
                 // حساب تاريخ الانتهاء الجديد بناءً على نوع الباقة المشتراة
                 const nextPayDate = new Date();
@@ -207,6 +260,7 @@
                     maxPatients: plan.limits.patients,
                     maxWhatsapp: plan.limits.whatsapp,
                     nextPaymentDate: nextPayDate,
+                    lastTransactionId: transactionId,
                     planType: firebase.firestore.FieldValue.delete(), // تنظيف حقل التريال القديم لو موجود
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
