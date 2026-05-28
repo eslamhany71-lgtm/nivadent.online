@@ -156,7 +156,7 @@
     <script>
         const db = firebase.firestore();
 
-        window.onload = () => {
+window.onload = () => {
             firebase.auth().onAuthStateChanged(async (user) => {
                 if (user) {
                     const clinicId = sessionStorage.getItem('clinicId');
@@ -165,43 +165,31 @@
                         return;
                     }
 
-                    // 🔴 خطوة المايسترو السحرية: فحص ما إذا كان الدكتور راجع من بوابة الدفع بنجاح 🔴
-const urlParams = new URLSearchParams(window.location.search);
+                    const urlParams = new URLSearchParams(window.location.search);
+                    // 🔴 التعديل هنا: فحص القيمة "true" اللي بيبعتها بيموب
+                    const status = urlParams.get('success'); 
+                    const transactionId = urlParams.get('id') || urlParams.get('tx_id');
 
-const status = urlParams.get('success');
+                    console.log("🔍 URL Status:", status); // كشاف عشان نشوف بيموب بعت إيه
+                    console.log("🔍 Transaction ID:", transactionId);
 
-const transactionId =
-urlParams.get('id') ||
-urlParams.get('tx_id');
+                    // 🔴 تم تعديل الشرط عشان يقبل "true" أو "success"
+                    if ((status === 'true' || status === 'success') && transactionId) {
+                        document.getElementById('loader-text').innerText = "🎉 جاري التحقق البنكي وتأمين المعاملة...";
+                        await executeAutomatedUpgrade(clinicId, transactionId);
+                    } 
+                    else if (status === 'true' && !transactionId) {
+                        alert("⚠️ خطأ أمني: رقم المعاملة غير موجود في الرابط.");
+                        window.location.href = 'pricing.html';
+                        return;
+                    }
 
-if(status==='success' && transactionId){
-
-    document.getElementById('loader-text').innerText =
-    "🎉 جاري التحقق البنكي وتأمين المعاملة...";
-
-    await executeAutomatedUpgrade(
-        clinicId,
-        transactionId
-    );
-
-}else if(status==='success' && !transactionId){
-
-    alert(
-    "⚠️ خطأ أمني: رقم المعاملة غير موجود."
-    );
-
-    window.location.href='pricing.html';
-
-    return;
-}
-
-                    // شحن وقراءة البيانات وعرض العدادات الحية
                     await renderSubscriptionDashboard(clinicId);
                 } else {
                     window.location.href = 'index.html';
                 }
             });
-        };
+        };;
 
         // 🔴 دالة الترقية التلقائية الفورية وتعديل الـ Firestore بدون تدخلك 🔴
         async function executeAutomatedUpgrade(
