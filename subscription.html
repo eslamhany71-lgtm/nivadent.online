@@ -193,23 +193,23 @@ window.onload = () => {
 
         // 🔴 دالة الترقية التلقائية الفورية وتعديل الـ Firestore بدون تدخلك 🔴
 // 🔴 دالة الترقية المؤمنة بالكامل ضد التلاعب والسرقة 🔴
-        async function executeAutomatedUpgrade(clinicId, transactionId) {
+async function executeAutomatedUpgrade(clinicId, transactionId) {
             try {
                 const cachedPlan = sessionStorage.getItem('selectedCheckoutPlan');
                 if (!cachedPlan) return;
 
                 const plan = JSON.parse(cachedPlan);
 
-                // 1. جلب بيانات العيادة الحالية للفحص الأمني
                 const clinicRef = db.collection("Clinics").doc(clinicId);
                 const clinicDoc = await clinicRef.get();
                 const cData = clinicDoc.data();
 
-                // 2. الفحص الذكي: هل دي فترة مجانية ولا دفع حقيقي؟
+                // 🛡️ لو العيادة مسجلة قديم ومعندهاش كود، نولد لها واحد احتياطي
+                const accessCode = cData.accessCode || Math.floor(10000 + Math.random() * 90000).toString();
+
                 const isTrial = transactionId.startsWith('TRIAL_');
 
                 if (!isTrial) {
-                    // دفع حقيقي: التحقق الصارم من بيموب عبر الـ Worker
                     const verifyResponse = await fetch('https://nivadent-payments.eslamhany71.workers.dev/verify', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -218,15 +218,13 @@ window.onload = () => {
                     const verifyData = await verifyResponse.json();
                     if (!verifyData.success) throw new Error(verifyData.message || "Payment verification failed");
                 } else {
-                    // فترة مجانية: الفحص الأمني لمنع الاستغلال (Stealing Prevention)
                     if (cData.hasUsedTrial === true) {
-                        alert("⚠️ عذراً! هذه العيادة استهلكت بالفعل فترتها التجريبية المجانية من قبل. يرجى الترقية لباقة مدفوعة للاستمرار.");
+                        alert("⚠️ عذراً! هذه العيادة استهلكت بالفعل فترتها التجريبية المجانية من قبل.");
                         window.location.href = 'pricing.html';
-                        return; // وقف العملية فوراً ومفيش تجديد
+                        return;
                     }
                 }
 
-                // 3. حساب تاريخ الانتهاء
                 const nextPayDate = new Date();
                 if (plan.packageType === 'monthly') nextPayDate.setMonth(nextPayDate.getMonth() + 1);
                 else if (plan.packageType === 'quarterly') nextPayDate.setMonth(nextPayDate.getMonth() + 3);
@@ -234,7 +232,6 @@ window.onload = () => {
                 else if (plan.packageType === 'trial_7') nextPayDate.setDate(nextPayDate.getDate() + 7);
                 else if (plan.packageType === 'lifetime') nextPayDate.setFullYear(nextPayDate.getFullYear() + 99);
 
-                // 4. تحديث بيانات العيادة وختمها أمنياً
                 await clinicRef.update({
                     package: plan.packageType,
                     status: 'active',
@@ -244,26 +241,29 @@ window.onload = () => {
                     maxWhatsapp: plan.limits.whatsapp,
                     nextPaymentDate: nextPayDate,
                     lastTransactionId: transactionId,
-                    hasUsedTrial: true, // 🔴 الخاتم الأمني: هيمنعه من الاستخدام المجاني مرة تانية للأبد
+                    accessCode: accessCode, // تأكيد حفظ الكود في وثيقة العيادة
+                    hasUsedTrial: true,
                     planType: firebase.firestore.FieldValue.delete(),
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                // 5. تسجيل العيادة في سجل الدخول (clinicId)
-                await db.collection("clinicId").doc(clinicId).set({
+                // 🔴 التعديل الجوهري هنا: حفظ المستند برقم الـ accessCode (الـ 5 أرقام) مش الـ ID الطويل 🔴
+                await db.collection("clinicId").doc(accessCode).set({
                     clinicId: clinicId,
                     clinicName: cData.clinicName || "عيادة بدون اسم",
                     email: cData.adminEmail || "",
+                    phone: cData.phone1 || "01000000000",
                     status: "active",
-                    registeredAt: firebase.firestore.FieldValue.serverTimestamp()
+                    role: "admin",
+                    activated: true,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
 
-                // 6. إرسال إشعار الترحيب
                 await db.collection("Notifications").add({
                     clinicId: clinicId,
                     branchId: 'main',
                     title: "تم تفعيل الباقة بنجاح! 👑",
-                    message: `مرحباً بك في باقة ${plan.planId.toUpperCase()}! تم شحن وتحديث صلاحيات وحصص حسابك تلقائياً.`,
+                    message: `مرحباً بك في باقة ${plan.planId.toUpperCase()}! كود العيادة الخاص بك هو ${accessCode}`,
                     type: "system",
                     isRead: false,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -271,11 +271,11 @@ window.onload = () => {
 
                 sessionStorage.removeItem('selectedCheckoutPlan');
                 window.history.replaceState({}, document.title, window.location.pathname);
-                alert("✅ تم التفعيل بنجاح!");
+                alert(`✅ تم الترقية وتأمين حساب عيادتك بنجاح!\n🔑 كود العيادة الخاص بك هو: [ ${accessCode} ]`);
 
             } catch (err) {
                 console.error("Automated Upgrade Engine Failure:", err);
-                alert("حدث خطأ تقني، يرجى المحاولة مرة أخرى أو التواصل مع الدعم.");
+                alert("حدث خطأ تقني، يرجى المحاولة مرة أخرى.");
             }
         }
 
