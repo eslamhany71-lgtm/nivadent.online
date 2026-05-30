@@ -192,82 +192,92 @@ window.onload = () => {
         };;
 
         // 🔴 دالة الترقية التلقائية الفورية وتعديل الـ Firestore بدون تدخلك 🔴
-async function executeAutomatedUpgrade(clinicId, transactionId) {
-    try {
-        const cachedPlan = sessionStorage.getItem('selectedCheckoutPlan');
-        if (!cachedPlan) return;
+// 🔴 دالة الترقية المؤمنة بالكامل ضد التلاعب والسرقة 🔴
+        async function executeAutomatedUpgrade(clinicId, transactionId) {
+            try {
+                const cachedPlan = sessionStorage.getItem('selectedCheckoutPlan');
+                if (!cachedPlan) return;
 
-        const plan = JSON.parse(cachedPlan);
+                const plan = JSON.parse(cachedPlan);
 
-        // 1. التحقق من الدفع (كما هو)
-        const verifyResponse = await fetch('https://nivadent-payments.eslamhany71.workers.dev/verify', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ transactionId: transactionId, clinicId: clinicId })
-        });
+                // 1. جلب بيانات العيادة الحالية للفحص الأمني
+                const clinicRef = db.collection("Clinics").doc(clinicId);
+                const clinicDoc = await clinicRef.get();
+                const cData = clinicDoc.data();
 
-        const verifyData = await verifyResponse.json();
-        if (!verifyData.success) {
-            throw new Error(verifyData.message || "Payment verification failed");
+                // 2. الفحص الذكي: هل دي فترة مجانية ولا دفع حقيقي؟
+                const isTrial = transactionId.startsWith('TRIAL_');
+
+                if (!isTrial) {
+                    // دفع حقيقي: التحقق الصارم من بيموب عبر الـ Worker
+                    const verifyResponse = await fetch('https://nivadent-payments.eslamhany71.workers.dev/verify', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ transactionId: transactionId, clinicId: clinicId })
+                    });
+                    const verifyData = await verifyResponse.json();
+                    if (!verifyData.success) throw new Error(verifyData.message || "Payment verification failed");
+                } else {
+                    // فترة مجانية: الفحص الأمني لمنع الاستغلال (Stealing Prevention)
+                    if (cData.hasUsedTrial === true) {
+                        alert("⚠️ عذراً! هذه العيادة استهلكت بالفعل فترتها التجريبية المجانية من قبل. يرجى الترقية لباقة مدفوعة للاستمرار.");
+                        window.location.href = 'pricing.html';
+                        return; // وقف العملية فوراً ومفيش تجديد
+                    }
+                }
+
+                // 3. حساب تاريخ الانتهاء
+                const nextPayDate = new Date();
+                if (plan.packageType === 'monthly') nextPayDate.setMonth(nextPayDate.getMonth() + 1);
+                else if (plan.packageType === 'quarterly') nextPayDate.setMonth(nextPayDate.getMonth() + 3);
+                else if (plan.packageType === 'yearly') nextPayDate.setFullYear(nextPayDate.getFullYear() + 1);
+                else if (plan.packageType === 'trial_7') nextPayDate.setDate(nextPayDate.getDate() + 7);
+                else if (plan.packageType === 'lifetime') nextPayDate.setFullYear(nextPayDate.getFullYear() + 99);
+
+                // 4. تحديث بيانات العيادة وختمها أمنياً
+                await clinicRef.update({
+                    package: plan.packageType,
+                    status: 'active',
+                    subPrice: plan.price,
+                    maxUsers: plan.limits.users,
+                    maxPatients: plan.limits.patients,
+                    maxWhatsapp: plan.limits.whatsapp,
+                    nextPaymentDate: nextPayDate,
+                    lastTransactionId: transactionId,
+                    hasUsedTrial: true, // 🔴 الخاتم الأمني: هيمنعه من الاستخدام المجاني مرة تانية للأبد
+                    planType: firebase.firestore.FieldValue.delete(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                // 5. تسجيل العيادة في سجل الدخول (clinicId)
+                await db.collection("clinicId").doc(clinicId).set({
+                    clinicId: clinicId,
+                    clinicName: cData.clinicName || "عيادة بدون اسم",
+                    email: cData.adminEmail || "",
+                    status: "active",
+                    registeredAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+
+                // 6. إرسال إشعار الترحيب
+                await db.collection("Notifications").add({
+                    clinicId: clinicId,
+                    branchId: 'main',
+                    title: "تم تفعيل الباقة بنجاح! 👑",
+                    message: `مرحباً بك في باقة ${plan.planId.toUpperCase()}! تم شحن وتحديث صلاحيات وحصص حسابك تلقائياً.`,
+                    type: "system",
+                    isRead: false,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                sessionStorage.removeItem('selectedCheckoutPlan');
+                window.history.replaceState({}, document.title, window.location.pathname);
+                alert("✅ تم التفعيل بنجاح!");
+
+            } catch (err) {
+                console.error("Automated Upgrade Engine Failure:", err);
+                alert("حدث خطأ تقني، يرجى المحاولة مرة أخرى أو التواصل مع الدعم.");
+            }
         }
-
-        // 2. جلب بيانات العيادة الحالية عشان نسجلها في السجل
-        const clinicRef = db.collection("Clinics").doc(clinicId);
-        const clinicDoc = await clinicRef.get();
-        const cData = clinicDoc.data();
-
-        // 3. حساب تاريخ الانتهاء
-        const nextPayDate = new Date();
-        if (plan.packageType === 'monthly') nextPayDate.setMonth(nextPayDate.getMonth() + 1);
-        else if (plan.packageType === 'quarterly') nextPayDate.setMonth(nextPayDate.getMonth() + 3);
-        else if (plan.packageType === 'yearly') nextPayDate.setFullYear(nextPayDate.getFullYear() + 1);
-        else if (plan.packageType === 'trial_7') nextPayDate.setDate(nextPayDate.getDate() + 7);
-        else if (plan.packageType === 'lifetime') nextPayDate.setFullYear(nextPayDate.getFullYear() + 99);
-
-        // 4. تحديث العيادة
-        await clinicRef.update({
-            package: plan.packageType,
-            status: 'active',
-            subPrice: plan.price,
-            maxUsers: plan.limits.users,
-            maxPatients: plan.limits.patients,
-            maxWhatsapp: plan.limits.whatsapp,
-            nextPaymentDate: nextPayDate,
-            lastTransactionId: transactionId,
-            planType: firebase.firestore.FieldValue.delete(),
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        // 🔴 الجزء السحري: تسجيل العيادة في جدول الـ clinicId (السجل) 🔴
-        // بنستخدم set مع merge عشان لو موجودة يعمل تحديث، ولو مش موجودة ينشئها
-        await db.collection("clinicId").doc(clinicId).set({
-            clinicId: clinicId,
-            clinicName: cData.clinicName || "عيادة بدون اسم",
-            email: cData.adminEmail || "",
-            status: "active",
-            registeredAt: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
-
-        // 5. إرسال إشعار
-        await db.collection("Notifications").add({
-            clinicId: clinicId,
-            branchId: 'main',
-            title: "تم ترقية باقة العيادة بنجاح! 👑",
-            message: `مرحباً بك في باقة ${plan.planId.toUpperCase()}! تم تفعيل حسابك بالكامل.`,
-            type: "system",
-            isRead: false,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        sessionStorage.removeItem('selectedCheckoutPlan');
-        window.history.replaceState({}, document.title, window.location.pathname);
-        alert("✅ تم ترقية العيادة وتسجيلها في النظام بنجاح!");
-
-    } catch (err) {
-        console.error("Automated Upgrade Engine Failure:", err);
-        alert("حدث خطأ أثناء تحديث النظام. يرجى التواصل مع الدعم الفني.");
-    }
-}
 
         // 📊 دالة جلب العدادات الحية وعمل الـ Count الحقيقي من قاعدة البيانات 📊
         async function renderSubscriptionDashboard(clinicId) {
