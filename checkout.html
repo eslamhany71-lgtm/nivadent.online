@@ -41,12 +41,32 @@
 
         .payment-body { padding: 40px 30px; flex: 1; }
 
+        /* خيارات طرق الدفع الجديدة */
+        .method-options-container { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+        .method-card { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; border: 2px solid var(--border); border-radius: 12px; cursor: pointer; transition: 0.2s ease-in-out; }
+        .method-card:hover:not(.disabled) { border-color: var(--primary); background: #fafafa; }
+        .method-card.selected { border-color: var(--primary); background: #f0f9ff; }
+        .method-card.disabled { opacity: 0.5; cursor: not-allowed; background: #f1f5f9; }
+        
+        .method-meta { display: flex; align-items: center; gap: 12px; }
+        .method-icon { font-size: 24px; }
+        .method-title { font-weight: bold; font-size: 15px; color: var(--dark); }
+        .method-badge { background: #fee2e2; color: #ef4444; font-size: 11px; font-weight: bold; padding: 2px 8px; border-radius: 20px; }
+
+        .wallet-input-wrapper { display: none; background: var(--light-bg); border: 1px solid var(--border); padding: 15px; border-radius: 10px; margin-top: -5px; margin-bottom: 15px; animation: fadeIn 0.3s ease; }
+        .wallet-input-wrapper label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 6px; color: var(--slate); }
+        .wallet-input-wrapper input { width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 8px; outline: none; font-size: 15px; text-align: left; }
+        .wallet-input-wrapper input:focus { border-color: var(--primary); }
+
+        .btn-proceed-payment { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3); display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-proceed-payment:hover { background: var(--primary-dark); transform: translateY(-2px); }
+
         /* شاشة التحميل الافتراضية أثناء توليد جلسة الدفع البنكية */
-        .gateway-loader { text-align: center; padding: 60px 20px; display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        .gateway-loader { text-align: center; padding: 60px 20px; display: none; flex-direction: column; align-items: center; gap: 15px; }
         .spinner { width: 50px; height: 50px; border: 5px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
 
         /* حاوية الـ Iframe الخاص بـ Paymob */
-        #payment-iframe-container { width: 100%; height: 550px; display: none; border: none; }
+        #payment-iframe-container { width: 100%; height: 600px; display: none; border: none; border-radius: 12px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.06); }
 
         /* 🛡️ شريط الأمان السفلي */
         .security-footer { grid-column: 1 / -1; display: flex; justify-content: center; gap: 40px; margin-top: 20px; border-top: 1px solid var(--border); padding-top: 20px; flex-wrap: wrap; }
@@ -54,6 +74,7 @@
         .security-icon { font-size: 20px; color: var(--success); }
 
         @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
         @media (max-width: 992px) {
             .checkout-wrapper { grid-template-columns: 1fr; }
@@ -72,9 +93,54 @@
             </div>
             
             <div class="payment-body">
+                <div id="payment-methods-selector">
+                    <h3 style="margin-bottom: 15px; font-weight: 800; font-size: 16px; color: var(--slate);">اختر طريقة الدفع المفضلة لديك:</h3>
+                    
+                    <div class="method-options-container">
+                        <div class="method-card selected" onclick="selectPaymentUI('visa')">
+                            <div class="method-meta">
+                                <span class="method-icon">💳</span>
+                                <span class="method-title">بطاقة ائتمانية (فيزا / ماستركارد)</span>
+                            </div>
+                            <input type="radio" name="pay_method" id="rad-visa" value="visa" checked style="cursor: pointer;">
+                        </div>
+
+                        <div class="method-card" onclick="selectPaymentUI('wallet')">
+                            <div class="method-meta">
+                                <span class="method-icon">📱</span>
+                                <span class="method-title">المحافظ الإلكترونية (فودافون كاش / اتصالات / أورانج ...)</span>
+                            </div>
+                            <input type="radio" name="pay_method" id="rad-wallet" value="wallet" style="cursor: pointer;">
+                        </div>
+
+                        <div class="method-card" onclick="selectPaymentUI('paypal')">
+                            <div class="method-meta">
+                                <span class="method-icon">🇺🇸</span>
+                                <span class="method-title">حساب بايبال البنكي (PayPal)</span>
+                            </div>
+                            <input type="radio" name="pay_method" id="rad-paypal" value="paypal" style="cursor: pointer;">
+                        </div>
+
+                        <div class="method-card disabled">
+                            <div class="method-meta">
+                                <span class="method-icon">⚡</span>
+                                <span class="method-title">تطبيق انستا باي (InstaPay)</span>
+                            </div>
+                            <span class="method-badge">قريباً 🔥</span>
+                        </div>
+                    </div>
+
+                    <div class="wallet-input-wrapper" id="wallet-field-box">
+                        <label for="wallet_number">أدخل رقم المحفظة الإلكترونية (11 رقم):</label>
+                        <input type="tel" id="wallet_number" placeholder="01xxxxxxxxx" maxlength="11" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    </div>
+
+                    <button class="btn-proceed-payment" onclick="startSecurePaymentProcess()">الانتقال للدفع الآمن 🚀</button>
+                </div>
+
                 <div class="gateway-loader" id="gateway-loading-screen">
                     <div class="spinner"></div>
-                    <h3 style="font-weight: 800; color: var(--dark);">جاري إنشاء اتصال آمن بـ البنك...</h3>
+                    <h3 id="loader-status-text" style="font-weight: 800; color: var(--dark);">جاري إنشاء اتصال آمن بـ البنك...</h3>
                     <p style="color: var(--gray); font-size: 14px;">يرجى عدم إغلاق الشاشة أو عمل تحديث، يتم الآن فحص وتأمين قنوات تحويل الأموال.</p>
                 </div>
 
@@ -133,14 +199,35 @@
     </div>
 
     <script>
+        // دالة التحكم في شكل الاختيارات الرسومية
+        function selectPaymentUI(method) {
+            document.querySelectorAll('.method-card').forEach(card => card.classList.remove('selected'));
+            const walletBox = document.getElementById('wallet-field-box');
+            
+            if(method === 'visa') {
+                document.getElementById('rad-visa').checked = true;
+                document.getElementById('rad-visa').parentElement.classList.add('selected');
+                walletBox.style.display = 'none';
+            } else if(method === 'wallet') {
+                document.getElementById('rad-wallet').checked = true;
+                document.getElementById('rad-wallet').parentElement.classList.add('selected');
+                walletBox.style.display = 'block';
+            } else if(method === 'paypal') {
+                document.getElementById('rad-paypal').checked = true;
+                document.getElementById('rad-paypal').parentElement.classList.add('selected');
+                walletBox.style.display = 'none';
+            }
+        }
+
+        // المتغيرات العالمية المجهزة للتحميل
+        let clinicId, userEmail, plan;
+
         window.onload = async () => {
             const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
             
-            // 1. جلب بيانات العيادة المخزنة حالياً في المتصفح للحساب المفتوح
-            const clinicId = sessionStorage.getItem('clinicId');
-            const userEmail = sessionStorage.getItem('userEmail') || 'info@nivadent.com';
-            
-            // 2. قراءة كرتونة البيانات القادمة من صفحة الأسعارpricing.html
+            // 1. جلب بيانات العيادة والاشتراك المخزنة
+            clinicId = sessionStorage.getItem('clinicId');
+            userEmail = sessionStorage.getItem('userEmail') || 'info@nivadent.com';
             const cachedPlanData = sessionStorage.getItem('selectedCheckoutPlan');
 
             if (!clinicId || clinicId === 'default' || !cachedPlanData) {
@@ -149,9 +236,9 @@
                 return;
             }
 
-            const plan = JSON.parse(cachedPlanData);
+            plan = JSON.parse(cachedPlanData);
 
-            // 3. عرض وتعبئة تفاصيل الفاتورة على واجهة المستخدم
+            // 2. تعبئة تفاصيل الفاتورة على واجهة المستخدم
             document.getElementById('chk-plan-name').innerText = plan.planId.toUpperCase();
             document.getElementById('chk-plan-duration').innerText = plan.durationText;
             document.getElementById('chk-clinic-id').innerText = clinicId;
@@ -162,72 +249,70 @@
             document.getElementById('lim-patients').innerText = plan.limits.patients.toLocaleString();
             document.getElementById('lim-whatsapp').innerText = plan.limits.whatsapp.toLocaleString();
 
-            // 4. دمج وحساب المعالج التلقائي لبوابة الدفع (Paymob Workflow Bridge)
+            // 3. لو الباقة مجانية (تريال) نحول فوراً للملف المايسترو بدون خيارات الدفع البنكية
             if (plan.price === 0) {
-                // باقة تريال مجانية - لا داعي لتشغيل محرك البنك الإجباري
+                document.getElementById('payment-methods-selector').style.display = 'none';
+                document.getElementById('gateway-loading-screen').style.display = 'flex';
                 setTimeout(() => {
                     alert(isAr ? "🎁 تم اختيار الباقة التجريبية بنجاح! جاري تحويلك لتفعيل الحساب..." : "Trial selected.");
-                    // سنقوم بتوجيه الطبيب لصفحة النجاح مباشرة لتحديث الـ Firestore تلقائياً
-                    window.location.href = `subscription.html?status=success&plan=${plan.planId}&pkg=${plan.packageType}&price=0`;
+                    window.location.href = `subscription.html?success=true&plan=${plan.planId}&pkg=${plan.packageType}&price=0&id=TRIAL_${Date.now()}`;
                 }, 1500);
-                return;
+            }
+        };
+
+        // 🔴 دالة إطلاق المعاملة الآمنة الحقيقية بناءً على خيار الدكتور 🔴
+        async function startSecurePaymentProcess() {
+            const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
+            const selectedMethod = document.querySelector('input[name="pay_method"]:checked').value;
+            let walletNumber = "";
+
+            // لو اختار محفظة، لازم نتأكد من صحة رقم الهاتف
+            if(selectedMethod === 'wallet') {
+                walletNumber = document.getElementById('wallet_number').value.trim();
+                if(walletNumber.length !== 11) {
+                    alert(isAr ? "❌ يرجى إدخال رقم محفظة إلكترونية صحيح مكون من 11 رقم (مثال: 010xxxxxxxx)" : "❌ Please enter a valid 11-digit wallet number.");
+                    return;
+                }
             }
 
-            // 🔴 محرك الاتصال بـ الـ API لـ Paymob (هنا يتم إطلاق عملية الدمج الصارمة)
+            // إخفاء صندوق الاختيارات وإظهار شاشة التحميل للاتصال بالـ Worker
+            document.getElementById('payment-methods-selector').style.display = 'none';
+            document.getElementById('gateway-loading-screen').style.display = 'flex';
+
             try {
-                /*
-                  خطوات الـ API لـ Paymob تتطلب حماية عالية (عبر كود Cloud Function أو سيرفر محمي):
-                  1. طلب Authentication Token باستخدام الـ API Key الخاص بحسابك في بيموب.
-                  2. إنشاء Order Registration بمرجع السعر و الـ clinicId.
-                  3. توليد Payment Key يشمل بيانات الطبيب (إيميله، الباقة المختارة، معرّف واجهة الفيزا الكود 1234 مثلاً).
-                  
-                  لغرض جعل الواجهة تعمل فوراً وتنتظر رد السيرفر بأمان بنكي كامل:
-                */
-                
-const paymentResponse = await fetch(
-'https://nivadent-payments.eslamhany71.workers.dev/',
-{
-    method:'POST',
+                // الاتصال بـ Cloudflare Worker الإنتاجي والمؤمن
+                const paymentResponse = await fetch('https://nivadent-payments.eslamhany71.workers.dev/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        amount: plan.price,
+                        clinicId: clinicId,
+                        email: userEmail,
+                        planId: plan.planId,
+                        paymentMethod: selectedMethod, // الـ Router الذكي
+                        walletNumber: walletNumber      // رقم الهاتف للمحافظ
+                    })
+                });
 
-    headers:{
-        'Content-Type':'application/json'
-    },
+                const paymentData = await paymentResponse.json();
+                console.log("PAYMENT ROUTER RESPONSE:", paymentData);
 
-    body:JSON.stringify({
+                if (!paymentData.success) {
+                    throw new Error(paymentData.error || "Failed generating payment session");
+                }
 
-        amount:plan.price,
-
-        clinicId:clinicId,
-
-        email:userEmail,
-
-        planId:plan.planId
-
-    })
-});
-
-const paymentData = await paymentResponse.json();
-
-console.log("PAYMENT RESPONSE:", paymentData);
-
-if(!paymentData.success){
-
-throw new Error(
-paymentData.error ||
-"Failed generating payment session"
-);
-
-}
-
-                if (paymentData.success) {
-                    // إخفاء شاشة الانتظار
+                // 🔄 التوجيه الذكي بناءً على رد الـ Worker
+                if (paymentData.type === 'redirect') {
+                    // لو محفظة أو بايبال: تحويل المتصفح بالكامل للرابط المولد
+                    document.getElementById('loader-status-text').innerText = isAr ? "جاري تحويلك لصفحة التأمين البنكي الخارجية..." : "Redirecting to secure bank portal...";
+                    setTimeout(() => {
+                        window.location.href = paymentData.redirectUrl;
+                    }, 1000);
+                } 
+                else if (paymentData.type === 'iframe') {
+                    // لو فيزا: نفتح الـ Iframe جوه الصفحة كالعادة
                     document.getElementById('gateway-loading-screen').style.display = 'none';
-                    
-                    // شحن وإظهار الـ Iframe المخصص للفيزا والماستركارد المؤمن التابع لـ Paymob
                     const iframeContainer = document.getElementById('payment-iframe-container');
-                    
-                    // هنا يتم وضع رابط الـ iframe الخاص بحساب Paymob وتمرير الـ token المولد
-                    // مثال لرابط بيموب: https://egypt.paymob.com/api/acceptance/iframes/{{IFRAME_ID}}?payment_token={{TOKEN}}
                     iframeContainer.src = `https://accept.paymob.com/api/acceptance/iframes/${paymentData.iframeId}?payment_token=${paymentData.paymentToken}`;
                     iframeContainer.style.display = 'block';
                 }
@@ -235,9 +320,11 @@ paymentData.error ||
             } catch (err) {
                 console.error("Payment Gateway Connection Failed:", err);
                 alert(isAr ? "❌ فشل الاتصال بخوادم البنك المحمية. يرجى التحقق من الشبكة وإعادة المحاولة." : "Bank connection failure.");
-                window.location.href = 'pricing.html';
+                // إعادة فتح الاختيارات في حالة الفشل
+                document.getElementById('gateway-loading-screen').style.display = 'none';
+                document.getElementById('payment-methods-selector').style.display = 'block';
             }
-        };
+        }
     </script>
 </body>
 </html>
