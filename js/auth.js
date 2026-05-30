@@ -179,54 +179,65 @@ async function registerTrialAccount(e) {
     const email = document.getElementById('trial_email').value.trim().toLowerCase();
     const password = document.getElementById('trial_password').value;
 
+    // حارس الأرقام: شرط الـ 11 رقم
     if (phone.length !== 11) {
-    const isAr = document.body.dir === 'rtl';
-    alert(isAr ? "❌ رقم الموبايل يجب أن يكون 11 رقم بالضبط." : "❌ Phone number must be exactly 11 digits.");
-    btn.disabled = false;
-    btn.innerText = isAr ? "إنشاء الحساب وبدء التجربة" : "Create Account & Start Trial";
-    if (window.hideLoader) window.hideLoader();
-    return; // يوقف الدالة فوراً وميخليهاش ترفع لفايربيز
-}
-    // 🔴 حارس الباسورد: منع التسجيل إذا كانت كلمة المرور لا تستوفي الشروط 🔴
+        const isAr = document.body.dir === 'rtl';
+        alert(isAr ? "❌ رقم الموبايل يجب أن يكون 11 رقم بالضبط." : "❌ Phone number must be exactly 11 digits.");
+        btn.disabled = false;
+        btn.innerText = isAr ? "إنشاء الحساب وبدء التجربة" : "Create Account & Start Trial";
+        return; 
+    }
+
+    // حارس الباسورد: منع التسجيل إذا كانت كلمة المرور ضعيفة
     const strongRegex = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,}$");
     if (!strongRegex.test(password)) {
         const isAr = document.body.dir === 'rtl';
         alert(isAr ? "❌ كلمة المرور ضعيفة! يجب ألا تقل عن 8 أحرف، وتحتوي على حرف كبير، حرف صغير، رقم، ورمز (مثل @#$)." : "❌ Password is weak! Must be at least 8 chars, include uppercase, lowercase, number, and special character.");
         btn.disabled = false;
         btn.innerText = isAr ? "إنشاء الحساب وبدء التجربة" : "Create Account & Start Trial";
-        if (window.hideLoader) window.hideLoader();
         return; 
     }
 
     if (window.showLoader) window.showLoader("جاري تجهيز النظام لك...");
 
-    isLoginInProgress = true;
-
     try {
         await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
-        
         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
         const actualEmail = userCredential.user.email;
 
-        // 🔴 تعيين فترة التجربة لـ 7 أيام فقط
+        // 👑 توليد كود العيادة الـ 5 أرقام فوراً عند التسجيل التجريبي 👑
+        const accessCode = Math.floor(10000 + Math.random() * 90000).toString();
+
         const expirationDate = new Date();
         expirationDate.setDate(expirationDate.getDate() + 7); 
 
-        // 🔴 برمجة العيادة على باقة trial_7 وإعطاء حصص باقة Start
+        // حفظ العيادة وبداخلها الـ accessCode
         const clinicRef = await db.collection("Clinics").add({
             clinicName: clinicName,
             adminEmail: actualEmail,
             phone1: phone,
             status: 'active',
-            package: 'trial_7', // ربطها بنفس نظام السوبر أدمن
-            maxUsers: 3,        // 3 مستخدمين
-            maxPatients: 500,   // 500 مريض
-            maxWhatsapp: 50,    // 50 رسالة واتساب
+            package: 'trial_7', 
+            maxUsers: 3,        
+            maxPatients: 500,   
+            maxWhatsapp: 50,    
+            accessCode: accessCode, // حفظ الكود في وثيقة العيادة
+            hasUsedTrial: true,     
             nextPaymentDate: firebase.firestore.Timestamp.fromDate(expirationDate),
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
         const newClinicId = clinicRef.id;
+
+        // 🔴 تسجيل الكود في جدول الـ clinicId المركزي فوراً عشان اللوجين يشتغل 🔴
+        await db.collection("clinicId").doc(accessCode).set({
+            clinicId: newClinicId,
+            name: clinicName,
+            phone: phone,
+            email: actualEmail,
+            role: "admin",
+            activated: true
+        });
 
         await db.collection("Users").doc(actualEmail).set({
             role: 'admin',
@@ -245,28 +256,20 @@ async function registerTrialAccount(e) {
         sessionStorage.setItem('empCode', 'TRIAL-ADMIN');
         sessionStorage.setItem('clinicId', newClinicId);
         sessionStorage.setItem('branchId', 'main'); 
-        sessionStorage.setItem('userPermissions', JSON.stringify({ patients: true, calendar: true, finances: true, inventory: true, reports: true, settings: true, services: true, contracts: true, branches: true, hr: true, notifications: true }));
 
         if (window.hideLoader) window.hideLoader();
-        alert(`✅ مبروك يا ${adminName}!\nتم تفعيل العيادة بنجاح. فترة التجربة هتنتهي يوم ${expirationDate.toLocaleDateString('ar-EG')}`);
+        
+        // إظهار كود العيادة للدكتور في رسالة ترحيب واضحة عشان يحفظه
+        alert(`✅ مبروك يا دكتور ${adminName}!\nتم تفعيل العيادة بنجاح.\n🔑 كود العيادة الخاص بك للدخول هو: [ ${accessCode} ]\nفترة التجربة هتنتهي يوم ${expirationDate.toLocaleDateString('ar-EG')}`);
         
         window.location.href = "home.html";
 
     } catch (error) {
         console.error("Trial Registration Error:", error);
-        isLoginInProgress = false; 
-        
         if (window.hideLoader) window.hideLoader();
         btn.disabled = false;
         btn.innerText = "إنشاء الحساب وبدء التجربة";
-        
-        if (error.code === 'auth/email-already-in-use') {
-            alert("❌ هذا البريد مسجل بالفعل في النظام.");
-        } else if (error.code === 'auth/weak-password') {
-            alert("❌ كلمة المرور ضعيفة جداً.");
-        } else {
-            alert("❌ حدث خطأ أثناء التسجيل: " + error.message);
-        }
+        alert("❌ حدث خطأ أثناء التسجيل: " + error.message);
     }
 }
 
