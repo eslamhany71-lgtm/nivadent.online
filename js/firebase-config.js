@@ -2,7 +2,7 @@
 
 const firebaseConfig = {
   apiKey: "AIzaSyCFVu8FHYq2leGA1F9SQEAXmn1agv1V1cM",
-  authDomain: "nivadent.online",
+  authDomain: "smartplatform-513c3.firebaseapp.com",
   projectId: "smartplatform-513c3",
   storageBucket: "smartplatform-513c3.firebasestorage.app",
   messagingSenderId: "906640049959",
