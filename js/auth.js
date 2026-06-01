@@ -705,7 +705,6 @@ function checkPasswordStrength(password) {
     const bar = document.getElementById('pass-strength-bar');
     const label = document.getElementById('pass-strength-label');
 
-    if (!bar || !label) return;
     
     const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
     
