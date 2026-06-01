@@ -167,40 +167,53 @@
             <p id="mod-trial-sub" style="text-align: center; color: #64748b; margin-bottom: 25px;">جرب النظام بكامل مميزاته مجاناً لمدة 7 أيام</p>
             
             <div id="trial-form-wrapper">
-                <div class="form-group" style="margin-bottom: 15px;">
-                    <label id="lbl-t-clinic" style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155; font-size: 14px;">اسم العيادة</label>
-                    <input type="text" id="trial_clinic_name" required style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-family: inherit;">
-                </div>
-                <div class="form-group" style="margin-bottom: 15px;">
-                    <label id="lbl-t-admin" style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155; font-size: 14px;">اسم الطبيب / المدير</label>
-                    <input type="text" id="trial_admin_name" required style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-family: inherit;">
-                </div>
-                <div class="form-group" style="margin-bottom: 15px;">
-                    <label id="lbl-t-phone" style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155; font-size: 14px;">رقم الموبايل للتواصل</label>
-                    <input type="tel" id="trial_phone" required dir="ltr" maxlength="11" oninput="this.value = this.value.replace(/[^0-9]/g, '')" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; text-align: left; font-family: inherit;">                
-                </div>
-                <div class="form-group" style="margin-bottom: 15px;">
-                    <label id="lbl-t-email" style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155; font-size: 14px;">البريد الإلكتروني (للدخول)</label>
-                    <input type="email" id="trial_email" required dir="ltr" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; text-align: left; font-family: inherit;">
-                </div>
-                <div class="form-group" style="margin-bottom: 25px;">
-                    <label id="lbl-t-pass" style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155; font-size: 14px;">كلمة المرور (يجب أن تكون قوية)</label>
-                    <input type="password" id="trial_password" required dir="ltr" oninput="checkPasswordStrength(this.value)" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; text-align: left; font-family: inherit;">
+                <div id="step-1-data">
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155; font-size: 14px;">اسم العيادة</label>
+                        <input type="text" id="trial_clinic_name" required style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-family: inherit;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155; font-size: 14px;">اسم الطبيب / المدير</label>
+                        <input type="text" id="trial_admin_name" required style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-family: inherit;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155; font-size: 14px;">رقم الموبايل للتواصل</label>
+                        <input type="tel" id="trial_phone" required dir="ltr" maxlength="11" placeholder="01xxxxxxxxx" oninput="this.value = this.value.replace(/[^0-9]/g, '')" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; text-align: left; font-family: inherit;">                
+                    </div>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155; font-size: 14px;">البريد الإلكتروني (للدخول)</label>
+                        <input type="email" id="trial_email" required dir="ltr" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; text-align: left; font-family: inherit;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 25px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155; font-size: 14px;">كلمة المرور (يجب أن تكون قوية)</label>
+                        <input type="password" id="trial_password" required dir="ltr" oninput="checkPasswordStrength(this.value)" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; text-align: left; font-family: inherit;">
+                        <div style="height: 4px; background: #e2e8f0; border-radius: 4px; margin-top: 8px; overflow: hidden;">
+                            <div id="pass-strength-bar" style="height: 100%; width: 0%; transition: 0.3s ease-in-out;"></div>
+                        </div>
+                    </div>
                     
-                    <div style="height: 4px; background: #e2e8f0; border-radius: 4px; margin-top: 8px; overflow: hidden;">
-                        <div id="pass-strength-bar" style="height: 100%; width: 0%; transition: 0.3s ease-in-out;"></div>
-                    </div>
-                    <div style="font-size: 11px; color: #64748b; margin-top: 5px; display: flex; justify-content: space-between; align-items: flex-start;">
-                        <span style="flex: 1;">8 أحرف الأقل، وتحتوي على: (حرف كبير، حرف صغير، رقم، ورمز مثل @#$)</span>
-                        <span id="pass-strength-label" style="font-weight: bold; margin-inline-start: 10px;"></span>
-                    </div>
+                    <button type="button" id="btn-submit-trial" onclick="sendOTP(event)" style="width: 100%; background: #10b981; color: white; border: none; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; font-family: inherit;">
+                        تأكيد وإرسال كود التفعيل 📱
+                    </button>
                 </div>
-                
-                <input type="hidden" id="trial_max_users" value="3">
-                
-                <button type="button" id="btn-submit-trial" onclick="registerTrialAccount(event)" style="width: 100%; background: #10b981; color: white; border: none; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; font-family: inherit;">
-                    إنشاء الحساب وبدء التجربة
-                </button>
+
+                <div id="step-2-otp" style="display: none; text-align: center;">
+                    <div style="font-size: 40px; margin-bottom: 15px;">💬</div>
+                    <h3 style="margin-bottom: 10px;">تم إرسال كود التفعيل</h3>
+                    <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">أدخل الكود المكون من 6 أرقام المرسل إلى هاتفك لإتمام إنشاء العيادة.</p>
+                    
+                    <input type="text" id="otp_code_input" maxlength="6" dir="ltr" placeholder="------" style="width: 60%; padding: 15px; font-size: 24px; text-align: center; letter-spacing: 5px; border: 2px solid #0ea5e9; border-radius: 8px; margin-bottom: 20px; outline: none;">
+                    
+                    <button type="button" id="btn-verify-otp" onclick="verifyOTPAndRegister(event)" style="width: 100%; background: #0ea5e9; color: white; border: none; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; font-family: inherit;">
+                        تحقق وإنشاء الحساب 🚀
+                    </button>
+                    
+                    <button type="button" onclick="cancelOTP()" style="width: 100%; background: transparent; color: #ef4444; border: none; padding: 10px; margin-top: 10px; font-weight: bold; cursor: pointer;">
+                        إلغاء وتعديل الرقم
+                    </button>
+                </div>
+
+                <div id="recaptcha-container"></div>
             </div>
         </div>
     </div>
