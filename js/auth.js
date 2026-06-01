@@ -171,8 +171,11 @@ function closeTrialModal() {
     document.getElementById('trialModal').style.display = 'none';
 }
 
-async function registerTrialAccount(e) {
-    e.preventDefault();
+window.registerTrialAccount = async function(e) {
+    e.preventDefault(); // 🛑 منع المتصفح من عمل أي Refresh إجباري
+    
+    console.log("🚀 [1] بدء عملية التسجيل التجريبي...");
+    
     const btn = document.getElementById('btn-submit-trial');
     btn.disabled = true;
     btn.innerText = "جاري إنشاء العيادة...";
@@ -190,28 +193,20 @@ async function registerTrialAccount(e) {
         return; 
     }
 
-    const strongRegex = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,}$");
-    if (!strongRegex.test(password)) {
-        alert("❌ كلمة المرور ضعيفة! يجب ألا تقل عن 8 أحرف، وتحتوي على حرف كبير، حرف صغير، رقم، ورمز (مثل @#$).");
-        btn.disabled = false;
-        btn.innerText = "إنشاء الحساب وبدء التجربة";
-        return; 
-    }
-
     if (window.showLoader) window.showLoader("جاري تجهيز النظام لك...");
 
     try {
-        // 🔴 إشارة المرور: بنقول للمراقب متعملش Redirect دلوقتي! 🔴
-        sessionStorage.setItem('isRegistering', 'true');
-
-        await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
+        console.log("🚀 [2] جاري إنشاء حساب الـ Auth...");
+        // استخدام auth بدلاً من firebase.auth() لو كنت معرفها فوق
         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
         const actualEmail = userCredential.user.email;
+        console.log("✅ [2] تم إنشاء الـ Auth بنجاح للإيميل:", actualEmail);
 
         const accessCode = Math.floor(10000 + Math.random() * 90000).toString();
         const expirationDate = new Date();
         expirationDate.setDate(expirationDate.getDate() + 7); 
 
+        console.log("🚀 [3] جاري الكتابة في كولكشن Clinics...");
         const clinicRef = await db.collection("Clinics").add({
             clinicName: clinicName,
             adminEmail: actualEmail,
@@ -226,9 +221,10 @@ async function registerTrialAccount(e) {
             nextPaymentDate: firebase.firestore.Timestamp.fromDate(expirationDate),
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
-
         const newClinicId = clinicRef.id;
+        console.log("✅ [3] تم كتابة العيادة بنجاح. ID:", newClinicId);
 
+        console.log("🚀 [4] جاري الكتابة في كولكشن clinicId...");
         await db.collection("clinicId").doc(accessCode).set({
             clinicId: newClinicId,
             name: clinicName,
@@ -237,7 +233,9 @@ async function registerTrialAccount(e) {
             role: "admin",
             activated: true
         });
+        console.log("✅ [4] تم كتابة الـ accessCode بنجاح.");
 
+        console.log("🚀 [5] جاري الكتابة في كولكشن Users...");
         await db.collection("Users").doc(actualEmail).set({
             role: 'admin',
             name: adminName,
@@ -250,6 +248,7 @@ async function registerTrialAccount(e) {
             lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
+        console.log("✅ [5] تم كتابة ملف المستخدم بنجاح.");
 
         sessionStorage.setItem('userRole', 'admin');
         sessionStorage.setItem('empCode', 'TRIAL-ADMIN');
@@ -258,16 +257,13 @@ async function registerTrialAccount(e) {
 
         if (window.hideLoader) window.hideLoader();
         
-        // دلوقتي الرسالة هتظهر غصب عن المتصفح
-        alert(`✅ مبروك يا دكتور ${adminName}!\nتم تفعيل العيادة بنجاح.\n🔑 كود العيادة الخاص بك للدخول هو: [ ${accessCode} ]\nفترة التجربة هتنتهي يوم ${expirationDate.toLocaleDateString('ar-EG')}`);
+        console.log("🚀 [6] إظهار رسالة الترحيب والتحويل...");
+        alert(`✅ مبروك يا دكتور ${adminName}!\nتم تفعيل العيادة بنجاح.\n🔑 كود العيادة الخاص بك للدخول هو: [ ${accessCode} ]`);
         
-        // 🔴 بنمسح الإشارة ونعمل إحنا الـ Redirect اليدوي 🔴
-        sessionStorage.removeItem('isRegistering');
         window.location.href = "home.html";
 
     } catch (error) {
-        sessionStorage.removeItem('isRegistering'); // مسح الإشارة في حالة الخطأ
-        console.error("Trial Registration Error:", error);
+        console.error("❌ [CRITICAL ERROR] الكود ضرب هنا:", error);
         if (window.hideLoader) window.hideLoader();
         btn.disabled = false;
         btn.innerText = "إنشاء الحساب وبدء التجربة";
