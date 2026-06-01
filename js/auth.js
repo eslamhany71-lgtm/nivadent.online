@@ -206,6 +206,13 @@ window.sendOTP = async function(e) {
         alert("❌ رقم الموبايل يجب أن يكون 11 رقم بالضبط.");
         return; 
     }
+    const syndicateId = document.getElementById('trial_syndicate_id').value.trim();
+
+    // شرط التحقق من رقم النقابة
+    if (syndicateId === "") {
+        alert("❌ يرجى إدخال رقم القيد بنقابة أطباء الأسنان.");
+        return; 
+    }
 
     const strongRegex = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,}$");
     if (!strongRegex.test(password)) {
@@ -280,6 +287,7 @@ window.verifyOTPAndRegister = async function(e) {
         const phone = document.getElementById('trial_phone').value.trim();
         const email = document.getElementById('trial_email').value.trim().toLowerCase();
         const password = document.getElementById('trial_password').value;
+        const syndicateId = document.getElementById('trial_syndicate_id').value.trim(); // 🔴 السطر الجديد
 
         // 2. إنشاء حساب الـ Email والباسورد الحقيقي للدكتور
         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
@@ -293,9 +301,11 @@ window.verifyOTPAndRegister = async function(e) {
         const clinicRef = await db.collection("Clinics").add({
             clinicName: clinicName, adminEmail: actualEmail, phone1: phone,
             status: 'active', package: 'trial_7', maxUsers: 3, maxPatients: 500, maxWhatsapp: 50,    
-            accessCode: accessCode, hasUsedTrial: true,     
+            accessCode: accessCode, hasUsedTrial: true,
+            syndicateId: syndicateId,
             nextPaymentDate: firebase.firestore.Timestamp.fromDate(expirationDate),
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            
         });
         const newClinicId = clinicRef.id;
 
