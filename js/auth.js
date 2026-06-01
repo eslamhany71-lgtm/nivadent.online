@@ -6,26 +6,26 @@ const db = firebase.firestore();
 // المتغير ده هو حارس البوابة، بيمنع التحويل قبل ما الداتا تترفع
 let isLoginInProgress = false; 
 
-// 1. مراقب الحالة (النسخة المؤمنة ضد الخطف البرمجي)
+// ==========================================
+// مراقب حالة الدخول (الحارس)
+// ==========================================
 auth.onAuthStateChanged((user) => {
-    const path = window.location.pathname;
-    const fileName = path.split("/").pop() || "index.html";
-    
-    if (fileName === "activate.html") return; 
-
-    const isLoginPage = fileName === "index.html" || fileName === "";
-
-    // 🔴 سحب إشارة المرور اللي حطيناها في دالة registerTrialAccount 🔴
-    const isRegistering = sessionStorage.getItem('isRegistering') === 'true';
-
     if (user) {
-        // 🔴 التعديل السحري: ضفنا شرط !isRegistering عشان نمنع التحويل أثناء التسجيل التجريبي
-        if (isLoginPage && !isLoginInProgress && !isRegistering) {
-            window.location.href = "home.html";
+        // 🔴 إشارة المرور: لو السيستم بيكريت حساب جديد، امنع التوجيه للمنزل فوراً!
+        if (sessionStorage.getItem('isRegistering') === 'true') {
+            console.log("⏳ جاري كتابة بيانات العيادة في السيرفر... يرجى الانتظار.");
+            return; // وقف الدالة هنا وسيب دالة التسجيل تكمل شغلها
         }
-        if (!isLoginPage) requestNotificationPermission();
+
+        // لو ده تسجيل دخول عادي، وديه لوحة التحكم
+        if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname === '') {
+            window.location.href = 'home.html';
+        }
     } else {
-        if (!isLoginPage) window.location.href = "index.html";
+        // لو مش مسجل دخول، اطرده لصفحة اللوجين
+        if (!window.location.pathname.endsWith('index.html') && window.location.pathname !== '/' && window.location.pathname !== '') {
+            window.location.href = 'index.html';
+        }
     }
 });
 
