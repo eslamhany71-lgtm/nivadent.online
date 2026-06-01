@@ -160,13 +160,13 @@
         </div>
     </div>
 
-    <div id="trialModal" class="modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(4px);">
+<div id="trialModal" class="modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(4px);">
         <div class="modal-content" style="background: white; width: 90%; max-width: 500px; padding: 30px; border-radius: 16px; position: relative; max-height: 90vh; overflow-y: auto;">
             <span class="close-modal" onclick="closeTrialModal()" style="position: absolute; top: 15px; left: 20px; font-size: 24px; cursor: pointer; color: #64748b;">&times;</span>
             <h2 id="mod-trial-title" style="margin-top: 0; color: #0f172a; text-align: center;">🚀 إنشاء حساب تجريبي</h2>
             <p id="mod-trial-sub" style="text-align: center; color: #64748b; margin-bottom: 25px;">جرب النظام بكامل مميزاته مجاناً لمدة 7 أيام</p>
             
-            <form onsubmit="registerTrialAccount(event)">
+            <div id="trial-form-wrapper">
                 <div class="form-group" style="margin-bottom: 15px;">
                     <label id="lbl-t-clinic" style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155; font-size: 14px;">اسم العيادة</label>
                     <input type="text" id="trial_clinic_name" required style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-family: inherit;">
@@ -177,32 +177,31 @@
                 </div>
                 <div class="form-group" style="margin-bottom: 15px;">
                     <label id="lbl-t-phone" style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155; font-size: 14px;">رقم الموبايل للتواصل</label>
-                <input type="tel" id="trial_phone" required dir="ltr" maxlength="11" oninput="this.value = this.value.replace(/[^0-9]/g, '')" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; text-align: left; font-family: inherit;">                </div>
+                    <input type="tel" id="trial_phone" required dir="ltr" maxlength="11" oninput="this.value = this.value.replace(/[^0-9]/g, '')" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; text-align: left; font-family: inherit;">                
+                </div>
                 <div class="form-group" style="margin-bottom: 15px;">
                     <label id="lbl-t-email" style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155; font-size: 14px;">البريد الإلكتروني (للدخول)</label>
                     <input type="email" id="trial_email" required dir="ltr" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; text-align: left; font-family: inherit;">
                 </div>
-<div class="form-group" style="margin-bottom: 25px;">
-    <label id="lbl-t-pass" style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155; font-size: 14px;">كلمة المرور (يجب أن تكون قوية)</label>
-    <!-- ضفنا oninput عشان يفحص الباسورد مع كل حرف بيتكتب -->
-    <input type="password" id="trial_password" required dir="ltr" oninput="checkPasswordStrength(this.value)" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; text-align: left; font-family: inherit;">
-    
-    <!-- 🔴 شريط ومؤشر قوة الباسورد 🔴 -->
-    <div style="height: 4px; background: #e2e8f0; border-radius: 4px; margin-top: 8px; overflow: hidden;">
-        <div id="pass-strength-bar" style="height: 100%; width: 0%; transition: 0.3s ease-in-out;"></div>
-    </div>
-    <div style="font-size: 11px; color: #64748b; margin-top: 5px; display: flex; justify-content: space-between; align-items: flex-start;">
-        <span style="flex: 1;">8 أحرف الأقل، وتحتوي على: (حرف كبير، حرف صغير، رقم، ورمز مثل @#$)</span>
-        <span id="pass-strength-label" style="font-weight: bold; margin-inline-start: 10px;"></span>
-    </div>
-</div>
+                <div class="form-group" style="margin-bottom: 25px;">
+                    <label id="lbl-t-pass" style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155; font-size: 14px;">كلمة المرور (يجب أن تكون قوية)</label>
+                    <input type="password" id="trial_password" required dir="ltr" oninput="checkPasswordStrength(this.value)" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; text-align: left; font-family: inherit;">
+                    
+                    <div style="height: 4px; background: #e2e8f0; border-radius: 4px; margin-top: 8px; overflow: hidden;">
+                        <div id="pass-strength-bar" style="height: 100%; width: 0%; transition: 0.3s ease-in-out;"></div>
+                    </div>
+                    <div style="font-size: 11px; color: #64748b; margin-top: 5px; display: flex; justify-content: space-between; align-items: flex-start;">
+                        <span style="flex: 1;">8 أحرف الأقل، وتحتوي على: (حرف كبير، حرف صغير، رقم، ورمز مثل @#$)</span>
+                        <span id="pass-strength-label" style="font-weight: bold; margin-inline-start: 10px;"></span>
+                    </div>
+                </div>
                 
                 <input type="hidden" id="trial_max_users" value="3">
                 
-               <button type="button" id="btn-submit-trial" onclick="registerTrialAccount(event)" style="width: 100%; background: #10b981; color: white; border: none; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; font-family: inherit;">
-    إنشاء الحساب وبدء التجربة
-</button>
-            </form>
+                <button type="button" id="btn-submit-trial" onclick="registerTrialAccount(event)" style="width: 100%; background: #10b981; color: white; border: none; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; font-family: inherit;">
+                    إنشاء الحساب وبدء التجربة
+                </button>
+            </div>
         </div>
     </div>
 
