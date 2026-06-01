@@ -196,8 +196,10 @@ window.registerTrialAccount = async function(e) {
     if (window.showLoader) window.showLoader("جاري تجهيز النظام لك...");
 
     try {
+        // 🔴🔴 التعديل الأهم: تشغيل إشارة المرور الحمراء 🔴🔴
+        sessionStorage.setItem('isRegistering', 'true');
+
         console.log("🚀 [2] جاري إنشاء حساب الـ Auth...");
-        // استخدام auth بدلاً من firebase.auth() لو كنت معرفها فوق
         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
         const actualEmail = userCredential.user.email;
         console.log("✅ [2] تم إنشاء الـ Auth بنجاح للإيميل:", actualEmail);
@@ -260,9 +262,13 @@ window.registerTrialAccount = async function(e) {
         console.log("🚀 [6] إظهار رسالة الترحيب والتحويل...");
         alert(`✅ مبروك يا دكتور ${adminName}!\nتم تفعيل العيادة بنجاح.\n🔑 كود العيادة الخاص بك للدخول هو: [ ${accessCode} ]`);
         
+        // 🔴🔴 طفينا إشارة المرور عشان نحول إحنا براحتنا 🔴🔴
+        sessionStorage.removeItem('isRegistering');
         window.location.href = "home.html";
 
     } catch (error) {
+        // 🔴 لو حصل إيرور نطفي الإشارة برضه 🔴
+        sessionStorage.removeItem('isRegistering');
         console.error("❌ [CRITICAL ERROR] الكود ضرب هنا:", error);
         if (window.hideLoader) window.hideLoader();
         btn.disabled = false;
