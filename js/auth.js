@@ -155,128 +155,172 @@ async function loginById() {
     }
 }
 
+
 // ==========================================
-// إنشاء حساب تجريبي مجاني
+// إنشاء حساب تجريبي مجاني (بنظام OTP المزدوج)
 // ==========================================
+let confirmationResultGlobal = null; // متغير لحفظ جلسة الـ OTP
+
 function openTrialModal() {
     document.getElementById('trial_clinic_name').value = '';
     document.getElementById('trial_admin_name').value = '';
     document.getElementById('trial_phone').value = '';
     document.getElementById('trial_email').value = '';
     document.getElementById('trial_password').value = '';
+    document.getElementById('otp_code_input').value = '';
+    
+    // إرجاع المودال للمرحلة الأولى
+    document.getElementById('step-1-data').style.display = 'block';
+    document.getElementById('step-2-otp').style.display = 'none';
     document.getElementById('trialModal').style.display = 'flex';
+
+    // 🔴 تجهيز الـ Invisible reCAPTCHA 🔴
+    if (!window.recaptchaVerifier) {
+        window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+            'size': 'invisible',
+            'callback': (response) => {
+                // reCAPTCHA تمت بنجاح
+            }
+        });
+    }
 }
 
 function closeTrialModal() {
     document.getElementById('trialModal').style.display = 'none';
 }
 
-window.registerTrialAccount = async function(e) {
-    e.preventDefault(); // 🛑 منع المتصفح من عمل أي Refresh إجباري
-    
-    console.log("🚀 [1] بدء عملية التسجيل التجريبي...");
-    
-    const btn = document.getElementById('btn-submit-trial');
-    btn.disabled = true;
-    btn.innerText = "جاري إنشاء العيادة...";
+function cancelOTP() {
+    document.getElementById('step-2-otp').style.display = 'none';
+    document.getElementById('step-1-data').style.display = 'block';
+    document.getElementById('otp_code_input').value = '';
+}
 
-    const clinicName = document.getElementById('trial_clinic_name').value.trim();
-    const adminName = document.getElementById('trial_admin_name').value.trim();
+// 📱 1. دالة إرسال الـ OTP 📱
+window.sendOTP = async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btn-submit-trial');
     const phone = document.getElementById('trial_phone').value.trim();
-    const email = document.getElementById('trial_email').value.trim().toLowerCase();
     const password = document.getElementById('trial_password').value;
 
     if (phone.length !== 11) {
         alert("❌ رقم الموبايل يجب أن يكون 11 رقم بالضبط.");
-        btn.disabled = false;
-        btn.innerText = "إنشاء الحساب وبدء التجربة";
         return; 
     }
 
-    if (window.showLoader) window.showLoader("جاري تجهيز النظام لك...");
+    const strongRegex = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,}$");
+    if (!strongRegex.test(password)) {
+        alert("❌ كلمة المرور ضعيفة! يجب ألا تقل عن 8 أحرف، وتحتوي على حرف كبير، حرف صغير، رقم، ورمز (مثل @#$).");
+        return; 
+    }
+
+    btn.disabled = true;
+    btn.innerText = "جاري إرسال الكود...";
+
+    // 🔴 تحويل الرقم للصيغة الدولية +20 🔴
+    const formattedPhone = "+20" + phone.substring(1); 
 
     try {
-        // 🔴🔴 التعديل الأهم: تشغيل إشارة المرور الحمراء 🔴🔴
+        const appVerifier = window.recaptchaVerifier;
+        
+        // إرسال رسالة الـ SMS
+        const confirmationResult = await auth.signInWithPhoneNumber(formattedPhone, appVerifier);
+        
+        // حفظ النتيجة عشان نستخدمها في المرحلة الثانية
+        confirmationResultGlobal = confirmationResult; 
+
+        // إخفاء المرحلة الأولى وإظهار إدخال الكود
+        document.getElementById('step-1-data').style.display = 'none';
+        document.getElementById('step-2-otp').style.display = 'block';
+
+    } catch (error) {
+        console.error("SMS Error:", error);
+        alert("❌ فشل إرسال الكود: " + error.message);
+        
+        // إعادة تهيئة الكابتشا في حالة الفشل
+        if(window.recaptchaVerifier) window.recaptchaVerifier.render().then(function(widgetId) {
+            grecaptcha.reset(widgetId);
+        });
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "تأكيد وإرسال كود التفعيل 📱";
+    }
+}
+
+// 🚀 2. دالة التحقق من الـ OTP وإنشاء الحساب في قاعدة البيانات 🚀
+window.verifyOTPAndRegister = async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btn-verify-otp');
+    const otpCode = document.getElementById('otp_code_input').value.trim();
+
+    if (otpCode.length !== 6) {
+        alert("❌ يرجى إدخال الكود المكون من 6 أرقام بشكل صحيح.");
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = "جاري التحقق وإنشاء العيادة...";
+
+    try {
+        // 1. التحقق من صحة كود الـ SMS
+        await confirmationResultGlobal.confirm(otpCode);
+        console.log("✅ الهاتف موثق بنجاح!");
+
+        // 🔴 تشغيل إشارة المرور عشان نمنع الخطف أثناء الكريت 🔴
         sessionStorage.setItem('isRegistering', 'true');
 
-        console.log("🚀 [2] جاري إنشاء حساب الـ Auth...");
+        // جلب البيانات من الفورم
+        const clinicName = document.getElementById('trial_clinic_name').value.trim();
+        const adminName = document.getElementById('trial_admin_name').value.trim();
+        const phone = document.getElementById('trial_phone').value.trim();
+        const email = document.getElementById('trial_email').value.trim().toLowerCase();
+        const password = document.getElementById('trial_password').value;
+
+        // 2. إنشاء حساب الـ Email والباسورد الحقيقي للدكتور
         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
         const actualEmail = userCredential.user.email;
-        console.log("✅ [2] تم إنشاء الـ Auth بنجاح للإيميل:", actualEmail);
 
+        // 3. كتابة قاعدة البيانات (Firestore)
         const accessCode = Math.floor(10000 + Math.random() * 90000).toString();
         const expirationDate = new Date();
         expirationDate.setDate(expirationDate.getDate() + 7); 
 
-        console.log("🚀 [3] جاري الكتابة في كولكشن Clinics...");
         const clinicRef = await db.collection("Clinics").add({
-            clinicName: clinicName,
-            adminEmail: actualEmail,
-            phone1: phone,
-            status: 'active',
-            package: 'trial_7', 
-            maxUsers: 3,        
-            maxPatients: 500,   
-            maxWhatsapp: 50,    
-            accessCode: accessCode, 
-            hasUsedTrial: true,     
+            clinicName: clinicName, adminEmail: actualEmail, phone1: phone,
+            status: 'active', package: 'trial_7', maxUsers: 3, maxPatients: 500, maxWhatsapp: 50,    
+            accessCode: accessCode, hasUsedTrial: true,     
             nextPaymentDate: firebase.firestore.Timestamp.fromDate(expirationDate),
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         const newClinicId = clinicRef.id;
-        console.log("✅ [3] تم كتابة العيادة بنجاح. ID:", newClinicId);
 
-        console.log("🚀 [4] جاري الكتابة في كولكشن clinicId...");
         await db.collection("clinicId").doc(accessCode).set({
-            clinicId: newClinicId,
-            name: clinicName,
-            phone: phone,
-            email: actualEmail,
-            role: "admin",
-            activated: true
+            clinicId: newClinicId, name: clinicName, phone: phone, email: actualEmail, role: "admin", activated: true
         });
-        console.log("✅ [4] تم كتابة الـ accessCode بنجاح.");
 
-        console.log("🚀 [5] جاري الكتابة في كولكشن Users...");
         await db.collection("Users").doc(actualEmail).set({
-            role: 'admin',
-            name: adminName,
-            empCode: 'TRIAL-ADMIN', 
-            email: actualEmail,
-            clinicId: newClinicId,
-            branchId: 'main', 
+            role: 'admin', name: adminName, empCode: 'TRIAL-ADMIN', email: actualEmail, clinicId: newClinicId, branchId: 'main', 
             permissions: { patients: true, calendar: true, finances: true, inventory: true, reports: true, settings: true, services: true, contracts: true, branches: true, hr: true, notifications: true },
-            isOnline: true,
-            lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            isOnline: true, lastLogin: firebase.firestore.FieldValue.serverTimestamp(), createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
-        console.log("✅ [5] تم كتابة ملف المستخدم بنجاح.");
 
         sessionStorage.setItem('userRole', 'admin');
         sessionStorage.setItem('empCode', 'TRIAL-ADMIN');
         sessionStorage.setItem('clinicId', newClinicId);
         sessionStorage.setItem('branchId', 'main'); 
 
-        if (window.hideLoader) window.hideLoader();
+        alert(`✅ مبروك يا دكتور ${adminName}!\nتم توثيق الرقم وتفعيل العيادة بنجاح.\n🔑 كود العيادة الخاص بك للدخول هو: [ ${accessCode} ]`);
         
-        console.log("🚀 [6] إظهار رسالة الترحيب والتحويل...");
-        alert(`✅ مبروك يا دكتور ${adminName}!\nتم تفعيل العيادة بنجاح.\n🔑 كود العيادة الخاص بك للدخول هو: [ ${accessCode} ]`);
-        
-        // 🔴🔴 طفينا إشارة المرور عشان نحول إحنا براحتنا 🔴🔴
         sessionStorage.removeItem('isRegistering');
         window.location.href = "home.html";
 
     } catch (error) {
-        // 🔴 لو حصل إيرور نطفي الإشارة برضه 🔴
         sessionStorage.removeItem('isRegistering');
-        console.error("❌ [CRITICAL ERROR] الكود ضرب هنا:", error);
-        if (window.hideLoader) window.hideLoader();
+        console.error("OTP or Registration Error:", error);
+        alert("❌ الكود غير صحيح أو حدث خطأ: " + error.message);
         btn.disabled = false;
-        btn.innerText = "إنشاء الحساب وبدء التجربة";
-        alert("❌ حدث خطأ أثناء التسجيل: " + error.message);
+        btn.innerText = "تحقق وإنشاء الحساب 🚀";
     }
 }
-
 // ==========================================
 // دوال تفعيل حساب موظف (الممرضة/الدكتور)
 // ==========================================
