@@ -263,16 +263,16 @@ window.verifyOTPAndRegister = async function(e) {
         return;
     }
 
+    // 🔴🔴🔴 السر هنا: تشغيل الحماية (منع التوجيه) قبل أي اتصال بالفايربيز 🔴🔴🔴
+    sessionStorage.setItem('isRegistering', 'true');
+
     btn.disabled = true;
     btn.innerText = "جاري التحقق وإنشاء العيادة...";
 
     try {
-        // 1. التحقق من صحة كود الـ SMS
+        // 1. التحقق من صحة الكود الاختباري أو الحقيقي
         await confirmationResultGlobal.confirm(otpCode);
         console.log("✅ الهاتف موثق بنجاح!");
-
-        // 🔴 تشغيل إشارة المرور عشان نمنع الخطف أثناء الكريت 🔴
-        sessionStorage.setItem('isRegistering', 'true');
 
         // جلب البيانات من الفورم
         const clinicName = document.getElementById('trial_clinic_name').value.trim();
@@ -316,6 +316,7 @@ window.verifyOTPAndRegister = async function(e) {
 
         alert(`✅ مبروك يا دكتور ${adminName}!\nتم توثيق الرقم وتفعيل العيادة بنجاح.\n🔑 كود العيادة الخاص بك للدخول هو: [ ${accessCode} ]`);
         
+        // 🔴 السماح بالتوجيه بعد ما كل حاجة خلصت 🔴
         sessionStorage.removeItem('isRegistering');
         window.location.href = "home.html";
 
