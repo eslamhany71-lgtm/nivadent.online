@@ -176,12 +176,12 @@ function openTrialModal() {
 
     // 🔴 تجهيز الـ Invisible reCAPTCHA 🔴
     if (!window.recaptchaVerifier) {
-        window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-            'size': 'invisible',
-            'callback': (response) => {
-                // reCAPTCHA تمت بنجاح
-            }
-        });
+window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+    'size': 'normal', // خليناها مرئية
+    'callback': (response) => { 
+        console.log("✅ الكابتشا اتحلت!");
+    }
+});
     }
 }
 
