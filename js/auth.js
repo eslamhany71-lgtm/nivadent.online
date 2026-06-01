@@ -6,7 +6,7 @@ const db = firebase.firestore();
 // المتغير ده هو حارس البوابة، بيمنع التحويل قبل ما الداتا تترفع
 let isLoginInProgress = false; 
 
-// 1. مراقب الحالة
+// 1. مراقب الحالة (النسخة المؤمنة ضد الخطف البرمجي)
 auth.onAuthStateChanged((user) => {
     const path = window.location.pathname;
     const fileName = path.split("/").pop() || "index.html";
@@ -15,8 +15,12 @@ auth.onAuthStateChanged((user) => {
 
     const isLoginPage = fileName === "index.html" || fileName === "";
 
+    // 🔴 سحب إشارة المرور اللي حطيناها في دالة registerTrialAccount 🔴
+    const isRegistering = sessionStorage.getItem('isRegistering') === 'true';
+
     if (user) {
-        if (isLoginPage && !isLoginInProgress) {
+        // 🔴 التعديل السحري: ضفنا شرط !isRegistering عشان نمنع التحويل أثناء التسجيل التجريبي
+        if (isLoginPage && !isLoginInProgress && !isRegistering) {
             window.location.href = "home.html";
         }
         if (!isLoginPage) requestNotificationPermission();
