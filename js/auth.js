@@ -206,11 +206,13 @@ window.sendOTP = async function(e) {
         alert("❌ رقم الموبايل يجب أن يكون 11 رقم بالضبط.");
         return; 
     }
-    const syndicateId = document.getElementById('trial_syndicate_id').value.trim();
+const syndicateId = document.getElementById('trial_syndicate_id').value.trim();
 
-    // شرط التحقق من رقم النقابة
-    if (syndicateId === "") {
-        alert("❌ يرجى إدخال رقم القيد بنقابة أطباء الأسنان.");
+    // شرط التحقق المتقدم: أرقام فقط، لا يبدأ بصفر، يتكون من 3 إلى 6 أرقام
+    const syndicateRegex = /^[1-9][0-9]{2,5}$/;
+    
+    if (!syndicateRegex.test(syndicateId)) {
+        alert("❌ يرجى إدخال رقم قيد نقابي صحيح (يجب أن يحتوي على أرقام فقط، ولا يقل عن 3 ولا يزيد عن 6 أرقام).");
         return; 
     }
 
