@@ -209,34 +209,39 @@ window.sendOTP = async function(e) {
 
     const strongRegex = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,}$");
     if (!strongRegex.test(password)) {
-        alert("❌ كلمة المرور ضعيفة! يجب ألا تقل عن 8 أحرف، وتحتوي على حرف كبير، حرف صغير، رقم، ورمز (مثل @#$).");
+        alert("❌ كلمة المرور ضعيفة! يجب ألا تقل عن 8 أحرف، وتحتوي على حرف كبير، حرف صغير، رقم، ورمز.");
         return; 
     }
 
     btn.disabled = true;
     btn.innerText = "جاري إرسال الكود...";
 
-    // 🔴 تحويل الرقم للصيغة الدولية +20 🔴
     const formattedPhone = "+20" + phone.substring(1); 
 
     try {
+        // 🔴 السطر السحري: تعطيل الكابتشا بالكامل لأرقام الاختبار 🔴
+        auth.settings.appVerificationDisabledForTesting = true;
+
+        if (!window.recaptchaVerifier) {
+            window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+                'size': 'invisible'
+            });
+        }
+        
         const appVerifier = window.recaptchaVerifier;
         
-        // إرسال رسالة الـ SMS
+        // إرسال الـ OTP (الفايربيز هيتجاهل الكابتشا تماماً لو الرقم متسجل للتيست)
         const confirmationResult = await auth.signInWithPhoneNumber(formattedPhone, appVerifier);
         
-        // حفظ النتيجة عشان نستخدمها في المرحلة الثانية
         confirmationResultGlobal = confirmationResult; 
 
-        // إخفاء المرحلة الأولى وإظهار إدخال الكود
         document.getElementById('step-1-data').style.display = 'none';
         document.getElementById('step-2-otp').style.display = 'block';
 
     } catch (error) {
         console.error("SMS Error:", error);
-        alert("❌ فشل إرسال الكود: تأكد من اتصال الإنترنت وإيقاف مانع الإعلانات.");
+        alert("❌ فشل إرسال الكود: " + error.message);
         
-        // 🔴 التعديل: تصفير الكابتشا بأمان بدون كراش
         if (window.recaptchaVerifier) {
             window.recaptchaVerifier.clear();
             window.recaptchaVerifier = null;
