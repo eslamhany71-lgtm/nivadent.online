@@ -706,6 +706,9 @@ function checkPasswordStrength(password) {
     const label = document.getElementById('pass-strength-label');
 
     
+// 🔴 سطر الحماية لمنع كراش الـ null
+    if (!bar || !label) return;
+    
     const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
     
     if (!password) {
