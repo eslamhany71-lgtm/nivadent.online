@@ -45,24 +45,39 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+    // 1. استثناء البروتوكولات غير المدعومة
     if (!event.request.url.startsWith('http')) return;
 
     const requestUrl = new URL(event.request.url);
+
+    // 🔴 2. "حائط الصد" - منع التدخل نهائياً في خدمات جوجل والفايربيز 🔴
+    // الخطوة دي بتضمن إن الـ Integrity بتاع الكابتشا يفضل سليم 100%
+    if (requestUrl.hostname.includes('gstatic.com') || 
+        requestUrl.hostname.includes('googleapis.com') || 
+        requestUrl.hostname.includes('firebaseio.com')) {
+        return; // خروج فوري وترك الطلب للشبكة الأصلية
+    }
+
+    // 3. منع تكييش أي ملفات خارجية أخرى لضمان الاستقرار
     if (requestUrl.origin !== self.location.origin) return;
 
+    // 4. منطق التكييش للملفات المحلية (NivaDent Files)
     if (event.request.method === 'GET') {
         event.respondWith(
             caches.match(event.request, { ignoreSearch: true }).then((cachedResponse) => {
                 const fetchPromise = fetch(event.request).then((networkResponse) => {
+                    // تكييش النسخة الجديدة للعمل أوفلاين لاحقاً
                     if (networkResponse && networkResponse.status === 200) {
                         const responseToCache = networkResponse.clone();
                         caches.open(CACHE_NAME).then((cache) => {
+                            // التخزين بدون الـ Query Strings لضمان السرعة
                             cache.put(event.request.url.split('?')[0], responseToCache);
                         });
                     }
                     return networkResponse;
                 }).catch(() => null);
 
+                // رد من الكاش لو متاح، وإلا انتظر الشبكة
                 return cachedResponse || fetchPromise.then(res => res || new Response(
                     "عفواً، لا يوجد اتصال بالإنترنت وهذه الصفحة لم يتم تحميلها مسبقاً.", 
                     { status: 503, headers: new Headers({ 'Content-Type': 'text/html; charset=utf-8' }) }
