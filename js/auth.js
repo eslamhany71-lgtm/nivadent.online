@@ -179,39 +179,35 @@ async function registerTrialAccount(e) {
     const email = document.getElementById('trial_email').value.trim().toLowerCase();
     const password = document.getElementById('trial_password').value;
 
-    // حارس الأرقام: شرط الـ 11 رقم
     if (phone.length !== 11) {
-        const isAr = document.body.dir === 'rtl';
-        alert(isAr ? "❌ رقم الموبايل يجب أن يكون 11 رقم بالضبط." : "❌ Phone number must be exactly 11 digits.");
+        alert("❌ رقم الموبايل يجب أن يكون 11 رقم بالضبط.");
         btn.disabled = false;
-        btn.innerText = isAr ? "إنشاء الحساب وبدء التجربة" : "Create Account & Start Trial";
+        btn.innerText = "إنشاء الحساب وبدء التجربة";
         return; 
     }
 
-    // حارس الباسورد: منع التسجيل إذا كانت كلمة المرور ضعيفة
     const strongRegex = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,}$");
     if (!strongRegex.test(password)) {
-        const isAr = document.body.dir === 'rtl';
-        alert(isAr ? "❌ كلمة المرور ضعيفة! يجب ألا تقل عن 8 أحرف، وتحتوي على حرف كبير، حرف صغير، رقم، ورمز (مثل @#$)." : "❌ Password is weak! Must be at least 8 chars, include uppercase, lowercase, number, and special character.");
+        alert("❌ كلمة المرور ضعيفة! يجب ألا تقل عن 8 أحرف، وتحتوي على حرف كبير، حرف صغير، رقم، ورمز (مثل @#$).");
         btn.disabled = false;
-        btn.innerText = isAr ? "إنشاء الحساب وبدء التجربة" : "Create Account & Start Trial";
+        btn.innerText = "إنشاء الحساب وبدء التجربة";
         return; 
     }
 
     if (window.showLoader) window.showLoader("جاري تجهيز النظام لك...");
 
     try {
+        // 🔴 إشارة المرور: بنقول للمراقب متعملش Redirect دلوقتي! 🔴
+        sessionStorage.setItem('isRegistering', 'true');
+
         await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
         const actualEmail = userCredential.user.email;
 
-        // 👑 توليد كود العيادة الـ 5 أرقام فوراً عند التسجيل التجريبي 👑
         const accessCode = Math.floor(10000 + Math.random() * 90000).toString();
-
         const expirationDate = new Date();
         expirationDate.setDate(expirationDate.getDate() + 7); 
 
-        // حفظ العيادة وبداخلها الـ accessCode
         const clinicRef = await db.collection("Clinics").add({
             clinicName: clinicName,
             adminEmail: actualEmail,
@@ -221,7 +217,7 @@ async function registerTrialAccount(e) {
             maxUsers: 3,        
             maxPatients: 500,   
             maxWhatsapp: 50,    
-            accessCode: accessCode, // حفظ الكود في وثيقة العيادة
+            accessCode: accessCode, 
             hasUsedTrial: true,     
             nextPaymentDate: firebase.firestore.Timestamp.fromDate(expirationDate),
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -229,7 +225,6 @@ async function registerTrialAccount(e) {
 
         const newClinicId = clinicRef.id;
 
-        // 🔴 تسجيل الكود في جدول الـ clinicId المركزي فوراً عشان اللوجين يشتغل 🔴
         await db.collection("clinicId").doc(accessCode).set({
             clinicId: newClinicId,
             name: clinicName,
@@ -259,12 +254,15 @@ async function registerTrialAccount(e) {
 
         if (window.hideLoader) window.hideLoader();
         
-        // إظهار كود العيادة للدكتور في رسالة ترحيب واضحة عشان يحفظه
+        // دلوقتي الرسالة هتظهر غصب عن المتصفح
         alert(`✅ مبروك يا دكتور ${adminName}!\nتم تفعيل العيادة بنجاح.\n🔑 كود العيادة الخاص بك للدخول هو: [ ${accessCode} ]\nفترة التجربة هتنتهي يوم ${expirationDate.toLocaleDateString('ar-EG')}`);
         
+        // 🔴 بنمسح الإشارة ونعمل إحنا الـ Redirect اليدوي 🔴
+        sessionStorage.removeItem('isRegistering');
         window.location.href = "home.html";
 
     } catch (error) {
+        sessionStorage.removeItem('isRegistering'); // مسح الإشارة في حالة الخطأ
         console.error("Trial Registration Error:", error);
         if (window.hideLoader) window.hideLoader();
         btn.disabled = false;
