@@ -35,7 +35,7 @@ document.addEventListener('keydown', function(event) {
 // =======================================================
 // 🔴 سحر التحديث التلقائي للـ Service Worker (بدون تدخل الطبيب) 🔴
 // =======================================================
-/*if ('serviceWorker' in navigator) {
+if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js').then(reg => {
             console.log('✅ ServiceWorker registered.');
@@ -56,7 +56,7 @@ document.addEventListener('keydown', function(event) {
             };
         }).catch(err => { console.log('❌ SW error: ', err); });
     });
-}*/
+}
 
 // =========================================================================
 // 🌟 اللودر العالمي المُحصن + حل مشكلة السكرول 🌟
