@@ -234,12 +234,13 @@ window.sendOTP = async function(e) {
 
     } catch (error) {
         console.error("SMS Error:", error);
-        alert("❌ فشل إرسال الكود: " + error.message);
+        alert("❌ فشل إرسال الكود: تأكد من اتصال الإنترنت وإيقاف مانع الإعلانات.");
         
-        // إعادة تهيئة الكابتشا في حالة الفشل
-        if(window.recaptchaVerifier) window.recaptchaVerifier.render().then(function(widgetId) {
-            grecaptcha.reset(widgetId);
-        });
+        // 🔴 التعديل: تصفير الكابتشا بأمان بدون كراش
+        if (window.recaptchaVerifier) {
+            window.recaptchaVerifier.clear();
+            window.recaptchaVerifier = null;
+        }
     } finally {
         btn.disabled = false;
         btn.innerText = "تأكيد وإرسال كود التفعيل 📱";
@@ -703,6 +704,9 @@ function togglePasswordVisibility() {
 function checkPasswordStrength(password) {
     const bar = document.getElementById('pass-strength-bar');
     const label = document.getElementById('pass-strength-label');
+
+    if (!bar || !label) return;
+    
     const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
     
     if (!password) {
