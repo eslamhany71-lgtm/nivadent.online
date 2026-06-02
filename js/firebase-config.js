@@ -32,30 +32,6 @@ document.addEventListener('keydown', function(event) {
     }
 });
 
-// 🔴 سحر التحديث التلقائي للـ Service Worker (بدون تدخل الطبيب) 🔴
-// =======================================================
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').then(reg => {
-            console.log('✅ ServiceWorker registered.');
-            
-            // مراقبة أي تحديث جديد في ملف sw.js
-            reg.onupdatefound = () => {
-                const installingWorker = reg.installing;
-                installingWorker.onstatechange = () => {
-                    if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                        // تم العثور على تحديث! إجبار المتصفح على مسح الكاش وإعادة التحميل فوراً
-                        console.log('🔄 تم العثور على تحديث جديد للنظام، جاري إعادة التحميل...');
-                        if(window.showLoader) window.showLoader("جاري تحديث النظام لنسخة أحدث...");
-                        setTimeout(() => {
-                            window.location.reload(true); // True تجبر المتصفح يتجاهل الكاش
-                        }, 1000);
-                    }
-                };
-            };
-        }).catch(err => { console.log('❌ SW error: ', err); });
-    });
-}
 // =========================================================================
 // 🌟 اللودر العالمي المُحصن + حل مشكلة السكرول 🌟
 // =========================================================================
