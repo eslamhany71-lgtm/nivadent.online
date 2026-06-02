@@ -32,28 +32,28 @@ document.addEventListener('keydown', function(event) {
     }
 });
 
-// =======================================================
-// 🛑 كود التطهير الشامل: إبادة السيرفيس وركر واستعادة استقرار النظام 🛑
+// 🔴 سحر التحديث التلقائي للـ Service Worker (بدون تدخل الطبيب) 🔴
 // =======================================================
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(function(registrations) {
-        for (let registration of registrations) {
-            registration.unregister().then(function() {
-                console.log('🧹 تم قتـل وإلغاء تسجيل السيرفيس وركر بنجاح.');
-            });
-        }
-    }).catch(function(err) {
-        console.error('❌ فشل قفل السيرفيس وركر:', err);
-    });
-}
-
-// مسح جميع ملفات الكاش المخزنة في المتصفح نهائياً
-if ('caches' in window) {
-    caches.keys().then(function(names) {
-        for (let name of names) {
-            caches.delete(name);
-            console.log('🧹 تم مسح كاش المتصفح التالف بنجاح.');
-        }
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').then(reg => {
+            console.log('✅ ServiceWorker registered.');
+            
+            // مراقبة أي تحديث جديد في ملف sw.js
+            reg.onupdatefound = () => {
+                const installingWorker = reg.installing;
+                installingWorker.onstatechange = () => {
+                    if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        // تم العثور على تحديث! إجبار المتصفح على مسح الكاش وإعادة التحميل فوراً
+                        console.log('🔄 تم العثور على تحديث جديد للنظام، جاري إعادة التحميل...');
+                        if(window.showLoader) window.showLoader("جاري تحديث النظام لنسخة أحدث...");
+                        setTimeout(() => {
+                            window.location.reload(true); // True تجبر المتصفح يتجاهل الكاش
+                        }, 1000);
+                    }
+                };
+            };
+        }).catch(err => { console.log('❌ SW error: ', err); });
     });
 }
 // =========================================================================
