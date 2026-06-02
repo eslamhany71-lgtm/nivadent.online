@@ -18,7 +18,6 @@ const ASSETS_TO_CACHE = [
 ];
 
 self.addEventListener('install', (event) => {
-    self.skipWaiting(); // إجبار التحديث الفوري
     event.waitUntil(
         caches.open(CACHE_NAME).then(async (cache) => {
             console.log('✅ جاري تخزين الملفات الأساسية لتسريع النظام...');
