@@ -33,28 +33,82 @@ document.addEventListener('keydown', function(event) {
 });
 
 // =======================================================
-// 🔴 سحر التحديث التلقائي للـ Service Worker (بدون تدخل الطبيب) 🔴
+// 🔴 سحر التحديث التلقائي الذكي (Smart Toast) للـ Service Worker 🔴
 // =======================================================
+let refreshing = false;
+
+// 1. لما النسخة الجديدة تستلم الشغل، اعمل ريفرش للصفحة إجبارياً
+navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!refreshing) {
+        window.location.reload();
+        refreshing = true;
+    }
+});
+
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js').then(reg => {
             console.log('✅ ServiceWorker registered.');
             
             // مراقبة أي تحديث جديد في ملف sw.js
-            reg.onupdatefound = () => {
-                const installingWorker = reg.installing;
-                installingWorker.onstatechange = () => {
-                    if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                        // تم العثور على تحديث! إجبار المتصفح على مسح الكاش وإعادة التحميل فوراً
-                        console.log('🔄 تم العثور على تحديث جديد للنظام، جاري إعادة التحميل...');
-                        if(window.showLoader) window.showLoader("جاري تحديث النظام لنسخة أحدث...");
-                        setTimeout(() => {
-                            window.location.reload(true); // True تجبر المتصفح يتجاهل الكاش
-                        }, 1000);
+            reg.addEventListener('updatefound', () => {
+                const newWorker = reg.installing;
+                newWorker.addEventListener('statechange', () => {
+                    // لو التحديث نزل وجاهز، والعيادة فاتحة النسخة القديمة
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        showUpdateToast(newWorker); // إظهار الإشعار بدلاً من الريفرش الإجباري
                     }
-                };
-            };
+                });
+            });
         }).catch(err => { console.log('❌ SW error: ', err); });
+    });
+}
+
+// 2. دالة بناء وعرض الإشعار (Toast)
+function showUpdateToast(newWorker) {
+    // منع التكرار لو الإشعار ظاهر أصلاً
+    if (document.getElementById('smart-update-toast')) return; 
+
+    const toast = document.createElement('div');
+    toast.id = 'smart-update-toast';
+    toast.innerHTML = `
+        <div style="position: fixed; bottom: 30px; left: 30px; background: #0d6efd; color: white; padding: 15px 25px; border-radius: 10px; box-shadow: 0 10px 30px rgba(13, 110, 253, 0.4); z-index: 9999999; display: flex; align-items: center; gap: 20px; font-family: 'Tajawal', sans-serif; animation: slideUp 0.5s ease-out; direction: rtl;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 24px;">🚀</span>
+                <div>
+                    <h6 style="margin: 0; font-weight: bold; font-size: 16px;">تحديث جديد متوفر!</h6>
+                    <small style="opacity: 0.9;">تم إضافة ميزات جديدة للنظام.</small>
+                </div>
+            </div>
+            <button id="btn-apply-update" style="background: white; color: #0d6efd; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s;">تحديث الآن</button>
+        </div>
+    `;
+
+    document.body.appendChild(toast);
+
+    // إضافة حركة (Animation) بالـ CSS
+    const style = document.createElement('style');
+    style.innerHTML = `
+        @keyframes slideUp {
+            from { transform: translateY(100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        #btn-apply-update:hover { background: #f8f9fa; transform: scale(1.05); }
+    `;
+    document.head.appendChild(style);
+
+    // لما الدكتور يدوس على التحديث
+    document.getElementById('btn-apply-update').addEventListener('click', () => {
+        const btn = document.getElementById('btn-apply-update');
+        btn.innerText = 'جاري التحديث... ⏳';
+        btn.style.opacity = '0.7';
+        btn.disabled = true;
+        
+        // تشغيل اللودر العالمي بتاعك عشان يقفل الشاشة
+        if(window.showLoader) window.showLoader("جاري تحديث النظام وتطبيق الميزات الجديدة...");
+        
+        // إرسال أمر القتل للنسخة القديمة
+        newWorker.postMessage({ action: 'skipWaiting' });
     });
 }
 
