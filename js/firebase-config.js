@@ -33,49 +33,45 @@ document.addEventListener('keydown', function(event) {
 });
 
 // =======================================================
-// 🔴 النظام الاحترافي الحاسم: التحديث الذكي ومنع عناد الآيفون 🔴
+// 🔴 النظام الاحترافي والنهائي: إشعار التحديث الذكي 🔴
 // =======================================================
 if ('serviceWorker' in navigator) {
-    
-    // [خاص بالآيفون] طرد وإلغاء السيرفيس وركر القديم فوراً لو وجد لإنهاء اللوب
-    navigator.serviceWorker.getRegistrations().then(registrations => {
-        for (let reg of registrations) {
-            if (reg.active && reg.active.scriptURL.includes('sw.js')) {
-                reg.unregister().then(() => {
-                    console.log('🧹 تم قتـل السيرفيس وركر القديم بنجاح!');
-                });
-            }
-        }
-    });
-
-    // تسجيل السيرفيس وركر بالاسم الجديد تماماً لكسر كاش سفاري غصب عنه
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw-v2.js').then(reg => {
-            console.log('✅ تم تسجيل النظام الجديد المستقر بنجاح.');
-            
-            reg.addEventListener('updatefound', () => {
-                const newWorker = reg.installing;
-                newWorker.addEventListener('statechange', () => {
-                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                        showSmartToast(newWorker);
-                    }
-                });
-            });
-        }).catch(err => console.error('SW Register Error:', err));
-    });
-
-    // حماية صارمة لضمان حدوث الريفرش مرة واحدة فقط عند التحديث
     let refreshing = false;
+
+    // 1. مراقبة التحديث: لا يتم الريفرش إلا إذا تم تغيير المتحكم فعلياً
     navigator.serviceWorker.addEventListener('controllerchange', () => {
         if (!refreshing) {
             refreshing = true;
             window.location.reload();
         }
     });
+
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').then((reg) => {
+            console.log('✅ ServiceWorker Registered.');
+
+            // أ. في حالة وجود تحديث معلق مسبقاً (حل مشكلة اللاب توب)
+            if (reg.waiting) {
+                showSmartToast(reg.waiting);
+                return;
+            }
+
+            // ب. في حالة العثور على تحديث أثناء التصفح
+            reg.addEventListener('updatefound', () => {
+                const newWorker = reg.installing;
+                newWorker.addEventListener('statechange', () => {
+                    // إظهار الرسالة فقط عند اكتمال التحميل ووجود نسخة قديمة تعمل
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        showSmartToast(newWorker);
+                    }
+                });
+            });
+        }).catch(err => console.error('SW Error:', err));
+    });
 }
 
-// دالة بناء وعرض إشعار التحديث (Smart Toast)
-function showSmartToast(newWorker) {
+function showSmartToast(worker) {
+    // منع تكرار الرسالة
     if (document.getElementById('smart-update-toast')) return;
 
     const toast = document.createElement('div');
@@ -101,12 +97,13 @@ function showSmartToast(newWorker) {
     document.getElementById('btn-apply-update').addEventListener('click', function() {
         this.innerText = 'جاري التحديث...';
         this.disabled = true;
-        if(window.showLoader) window.showLoader("جاري تطبيق التحديثات الجديدة...");
+        if(window.showLoader) window.showLoader("جاري تطبيق التحديثات...");
         
-        // إرسال أمر التحديث التلقائي للملف الجديد
-        newWorker.postMessage({ action: 'skipWaiting' });
+        // إرسال الأمر للسيرفيس وركر لتخطي الانتظار
+        worker.postMessage({ type: 'SKIP_WAITING' });
     });
 }
+
 // =========================================================================
 // 🌟 اللودر العالمي المُحصن + حل مشكلة السكرول 🌟
 // =========================================================================
