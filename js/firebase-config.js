@@ -33,65 +33,27 @@ document.addEventListener('keydown', function(event) {
 });
 
 // =======================================================
-// 🔴 نظام التحديث الذكي المستقر (v3) 🔴
+// 🛑 كود التطهير الشامل: إبادة السيرفيس وركر واستعادة استقرار النظام 🛑
 // =======================================================
 if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw-v3.js').then((reg) => {
-            console.log('✅ ServiceWorker Registered (v3).');
-
-            // لو فيه تحديث جاهز ومستني العميل يوافق
-            if (reg.waiting) {
-                showSmartToast(reg.waiting);
-            }
-
-            // مراقبة التحديثات الجديدة أثناء التصفح
-            reg.addEventListener('updatefound', () => {
-                const newWorker = reg.installing;
-                newWorker.addEventListener('statechange', () => {
-                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                        showSmartToast(newWorker);
-                    }
-                });
+    navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for (let registration of registrations) {
+            registration.unregister().then(function() {
+                console.log('🧹 تم قتـل وإلغاء تسجيل السيرفيس وركر بنجاح.');
             });
-        }).catch(err => console.error('SW Error:', err));
+        }
+    }).catch(function(err) {
+        console.error('❌ فشل قفل السيرفيس وركر:', err);
     });
 }
 
-function showSmartToast(worker) {
-    if (document.getElementById('smart-update-toast')) return;
-
-    const toast = document.createElement('div');
-    toast.id = 'smart-update-toast';
-    toast.innerHTML = `
-        <div style="position: fixed; bottom: 30px; left: 30px; background: #0f172a; color: white; padding: 15px 25px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 9999999; display: flex; align-items: center; gap: 20px; font-family: 'Tajawal', sans-serif; animation: slideUp 0.5s ease-out; direction: rtl; border: 1px solid #334155;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="font-size: 24px;">🔄</span>
-                <div>
-                    <h6 style="margin: 0; font-weight: bold; font-size: 15px; color: #38bdf8;">تحديث جديد للنظام متوفر</h6>
-                    <small style="opacity: 0.8;">يرجى التحديث لضمان عمل النظام بكفاءة.</small>
-                </div>
-            </div>
-            <button id="btn-apply-update" style="background: #38bdf8; color: #0f172a; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s;">تحديث الآن</button>
-        </div>
-    `;
-    document.body.appendChild(toast);
-
-    const style = document.createElement('style');
-    style.innerHTML = `@keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }`;
-    document.head.appendChild(style);
-
-    document.getElementById('btn-apply-update').addEventListener('click', function() {
-        this.innerText = 'جاري التحديث...';
-        this.disabled = true;
-        if(window.showLoader) window.showLoader("جاري تطبيق التحديثات...");
-        
-        // إرسال الإشارة والنقل الفوري
-        worker.postMessage({ type: 'SKIP_WAITING' });
-        
-        setTimeout(() => {
-            window.location.reload(true);
-        }, 500);
+// مسح جميع ملفات الكاش المخزنة في المتصفح نهائياً
+if ('caches' in window) {
+    caches.keys().then(function(names) {
+        for (let name of names) {
+            caches.delete(name);
+            console.log('🧹 تم مسح كاش المتصفح التالف بنجاح.');
+        }
     });
 }
 // =========================================================================
