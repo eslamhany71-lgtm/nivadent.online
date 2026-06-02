@@ -37,20 +37,24 @@ document.addEventListener('keydown', function(event) {
 // =======================================================
 if ('serviceWorker' in navigator) {
     let refreshing = false;
+    
+    // متغير عشان نمنع المتصفح يعمل ريفرش ويخطف الرسالة لو دي أول مرة يحمل فيها
+    let isFirstInstall = !navigator.serviceWorker.controller;
 
-    // 1. مراقبة التحديث: لا يتم الريفرش إلا إذا تم تغيير المتحكم فعلياً
+    // 1. مراقبة التحديث: لا يتم الريفرش إلا إذا تم تغيير المتحكم فعلياً ولم تكن هذه أول مرة
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!refreshing) {
+        if (!refreshing && !isFirstInstall) {
             refreshing = true;
             window.location.reload();
         }
     });
 
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').then((reg) => {
-            console.log('✅ ServiceWorker Registered.');
+        // 🔴 التأكد من استدعاء الملف الجديد sw-v2.js لكسر كاش الآيفون 🔴
+        navigator.serviceWorker.register('/sw-v2.js').then((reg) => {
+            console.log('✅ ServiceWorker Registered (v2).');
 
-            // أ. في حالة وجود تحديث معلق مسبقاً (حل مشكلة اللاب توب)
+            // أ. في حالة وجود تحديث معلق مسبقاً
             if (reg.waiting) {
                 showSmartToast(reg.waiting);
                 return;
@@ -60,7 +64,6 @@ if ('serviceWorker' in navigator) {
             reg.addEventListener('updatefound', () => {
                 const newWorker = reg.installing;
                 newWorker.addEventListener('statechange', () => {
-                    // إظهار الرسالة فقط عند اكتمال التحميل ووجود نسخة قديمة تعمل
                     if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                         showSmartToast(newWorker);
                     }
@@ -71,7 +74,6 @@ if ('serviceWorker' in navigator) {
 }
 
 function showSmartToast(worker) {
-    // منع تكرار الرسالة
     if (document.getElementById('smart-update-toast')) return;
 
     const toast = document.createElement('div');
@@ -99,7 +101,7 @@ function showSmartToast(worker) {
         this.disabled = true;
         if(window.showLoader) window.showLoader("جاري تطبيق التحديثات...");
         
-        // إرسال الأمر للسيرفيس وركر لتخطي الانتظار
+        // إرسال الشفرة الصحيحة لملف sw-v2.js
         worker.postMessage({ type: 'SKIP_WAITING' });
     });
 }
