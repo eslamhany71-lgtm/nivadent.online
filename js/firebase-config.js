@@ -33,34 +33,19 @@ document.addEventListener('keydown', function(event) {
 });
 
 // =======================================================
-// 🔴 النظام الاحترافي والنهائي: إشعار التحديث الذكي 🔴
+// 🔴 النظام المبسط والمباشر لإشعار التحديث (بدون ريفرش عشوائي) 🔴
 // =======================================================
 if ('serviceWorker' in navigator) {
-    let refreshing = false;
-    
-    // متغير عشان نمنع المتصفح يعمل ريفرش ويخطف الرسالة لو دي أول مرة يحمل فيها
-    let isFirstInstall = !navigator.serviceWorker.controller;
-
-    // 1. مراقبة التحديث: لا يتم الريفرش إلا إذا تم تغيير المتحكم فعلياً ولم تكن هذه أول مرة
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!refreshing && !isFirstInstall) {
-            refreshing = true;
-            window.location.reload();
-        }
-    });
-
     window.addEventListener('load', () => {
-        // 🔴 التأكد من استدعاء الملف الجديد sw-v2.js لكسر كاش الآيفون 🔴
         navigator.serviceWorker.register('/sw-v2.js').then((reg) => {
-            console.log('✅ ServiceWorker Registered (v2).');
+            console.log('✅ ServiceWorker Registered (Minimal Version).');
 
-            // أ. في حالة وجود تحديث معلق مسبقاً
+            // لو فيه تحديث نزل ومستني
             if (reg.waiting) {
                 showSmartToast(reg.waiting);
-                return;
             }
 
-            // ب. في حالة العثور على تحديث أثناء التصفح
+            // لو لقى تحديث جديد بيحمل
             reg.addEventListener('updatefound', () => {
                 const newWorker = reg.installing;
                 newWorker.addEventListener('statechange', () => {
@@ -96,16 +81,21 @@ function showSmartToast(worker) {
     style.innerHTML = `@keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }`;
     document.head.appendChild(style);
 
+    // الريفرش هيحصل هنا وبس!
     document.getElementById('btn-apply-update').addEventListener('click', function() {
         this.innerText = 'جاري التحديث...';
         this.disabled = true;
         if(window.showLoader) window.showLoader("جاري تطبيق التحديثات...");
         
-        // إرسال الشفرة الصحيحة لملف sw-v2.js
+        // 1. إرسال الشفرة لقتل النسخة القديمة
         worker.postMessage({ type: 'SKIP_WAITING' });
+        
+        // 2. عمل ريفرش إجباري من الزرار نفسه بعد نص ثانية
+        setTimeout(() => {
+            window.location.reload(true);
+        }, 500);
     });
 }
-
 // =========================================================================
 // 🌟 اللودر العالمي المُحصن + حل مشكلة السكرول 🌟
 // =========================================================================
