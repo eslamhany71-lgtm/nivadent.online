@@ -88,7 +88,6 @@ self.addEventListener('fetch', (event) => {
 // الاستماع لرسالة التحديث من الداشبورد
 self.addEventListener('message', (event) => {
     if (event.data && event.data.action === 'skipWaiting') {
-        self.skipWaiting(); // أمر بإنهاء النسخة القديمة فوراً
     }
 });
 
