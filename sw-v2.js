@@ -86,9 +86,9 @@ self.addEventListener('fetch', (event) => {
     }
 });
 
-// الكود النظيف داخل ملف sw-v2.js الجديد
+// الكود النظيف داخل ملف sw-v2.js الجديد (متطابق مع شفرة الزرار)
 self.addEventListener('message', (event) => {
-    if (event.data && event.data.action === 'skipWaiting') {
+    if (event.data && event.data.type === 'SKIP_WAITING') {
         self.skipWaiting();
     }
 });
