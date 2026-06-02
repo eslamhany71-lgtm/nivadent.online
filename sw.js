@@ -86,4 +86,9 @@ self.addEventListener('fetch', (event) => {
     }
 });
 
-
+// الكود النظيف داخل ملف sw-v2.js الجديد
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.action === 'skipWaiting') {
+        self.skipWaiting();
+    }
+});
