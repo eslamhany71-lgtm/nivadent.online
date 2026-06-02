@@ -33,22 +33,25 @@ document.addEventListener('keydown', function(event) {
 });
 
 // =======================================================
-// 🔴 النظام الاحترافي النهائي: التحديث الذكي (Smart Toast) 🔴
+// 🔴 النظام الاحترافي الحاسم: التحديث الذكي ومنع عناد الآيفون 🔴
 // =======================================================
-let refreshing = false;
-
 if ('serviceWorker' in navigator) {
-    // 1. الريفرش يحدث مرة واحدة فقط عندما يتولى العامل الجديد السيطرة
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!refreshing) {
-            refreshing = true;
-            window.location.reload();
+    
+    // [خاص بالآيفون] طرد وإلغاء السيرفيس وركر القديم فوراً لو وجد لإنهاء اللوب
+    navigator.serviceWorker.getRegistrations().then(registrations => {
+        for (let reg of registrations) {
+            if (reg.active && reg.active.scriptURL.includes('sw.js')) {
+                reg.unregister().then(() => {
+                    console.log('🧹 تم قتـل السيرفيس وركر القديم بنجاح!');
+                });
+            }
         }
     });
 
+    // تسجيل السيرفيس وركر بالاسم الجديد تماماً لكسر كاش سفاري غصب عنه
     window.addEventListener('load', () => {
-        // 2. استخدام (?v=2.0) لكسر الكاش القديم إجبارياً على جميع الأجهزة
-        navigator.serviceWorker.register('/sw.js?v=2.0').then(reg => {
+        navigator.serviceWorker.register('/sw-v2.js').then(reg => {
+            console.log('✅ تم تسجيل النظام الجديد المستقر بنجاح.');
             
             reg.addEventListener('updatefound', () => {
                 const newWorker = reg.installing;
@@ -58,11 +61,20 @@ if ('serviceWorker' in navigator) {
                     }
                 });
             });
-        }).catch(err => console.error('SW Error:', err));
+        }).catch(err => console.error('SW Register Error:', err));
+    });
+
+    // حماية صارمة لضمان حدوث الريفرش مرة واحدة فقط عند التحديث
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+            refreshing = true;
+            window.location.reload();
+        }
     });
 }
 
-// 3. بناء إشعار التحديث
+// دالة بناء وعرض إشعار التحديث (Smart Toast)
 function showSmartToast(newWorker) {
     if (document.getElementById('smart-update-toast')) return;
 
@@ -91,11 +103,10 @@ function showSmartToast(newWorker) {
         this.disabled = true;
         if(window.showLoader) window.showLoader("جاري تطبيق التحديثات الجديدة...");
         
-        // إرسال أمر التحديث للعامل الجديد
+        // إرسال أمر التحديث التلقائي للملف الجديد
         newWorker.postMessage({ action: 'skipWaiting' });
     });
 }
-
 // =========================================================================
 // 🌟 اللودر العالمي المُحصن + حل مشكلة السكرول 🌟
 // =========================================================================
