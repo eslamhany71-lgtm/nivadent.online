@@ -33,19 +33,19 @@ document.addEventListener('keydown', function(event) {
 });
 
 // =======================================================
-// 🔴 النظام المبسط والمباشر لإشعار التحديث (بدون ريفرش عشوائي) 🔴
+// 🔴 نظام التحديث الذكي المستقر (v3) 🔴
 // =======================================================
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw-v2.js').then((reg) => {
-            console.log('✅ ServiceWorker Registered (Minimal Version).');
+        navigator.serviceWorker.register('/sw-v3.js').then((reg) => {
+            console.log('✅ ServiceWorker Registered (v3).');
 
-            // لو فيه تحديث نزل ومستني
+            // لو فيه تحديث جاهز ومستني العميل يوافق
             if (reg.waiting) {
                 showSmartToast(reg.waiting);
             }
 
-            // لو لقى تحديث جديد بيحمل
+            // مراقبة التحديثات الجديدة أثناء التصفح
             reg.addEventListener('updatefound', () => {
                 const newWorker = reg.installing;
                 newWorker.addEventListener('statechange', () => {
@@ -81,16 +81,14 @@ function showSmartToast(worker) {
     style.innerHTML = `@keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }`;
     document.head.appendChild(style);
 
-    // الريفرش هيحصل هنا وبس!
     document.getElementById('btn-apply-update').addEventListener('click', function() {
         this.innerText = 'جاري التحديث...';
         this.disabled = true;
         if(window.showLoader) window.showLoader("جاري تطبيق التحديثات...");
         
-        // 1. إرسال الشفرة لقتل النسخة القديمة
+        // إرسال الإشارة والنقل الفوري
         worker.postMessage({ type: 'SKIP_WAITING' });
         
-        // 2. عمل ريفرش إجباري من الزرار نفسه بعد نص ثانية
         setTimeout(() => {
             window.location.reload(true);
         }, 500);
