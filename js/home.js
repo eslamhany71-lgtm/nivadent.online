@@ -48,7 +48,17 @@ document.addEventListener('DOMContentLoaded', () => {
 function loadPage(pageUrl, clickedLi) {
     const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
     const role = sessionStorage.getItem('userRole');
+// سحب البيانات الخام من الذاكرة للفحص
+    const rawPerms = sessionStorage.getItem('userPermissions');
+    const rawFeatures = sessionStorage.getItem('clinicFeatures');
+    const isSuperAdmin = (role === 'superadmin');
 
+    // 🛡️ حاجز الأمان الصامت: لو البيانات لسه مجتش من السيرفر، انتظر صامتاً تماماً ولا تظهر أي ألرت!
+    if ((!rawPerms || !rawFeatures) && !isSuperAdmin) {
+        console.log("⏳ الميزات أو الصلاحيات لسه بتحمل من الفايربيز.. إعادة المحاولة صامتاً بعد 300 مللي ثانية...");
+        setTimeout(() => { loadPage(pageUrl, clickedLi); }, 300);
+        return; // أوقف تنفيذ الدالة فوراً ولا تسمح بظهور الألرت الملعون
+    }
     const basePage = pageUrl.split('?')[0].replace('.html', '');
 
     const routeMap = {
@@ -335,6 +345,10 @@ firebase.auth().onAuthStateChanged(async (user) => {
                 const branchId = userData.branchId || sessionStorage.getItem('branchId') || 'main'; 
                 sessionStorage.setItem('clinicId', clinicId);
                 sessionStorage.setItem('userRole', role); 
+                // تأمين للحسابات المركزية عشان متدخلش في انتظار لانهائي
+                if (role === 'superadmin' || clinicId === 'default') {
+                    sessionStorage.setItem('clinicFeatures', JSON.stringify({}));
+                }
 
                 let userPermissions = userData.permissions;
                 let defaultPerms = getDefaultPermissions(role);
