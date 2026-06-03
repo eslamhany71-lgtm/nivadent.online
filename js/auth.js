@@ -128,7 +128,10 @@ async function loginById() {
         sessionStorage.setItem('branchId', targetBranchId); 
         sessionStorage.setItem('userPermissions', JSON.stringify(userPermissions));
         
-        window.location.replace("home.html"); 
+        // 🔴 خدعة الآيفون: تأخير التوجيه 800 مللي ثانية للسماح للفايربيز بحفظ الجلسة في الـ IndexedDB
+        setTimeout(() => {
+            window.location.replace("home.html"); 
+        }, 800); 
 
     } catch (error) {
         if (window.hideLoader) window.hideLoader();
@@ -389,8 +392,10 @@ async function activateStaffAccount(e) {
         if (window.hideLoader) window.hideLoader();
         alert(`✅ تم تفعيل الحساب بنجاح يا ${inviteData.name}!\nجاري تحويلك للعيادة...`);
         
-        if (window.showLoader) window.showLoader("جاري التحويل...");
-        window.location.replace("home.html");
+if (window.showLoader) window.showLoader("جاري التحويل...");
+        setTimeout(() => {
+            window.location.replace("home.html");
+        }, 800);
 
     } catch (error) {
         if (window.hideLoader) window.hideLoader();
