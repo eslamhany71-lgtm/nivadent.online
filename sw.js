@@ -1,3 +1,8 @@
+// 🔴 في كل مرة ترفع تعديل جديد في المشروع، غير الرقم ده (مثلاً خليه 1.2، 1.3 وهكذا)
+const APP_VERSION = '1.1'; 
+const CACHE_NAME = `nivadent-erp-cache-v${APP_VERSION}`;
+
+
 const CACHE_NAME = 'nivadent-erp-cache-v3';
  
 // الملفات الثابتة فقط (الصور والـ CSS) هي اللي بتتحفظ كاش ثابت لتسريع النظام
