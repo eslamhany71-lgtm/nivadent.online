@@ -227,25 +227,27 @@ if (window === window.top) {
     }
 }
 // =======================================================
-// 🚀 نظام التحديث الذكي (Smart Update) - النسخة المستقرة
+// 🚀 نظام التحديث الذكي المحصن (منع الريفرش في الزيارة الأولى)
 // =======================================================
-let isRefreshing = false;
-
 if ('serviceWorker' in navigator) {
+    let isRefreshing = false;
+    
+    // 🔴 السر هنا: هل هذا العميل يزور النظام لأول مرة؟
+    // لو لم يكن هناك Service Worker مسبقاً، إذن هذه الزيارة الأولى
+    let isFirstInstall = !navigator.serviceWorker.controller;
+
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js').then((registration) => {
             console.log('✅ Service Worker Registered Successfully.');
 
-            // 1. لو في تحديث نزل في الخلفية وكان مستني الدكتور يوافق
             if (registration.waiting) {
                 showUpdateToast(registration.waiting);
             }
 
-            // 2. مراقبة أي تحديث جديد يتم رفعه أثناء تصفح السيستم
             registration.addEventListener('updatefound', () => {
                 const newWorker = registration.installing;
                 newWorker.addEventListener('statechange', () => {
-                    // لما الملف الجديد يخلص تحميل ويبقى جاهز للعمل
+                    // لا تظهر الرسالة إلا إذا كانت هناك نسخة قديمة تعمل بالفعل
                     if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                         showUpdateToast(newWorker);
                     }
@@ -256,18 +258,17 @@ if ('serviceWorker' in navigator) {
         });
     });
 
-    // 3. 🔴 الريفرش هيحصل "مرة واحدة فقط" ولما الزرار يتباس 🔴
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!isRefreshing) {
+        // 🔴 الضربة القاضية: لا تقم بالريفرش إذا كانت هذه أول زيارة للمستخدم!
+        if (!isRefreshing && !isFirstInstall) {
             isRefreshing = true;
             window.location.reload();
         }
     });
 }
 
-// دالة إظهار الإشعار (Toast)
+// دالة إظهار الإشعار (نفس الدالة بدون تغيير)
 function showUpdateToast(newWorker) {
-    // منع تكرار الإشعار لو موجود بالفعل في الشاشة
     if (document.getElementById('smart-update-toast')) return;
 
     const toast = document.createElement('div');
@@ -293,20 +294,16 @@ function showUpdateToast(newWorker) {
     `;
     document.head.appendChild(style);
 
-    // الأكشن بتاع الزرار
     document.getElementById('btn-apply-update').addEventListener('click', function() {
         this.innerText = 'جاري التحديث... ⏳';
         this.disabled = true;
         this.style.opacity = '0.7';
 
-        // تشغيل اللودر الشيك بتاعك عشان الدكتور يعرف إن فيه حاجة بتحصل
         if(window.showLoader) window.showLoader("جاري تطبيق التحديثات وإعادة تشغيل النظام...");
 
-        // إرسال شفرة التشغيل للـ Service Worker الجديد
         newWorker.postMessage({ action: 'SKIP_WAITING' });
     });
 }
-
 // ==========================================
 // 🚀 NivaDent Automations & n8n Bridge
 // ==========================================
