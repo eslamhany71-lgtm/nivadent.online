@@ -226,6 +226,86 @@ if (window === window.top) {
         setupNetworkMonitor(); 
     }
 }
+// =======================================================
+// 🚀 نظام التحديث الذكي (Smart Update) - النسخة المستقرة
+// =======================================================
+let isRefreshing = false;
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').then((registration) => {
+            console.log('✅ Service Worker Registered Successfully.');
+
+            // 1. لو في تحديث نزل في الخلفية وكان مستني الدكتور يوافق
+            if (registration.waiting) {
+                showUpdateToast(registration.waiting);
+            }
+
+            // 2. مراقبة أي تحديث جديد يتم رفعه أثناء تصفح السيستم
+            registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                newWorker.addEventListener('statechange', () => {
+                    // لما الملف الجديد يخلص تحميل ويبقى جاهز للعمل
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        showUpdateToast(newWorker);
+                    }
+                });
+            });
+        }).catch((error) => {
+            console.error('❌ Service Worker Error:', error);
+        });
+    });
+
+    // 3. 🔴 الريفرش هيحصل "مرة واحدة فقط" ولما الزرار يتباس 🔴
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!isRefreshing) {
+            isRefreshing = true;
+            window.location.reload();
+        }
+    });
+}
+
+// دالة إظهار الإشعار (Toast)
+function showUpdateToast(newWorker) {
+    // منع تكرار الإشعار لو موجود بالفعل في الشاشة
+    if (document.getElementById('smart-update-toast')) return;
+
+    const toast = document.createElement('div');
+    toast.id = 'smart-update-toast';
+    toast.innerHTML = `
+        <div style="position: fixed; bottom: 30px; left: 30px; background: #0f172a; color: white; padding: 15px 25px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); z-index: 9999999; display: flex; align-items: center; gap: 20px; font-family: 'Tajawal', sans-serif; animation: slideUp 0.5s ease-out; direction: rtl; border: 1px solid #334155;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 22px;">🚀</span>
+                <div>
+                    <h6 style="margin: 0; font-weight: bold; font-size: 15px; color: #38bdf8;">تحديث جديد متوفر!</h6>
+                    <small style="opacity: 0.85;">تم إضافة تحسينات وميزات جديدة للنظام.</small>
+                </div>
+            </div>
+            <button id="btn-apply-update" style="background: #38bdf8; color: #0f172a; border: none; padding: 8px 18px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s;">تحديث الآن</button>
+        </div>
+    `;
+    document.body.appendChild(toast);
+
+    const style = document.createElement('style');
+    style.innerHTML = `
+        @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        #btn-apply-update:hover { transform: scale(1.05); background: #7dd3fc; }
+    `;
+    document.head.appendChild(style);
+
+    // الأكشن بتاع الزرار
+    document.getElementById('btn-apply-update').addEventListener('click', function() {
+        this.innerText = 'جاري التحديث... ⏳';
+        this.disabled = true;
+        this.style.opacity = '0.7';
+
+        // تشغيل اللودر الشيك بتاعك عشان الدكتور يعرف إن فيه حاجة بتحصل
+        if(window.showLoader) window.showLoader("جاري تطبيق التحديثات وإعادة تشغيل النظام...");
+
+        // إرسال شفرة التشغيل للـ Service Worker الجديد
+        newWorker.postMessage({ action: 'SKIP_WAITING' });
+    });
+}
 
 // ==========================================
 // 🚀 NivaDent Automations & n8n Bridge
