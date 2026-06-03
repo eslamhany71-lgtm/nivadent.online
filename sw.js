@@ -1,24 +1,18 @@
-// 🔴 في كل مرة ترفع تعديل جديد في المشروع، غير الرقم ده (مثلاً خليه 1.2، 1.3 وهكذا)
-const APP_VERSION = '1.1'; 
-const CACHE_NAME = `nivadent-erp-cache-v${APP_VERSION}`;
+// 🔴 1. رقم الإصدار: غيره في كل مرة ترفع فيها تعديل (مثلاً 1.2, 1.3)
+const APP_VERSION = '1.2'; 
+const CACHE_NAME = `nivadent-erp-cache-v${APP_VERSION}`; // 👈 تم تعريفه مرة واحدة فقط
 
- 
-// الملفات الثابتة فقط (الصور والـ CSS) هي اللي بتتحفظ كاش ثابت لتسريع النظام
+// 2. الملفات اللي هتتكيش
 const ASSETS_TO_CACHE = [
-    '/', '/index.html', '/activate.html', '/dashboard.html', 
-    '/patients.html', '/patient-profile.html', '/session-details.html', 
-    '/finances.html', '/calendar.html', '/settings.html', 
+    '/', '/index.html', '/activate.html', '/dashboard.html',
+    '/patients.html', '/patient-profile.html', '/session-details.html',
+    '/finances.html', '/calendar.html', '/settings.html',
     '/super-admin.html', '/404.html', '/home.html', '/inventory.html',
     '/assets/logo.png',
-    '/css/style.css', '/css/home.css', '/css/dashboard.css', 
-    '/css/patients.css', '/css/patient-profile.css', '/css/finances.css', 
-    '/css/calendar.css', '/css/settings.css', '/css/super-admin.css', 
-    '/css/dental-chart.css', '/css/inventory.css',
-    '/js/firebase-config.js', '/js/auth.js', '/js/lang-manager.js', 
-    '/js/home.js', '/js/dashboard.js', '/js/patients.js', 
-    '/js/patient-profile.js', '/js/session-details.js', '/js/finances.js', 
-    '/js/calendar.js', '/js/settings.js', '/js/super-admin.js', 
-    '/js/dental-chart.js', '/js/inventory.js', '/js/backup.js'
+    '/css/style.css', '/css/home.css', '/css/dashboard.css',
+    '/css/patients.css', '/css/patient-profile.css', '/css/finances.css',
+    '/css/calendar.css', '/css/settings.css', '/css/super-admin.css',
+    '/css/dental-chart.css', '/css/inventory.css'
 ];
 
 self.addEventListener('install', (event) => {
@@ -50,7 +44,7 @@ self.addEventListener('fetch', (event) => {
     if (!event.request.url.startsWith('http')) return;
     const requestUrl = new URL(event.request.url);
 
-    // استثناء خدمات جوجل والفايربيز تماماً
+    // استثناء الفايربيز
     if (requestUrl.hostname.includes('gstatic.com') || 
         requestUrl.hostname.includes('googleapis.com') || 
         requestUrl.hostname.includes('firebaseio.com')) {
@@ -63,28 +57,24 @@ self.addEventListener('fetch', (event) => {
         const isCodeFile = requestUrl.pathname.endsWith('.js') || requestUrl.pathname.endsWith('.html') || requestUrl.pathname === '/';
         
         if (isCodeFile) {
-            // ⭐ استراتيجية Network-First لملفات الكود: روح للسيرفر فوراً عشان التحديث يسمّع في ثانية
+            // الاستراتيجية الذكية للملفات البرمجية
             event.respondWith(
                 fetch(event.request).then((networkResponse) => {
                     if (networkResponse && networkResponse.status === 200) {
                         const responseToCache = networkResponse.clone();
-                        caches.open(CACHE_NAME).then((cache) => {
-                            cache.put(event.request.url.split('?')[0], responseToCache);
-                        });
+                        caches.open(CACHE_NAME).then((cache) => cache.put(event.request.url.split('?')[0], responseToCache));
                     }
                     return networkResponse;
                 }).catch(() => caches.match(event.request, { ignoreSearch: true }))
             );
         } else {
-            // استراتيجية Cache-First للصور والـ CSS لتوفير السرعة
+            // الاستراتيجية الذكية للصور والـ CSS
             event.respondWith(
                 caches.match(event.request, { ignoreSearch: true }).then((cachedResponse) => {
                     return cachedResponse || fetch(event.request).then((networkResponse) => {
                         if (networkResponse && networkResponse.status === 200) {
                             const responseToCache = networkResponse.clone();
-                            caches.open(CACHE_NAME).then((cache) => {
-                                cache.put(event.request.url.split('?')[0], responseToCache);
-                            });
+                            caches.open(CACHE_NAME).then((cache) => cache.put(event.request.url.split('?')[0], responseToCache));
                         }
                         return networkResponse;
                     });
@@ -94,7 +84,7 @@ self.addEventListener('fetch', (event) => {
     }
 });
 
-// الاستماع لرسالة التحديث من زرار الـ Toast
+// 3. الاستماع لرسالة الزرار
 self.addEventListener('message', (event) => {
     if (event.data && event.data.action === 'SKIP_WAITING') {
         self.skipWaiting();
