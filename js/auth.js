@@ -110,7 +110,7 @@ async function loginById() {
         }
 
         // 🔴 التعديل السحري: LOCAL بدلاً من SESSION لضمان بقاء الحساب على الآيفون 🔴
-        await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+        await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
 
         const userCredential = await auth.signInWithEmailAndPassword(loginEmail, pass);
         const actualEmail = userCredential.user.email;
@@ -290,7 +290,7 @@ window.verifyOTPAndRegister = async function(e) {
         const syndicateId = document.getElementById('trial_syndicate_id').value.trim(); 
 
         // 🔴 حماية الجلسة أثناء الإنشاء 🔴
-        await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+        await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
         const actualEmail = userCredential.user.email;
 
@@ -384,7 +384,7 @@ async function activateStaffAccount(e) {
         if (window.showLoader) window.showLoader("جاري تفعيل الحساب...");
 
         // 🔴 التعديل السحري للموظف 🔴
-        await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+        await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
         await auth.createUserWithEmailAndPassword(newEmail, newPassword);
 
         const assignedBranch = inviteData.branchId || 'main';
@@ -505,7 +505,7 @@ async function activateAccount() {
 
         isLoginInProgress = true;
         // 🔴 التعديل السحري هنا أيضاً 🔴
-        await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+        await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
         await auth.createUserWithEmailAndPassword(realEmail, pass);
         
         await db.collection("Users").doc(realEmail).set({
