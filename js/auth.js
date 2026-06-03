@@ -5,25 +5,44 @@ const db = firebase.firestore();
 let isLoginInProgress = false; 
 
 // ==========================================
-// 🔴 1. مراقب حالة الدخول (الحارس الذكي المحصن) 🔴
+// 🔴 1. مراقب حالة الدخول (الحارس الصبور - إصدار الآيفون) 🔴
 // ==========================================
+let iosFallbackTimer = null;
+
 auth.onAuthStateChanged((user) => {
     if (user) {
+        // لو الفايربيز صحي ولقى اليوزر، نلغي الطرد فوراً
+        if (iosFallbackTimer) clearTimeout(iosFallbackTimer);
+        
+        // زراعة وتد الأمان
+        localStorage.setItem('niva_logged_in', 'true');
+
         if (sessionStorage.getItem('isRegistering') === 'true') {
-            console.log("⏳ جاري كتابة بيانات العيادة في السيرفر... يرجى الانتظار.");
             return; 
         }
 
         if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname === '') {
-            // استخدام replace لمنع زرار الـ Back من عمل مشاكل
             window.location.replace('home.html');
         }
     } else {
+        // الفايربيز بيقول مفيش يوزر.. هل ده حقيقي ولا أبل نايمة؟
         if (!window.location.pathname.endsWith('index.html') && window.location.pathname !== '/' && window.location.pathname !== '') {
-            // تأخير بسيط لمنع الطرد الوهمي أثناء الريفرش
-            setTimeout(() => {
+            
+            // بنسأل الذاكرة السريعة: هل الراجل ده مسجل دخول قبل كده؟
+            if (localStorage.getItem('niva_logged_in') === 'true') {
+                console.log("⏳ الآيفون يقرأ الجلسة ببطء.. إعطاء مهلة 4 ثواني للفايربيز...");
+                
+                iosFallbackTimer = setTimeout(() => {
+                    // لو عدى 4 ثواني والفايربيز لسه مجابش حاجة، يبقى ده طرد حقيقي
+                    if (!auth.currentUser) {
+                        localStorage.removeItem('niva_logged_in');
+                        window.location.replace('index.html');
+                    }
+                }, 4000);
+            } else {
+                // مش مسجل دخول بجد (مفيش وتد أمان)، اطرده فوراً
                 window.location.replace('index.html');
-            }, 500);
+            }
         }
     }
 });
@@ -46,12 +65,13 @@ async function logout() {
                 isOnline: false,
                 lastLogin: firebase.firestore.FieldValue.serverTimestamp()
             });
-        } catch (e) { console.error("Error setting offline status:", e); }
+        } catch (e) {}
     }
     
     await auth.signOut();
     sessionStorage.clear();
     localStorage.removeItem('lastActiveNiva');
+    localStorage.removeItem('niva_logged_in'); // 🔴 خلع وتد الأمان عند الخروج
     window.location.replace("index.html");
 }
 
@@ -127,7 +147,10 @@ async function loginById() {
         sessionStorage.setItem('clinicId', targetClinicId);
         sessionStorage.setItem('branchId', targetBranchId); 
         sessionStorage.setItem('userPermissions', JSON.stringify(userPermissions));
+
         
+        // 🔴 زراعة وتد الأمان قبل التحويل للآيفون
+        localStorage.setItem('niva_logged_in', 'true');
         // 🔴 خدعة الآيفون: تأخير التوجيه 800 مللي ثانية للسماح للفايربيز بحفظ الجلسة في الـ IndexedDB
         setTimeout(() => {
             window.location.replace("home.html"); 
