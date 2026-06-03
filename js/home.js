@@ -310,8 +310,14 @@ function startGlobalNotificationsListener(clinicId, role, branchId) {
     });
 }
 
+// 🔴 رادار حالة المستخدم (نسخة محصنة متوافقة مع الآيفون) 🔴
+let homeFallbackTimer = null;
+
 firebase.auth().onAuthStateChanged(async (user) => {
     if (user) {
+        // إلغاء أي طرد مؤقت لو الفايربيز صحي
+        if (homeFallbackTimer) clearTimeout(homeFallbackTimer);
+
         document.getElementById('userEmail').innerText = user.email;
         if (window.showLoader) window.showLoader(document.body.dir === 'rtl' ? "جاري تهيئة النظام..." : "Initializing...");
 
@@ -398,23 +404,25 @@ firebase.auth().onAuthStateChanged(async (user) => {
                         await db.collection("Users").doc(user.email).update({ forceLogout: false });
                         firebase.auth().signOut().then(() => {
                             sessionStorage.clear();
+                            localStorage.removeItem('niva_logged_in');
                             window.top.location.href = 'index.html';
                         });
                     }
                 });
                             
-                         // 🚨 Death Switch (حماية الطرد النهائي للعيادة المحذوفة) 🚨
+                // 🚨 Death Switch (حماية الطرد النهائي للعيادة المحذوفة) 🚨
                 if (clinicId && clinicId !== 'default') {
-                db.collection("Clinics").doc(clinicId).onSnapshot(doc => {
-                    if (!doc.exists || doc.data().status === 'deleted') {
-                        alert("🚫 تم إغلاق أو إزالة هذه العيادة من قِبل إدارة النظام. سيتم تسجيل خروجك الآن.");
-                        firebase.auth().signOut().then(() => {
-                            sessionStorage.clear();
-                            window.location.href = "index.html";
-                        });
-                    }
-                });
-}
+                    db.collection("Clinics").doc(clinicId).onSnapshot(doc => {
+                        if (!doc.exists || doc.data().status === 'deleted') {
+                            alert("🚫 تم إغلاق أو إزالة هذه العيادة من قِبل إدارة النظام. سيتم تسجيل خروجك الآن.");
+                            firebase.auth().signOut().then(() => {
+                                sessionStorage.clear();
+                                localStorage.removeItem('niva_logged_in');
+                                window.location.href = "index.html";
+                            });
+                        }
+                    });
+                }
 
             }
         } catch (error) {
@@ -423,7 +431,19 @@ firebase.auth().onAuthStateChanged(async (user) => {
             if (window.hideLoader) window.hideLoader();
         }
     } else {
-        window.location.href = "index.html";
+        // 🔴 التعديل السحري: هل هذا طرد حقيقي أم بطء من الآيفون؟
+        if (localStorage.getItem('niva_logged_in') === 'true') {
+            console.log("⏳ الآيفون يقرأ الجلسة ببطء في الرئيسية.. مهلة 4 ثواني...");
+            homeFallbackTimer = setTimeout(() => {
+                if (!firebase.auth().currentUser) {
+                    localStorage.removeItem('niva_logged_in');
+                    window.location.href = "index.html";
+                }
+            }, 4000);
+        } else {
+            // لو مفيش وتد أمان، ده معناه إنه طرد حقيقي
+            window.location.href = "index.html";
+        }
     }
 });
 
