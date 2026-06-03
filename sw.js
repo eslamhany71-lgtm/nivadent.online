@@ -1,5 +1,5 @@
 const CACHE_NAME = 'nivadent-erp-cache-v3';
-
+ 
 // الملفات الثابتة فقط (الصور والـ CSS) هي اللي بتتحفظ كاش ثابت لتسريع النظام
 const ASSETS_TO_CACHE = [
     '/', '/index.html', '/activate.html', '/dashboard.html', 
