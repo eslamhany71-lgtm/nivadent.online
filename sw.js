@@ -1,5 +1,5 @@
 // 🔴 1. رقم الإصدار: غيره في كل مرة ترفع فيها تعديل (مثلاً 1.2, 1.3)
-const APP_VERSION = '1.2'; 
+const APP_VERSION = '1.3'; 
 const CACHE_NAME = `nivadent-erp-cache-v${APP_VERSION}`; // 👈 تم تعريفه مرة واحدة فقط
  
 // 2. الملفات اللي هتتكيش
@@ -57,7 +57,6 @@ self.addEventListener('fetch', (event) => {
         const isCodeFile = requestUrl.pathname.endsWith('.js') || requestUrl.pathname.endsWith('.html') || requestUrl.pathname === '/';
         
         if (isCodeFile) {
-            // الاستراتيجية الذكية للملفات البرمجية
             event.respondWith(
                 fetch(event.request).then((networkResponse) => {
                     if (networkResponse && networkResponse.status === 200) {
@@ -65,10 +64,14 @@ self.addEventListener('fetch', (event) => {
                         caches.open(CACHE_NAME).then((cache) => cache.put(event.request.url.split('?')[0], responseToCache));
                     }
                     return networkResponse;
-                }).catch(() => caches.match(event.request, { ignoreSearch: true }))
+                }).catch(() => {
+                    // 🔴 التعديل هنا: لو مفيش نت ولا كاش، رجع صفحة أو رد فاضي بدل undefined
+                    return caches.match(event.request, { ignoreSearch: true }).then(res => {
+                        return res || new Response("Offline or File Not Found", { status: 404, statusText: "Not Found" });
+                    });
+                })
             );
         } else {
-            // الاستراتيجية الذكية للصور والـ CSS
             event.respondWith(
                 caches.match(event.request, { ignoreSearch: true }).then((cachedResponse) => {
                     return cachedResponse || fetch(event.request).then((networkResponse) => {
@@ -77,6 +80,9 @@ self.addEventListener('fetch', (event) => {
                             caches.open(CACHE_NAME).then((cache) => cache.put(event.request.url.split('?')[0], responseToCache));
                         }
                         return networkResponse;
+                    }).catch(() => {
+                        // 🔴 التعديل هنا: نفس الحماية للصور والملفات الثابتة
+                        return new Response('', { status: 404, statusText: "Not Found" });
                     });
                 })
             );
