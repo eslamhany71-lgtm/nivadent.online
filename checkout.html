@@ -58,16 +58,18 @@
         .wallet-input-wrapper input { width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 8px; outline: none; font-size: 15px; text-align: left; }
         .wallet-input-wrapper input:focus { border-color: var(--primary); }
 
-        /* ستايل نظام الدفع اليدوي الجديد */
+        /* ستايل نظام الدفع اليدوي المعدل (الرقم المرجعي) */
         .manual-payment-box { display: none; background: #f8fafc; border: 1px dashed var(--primary); padding: 20px; border-radius: 10px; margin-top: -5px; margin-bottom: 15px; animation: fadeIn 0.3s ease; }
         .transfer-info { margin-bottom: 15px; font-size: 14px; color: var(--slate); line-height: 1.6; }
         .transfer-info ul { list-style: none; padding-right: 5px; margin-top: 10px; }
         .transfer-info li { margin-bottom: 10px; font-weight: 700; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
         .transfer-info li span { color: var(--primary-dark); font-family: monospace; font-size: 16px; background: #e0f2fe; padding: 4px 10px; border-radius: 6px; user-select: all; }
-        .file-upload-wrapper { border-top: 1px solid var(--border); padding-top: 15px; margin-top: 10px; }
-        .file-upload-wrapper label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 8px; color: var(--dark); }
-        .file-upload-wrapper input[type="file"] { width: 100%; padding: 10px; border: 2px dashed var(--border); border-radius: 8px; background: white; font-size: 14px; cursor: pointer; }
-        .file-upload-wrapper input[type="file"]:hover { border-color: var(--primary); }
+        
+        .ref-input-wrapper { border-top: 1px solid var(--border); padding-top: 15px; margin-top: 10px; }
+        .ref-input-wrapper label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 8px; color: var(--dark); }
+        .ref-input-wrapper input { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; outline: none; font-size: 16px; text-align: left; direction: ltr; font-family: monospace; font-weight: bold; }
+        .ref-input-wrapper input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1); }
+        .ref-input-wrapper small { color: var(--gray); font-size: 12px; margin-top: 6px; display: block; line-height: 1.4; }
 
         .btn-proceed-payment { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3); display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-proceed-payment:hover { background: var(--primary-dark); transform: translateY(-2px); }
@@ -158,14 +160,15 @@
                         <div class="transfer-info">
                             <p><strong>الرجاء تحويل المبلغ المستحق على أحد الحسابات التالية:</strong></p>
                             <ul>
-                                <li>⚡ إنستاباي (InstaPay): <span>eslam.hany24@instapay</span></li>
-                                <li>📱 فودافون كاش: <span>01149079451</span></li>
+                                <li>⚡ إنستاباي (InstaPay): <span>nivadent@instapay</span></li>
+                                <li>📱 فودافون كاش: <span>01012345678</span></li>
                             </ul>
-                            <p style="font-size: 12px; color: var(--gray); margin-top: 8px;">* يرجى أخذ لقطة شاشة (Screenshot) لعملية التحويل الناجحة لإرفاقها هنا.</p>
+                            <p style="font-size: 12px; color: var(--gray); margin-top: 8px;">* بعد إتمام التحويل، ستصلك رسالة من البنك أو شبكة المحمول تحتوي على "الرقم المرجعي" (Transaction ID).</p>
                         </div>
-                        <div class="file-upload-wrapper">
-                            <label for="receipt_image">📸 ارفع صورة إيصال التحويل:</label>
-                            <input type="file" id="receipt_image" accept="image/png, image/jpeg, image/jpg">
+                        <div class="ref-input-wrapper">
+                            <label for="transfer_reference">🔢 أدخل الرقم المرجعي للعملية (Transaction ID):</label>
+                            <input type="text" id="transfer_reference" placeholder="مثال: 9876543210" maxlength="25" oninput="this.value = this.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase()">
+                            <small>* يجب ألا يقل عن 6 أرقام/حروف. تأكد من إدخاله بشكل صحيح لضمان سرعة تفعيل الباقة.</small>
                         </div>
                     </div>
 
@@ -234,7 +237,6 @@
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 
     <script src="./js/firebase-config.js"></script>
 
@@ -262,7 +264,7 @@
             } else if(method === 'paypal') {
                 document.getElementById('rad-paypal').checked = true;
                 document.getElementById('rad-paypal').parentElement.classList.add('selected');
-            } else if(method === 'manual') { // 🔴 لوجيك الدفع اليدوي 🔴
+            } else if(method === 'manual') { // 🔴 إظهار حقل الرقم المرجعي 🔴
                 document.getElementById('rad-manual').checked = true;
                 document.getElementById('rad-manual').parentElement.classList.add('selected');
                 manualBox.style.display = 'block';
@@ -316,10 +318,10 @@
             const selectedMethod = document.querySelector('input[name="pay_method"]:checked').value;
             let walletNumber = "";
 
-            // 🟢 إذا كان الاختيار هو الدفع اليدوي، نوجه اللوجيك للوظيفة التي تم إعدادها بالأسفل 🟢
+            // 🟢 التوجيه المباشر لوظيفة الرقم المرجعي 🟢
             if (selectedMethod === 'manual') {
-                processManualPayment(clinicId, userEmail, plan);
-                return; // نوقف اللوجيك هنا عشان ميروحش للـ Cloudflare Worker
+                processManualPaymentWithReference(clinicId, userEmail, plan);
+                return;
             }
 
             // لو اختار محفظة، لازم نتأكد من صحة رقم الهاتف
@@ -379,69 +381,60 @@
         }
 
         // =========================================================================================
-        // 🟢 سكربت معالجة الدفع اليدوي ورفع الإيصالات للفايربيز (متوافق مع V8 Global Style) 🟢
+        // 🟢 سكربت معالجة الرقم المرجعي وتسجيله في Firestore بدون Storage 🟢
         // =========================================================================================
-        async function processManualPayment(clinicId, userEmail, plan) {
+        async function processManualPaymentWithReference(clinicId, userEmail, plan) {
             const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
-            const fileInput = document.getElementById('receipt_image');
+            const refInput = document.getElementById('transfer_reference').value.trim();
             
-            // 1. التحقق من وجود الصورة
-            if (!fileInput.files || fileInput.files.length === 0) {
-                alert(isAr ? "❌ يرجى إرفاق صورة إيصال التحويل أولاً لتأكيد طلبك." : "❌ Please upload the receipt image first.");
+            // 1. التحقق من قوة وسلامة الرقم المرجعي
+            if (!refInput) {
+                alert(isAr ? "❌ يرجى إدخال الرقم المرجعي لعملية التحويل أولاً." : "❌ Please enter the transaction reference number.");
                 return;
             }
 
-            const file = fileInput.files[0];
-            const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-            
-            // 2. حماية الـ Storage (فحص النوع والحجم)
-            if (!validTypes.includes(file.type)) {
-                alert(isAr ? "❌ صيغة الملف غير مدعومة. يرجى رفع صورة بصيغة (JPG, PNG)." : "❌ Invalid file type. Upload JPG or PNG.");
+            if (refInput.length < 6) {
+                alert(isAr ? "❌ الرقم المرجعي غير صحيح (يجب ألا يقل عن 6 أرقام/حروف)." : "❌ Invalid reference number (min 6 chars).");
                 return;
             }
-            if (file.size > 5 * 1024 * 1024) { // الحد الأقصى 5 ميجابايت
-                alert(isAr ? "❌ حجم الصورة كبير جداً. الحد الأقصى المسموح هو 5 ميجابايت." : "❌ Image too large. Max 5MB.");
+
+            // التحقق بالـ Regex: حروف إنجليزية وأرقام فقط (بدون مسافات أو رموز)
+            const strictRegex = /^[a-zA-Z0-9]+$/;
+            if (!strictRegex.test(refInput)) {
+                alert(isAr ? "❌ الرقم المرجعي يجب أن يحتوي على أرقام وحروف إنجليزية فقط (بدون مسافات أو رموز خاصة)." : "❌ Invalid format. Use only English letters and numbers.");
                 return;
             }
 
             // إخفاء الواجهة وإظهار التحميل
             document.getElementById('payment-methods-selector').style.display = 'none';
             document.getElementById('gateway-loading-screen').style.display = 'flex';
-            document.getElementById('loader-status-text').innerText = isAr ? "جاري رفع الإيصال وتأمين الطلب سحابياً..." : "Uploading receipt and securing request...";
+            document.getElementById('loader-status-text').innerText = isAr ? "جاري تسجيل وتأمين طلب التفعيل..." : "Securing activation request...";
 
             try {
-                // 3. رفع الصورة إلى Firebase Storage (V8 Style)
-                const ext = file.name.split('.').pop();
-                const fileName = `receipts/pending_${clinicId}_${Date.now()}.${ext}`;
-                const storageRef = firebase.storage().ref().child(fileName);
-                
-                const snapshot = await storageRef.put(file);
-                const downloadURL = await snapshot.ref.getDownloadURL(); // الحصول على الرابط السحابي
-
-                // 4. تسجيل الطلب في كوليكشن PendingPayments في Firestore (V8 Style)
+                // 2. تسجيل الطلب في كوليكشن PendingPayments في Firestore (بدون Storage)
                 await firebase.firestore().collection("PendingPayments").add({
                     clinicId: clinicId,
                     userEmail: userEmail,
                     planId: plan.planId,
                     price: plan.price,
                     packageType: plan.packageType || 'subscription',
-                    receiptUrl: downloadURL,
-                    status: "قيد المراجعة", // حالة الطلب
+                    referenceNumber: refInput, // 🔴 حفظ الرقم المرجعي 🔴
+                    status: "قيد المراجعة", 
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                // 5. عرض شاشة النجاح لصاحب العيادة
+                // 3. عرض شاشة النجاح لصاحب العيادة
                 document.getElementById('gateway-loading-screen').innerHTML = `
                     <div style="font-size: 60px; margin-bottom: 10px;">✅</div>
-                    <h3 style="font-weight: 800; color: var(--success);">تم إرسال طلب تفعيل الباقة بنجاح!</h3>
-                    <p style="color: var(--gray); font-size: 15px; text-align: center; margin-top: 10px; max-width: 350px;">
-                        تم استلام إيصال الدفع وحفظه بأمان. ستقوم الإدارة بمراجعة الطلب وتفعيل الباقة الخاصة بعيادتك في أقرب وقت ممكن.
+                    <h3 style="font-weight: 800; color: var(--success);">تم استلام طلب التفعيل بنجاح!</h3>
+                    <p style="color: var(--gray); font-size: 15px; text-align: center; margin-top: 10px; max-width: 380px;">
+                        تم تسجيل طلبك بالرقم المرجعي <strong style="color: var(--primary-dark); font-family: monospace;">${refInput}</strong>.<br> ستقوم الإدارة بمراجعة العملية وتفعيل الباقة الخاصة بعيادتك في أقرب وقت.
                     </p>
                     <button onclick="window.location.href='home.html'" style="margin-top: 25px; width: 100%; max-width: 300px; padding: 14px; background: var(--dark); color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer;">العودة للوحة التحكم</button>
                 `;
 
             } catch (error) {
-                console.error("Manual Payment Error:", error);
+                console.error("Reference Save Error:", error);
                 alert(isAr ? "❌ حدث خطأ أثناء الاتصال بقاعدة البيانات. تأكد من جودة الإنترنت وحاول مجدداً." : "❌ Error connecting to database.");
                 // إرجاع الواجهة في حالة الفشل
                 document.getElementById('gateway-loading-screen').style.display = 'none';
