@@ -105,6 +105,14 @@
                             <input type="radio" name="pay_method" id="rad-visa" value="visa" checked style="cursor: pointer;">
                         </div>
 
+                        <div class="method-card" onclick="selectPaymentUI('tap')">
+                            <div class="method-meta">
+                                <span class="method-icon">🌍</span>
+                                <span class="method-title">البطاقات الخليجية / Apple Pay (بواسطة Tap)</span>
+                            </div>
+                            <input type="radio" name="pay_method" id="rad-tap" value="tap" style="cursor: pointer;">
+                        </div>
+
                         <div class="method-card" onclick="selectPaymentUI('wallet')">
                             <div class="method-meta">
                                 <span class="method-icon">📱</span>
@@ -208,6 +216,10 @@
                 document.getElementById('rad-visa').checked = true;
                 document.getElementById('rad-visa').parentElement.classList.add('selected');
                 walletBox.style.display = 'none';
+            } else if(method === 'tap') { // 🔴 إضافة لوجيك Tap Payments 🔴
+                document.getElementById('rad-tap').checked = true;
+                document.getElementById('rad-tap').parentElement.classList.add('selected');
+                walletBox.style.display = 'none';
             } else if(method === 'wallet') {
                 document.getElementById('rad-wallet').checked = true;
                 document.getElementById('rad-wallet').parentElement.classList.add('selected');
@@ -288,7 +300,7 @@
                         clinicId: clinicId,
                         email: userEmail,
                         planId: plan.planId,
-                        paymentMethod: selectedMethod, // الـ Router الذكي
+                        paymentMethod: selectedMethod, // الـ Router الذكي هيبعت كلمة 'tap' لو اخترناها
                         walletNumber: walletNumber      // رقم الهاتف للمحافظ
                     })
                 });
@@ -302,14 +314,14 @@
 
                 // 🔄 التوجيه الذكي بناءً على رد الـ Worker
                 if (paymentData.type === 'redirect') {
-                    // لو محفظة أو بايبال: تحويل المتصفح بالكامل للرابط المولد
+                    // لو محفظة أو بايبال أو Tap Payments: تحويل المتصفح بالكامل للرابط المولد
                     document.getElementById('loader-status-text').innerText = isAr ? "جاري تحويلك لصفحة التأمين البنكي الخارجية..." : "Redirecting to secure bank portal...";
                     setTimeout(() => {
                         window.location.href = paymentData.redirectUrl;
                     }, 1000);
                 } 
                 else if (paymentData.type === 'iframe') {
-                    // لو فيزا: نفتح الـ Iframe جوه الصفحة كالعادة
+                    // لو فيزا Paymob: نفتح الـ Iframe جوه الصفحة كالعادة
                     document.getElementById('gateway-loading-screen').style.display = 'none';
                     const iframeContainer = document.getElementById('payment-iframe-container');
                     iframeContainer.src = `https://accept.paymob.com/api/acceptance/iframes/${paymentData.iframeId}?payment_token=${paymentData.paymentToken}`;
