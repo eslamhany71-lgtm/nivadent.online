@@ -58,6 +58,17 @@
         .wallet-input-wrapper input { width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 8px; outline: none; font-size: 15px; text-align: left; }
         .wallet-input-wrapper input:focus { border-color: var(--primary); }
 
+        /* ستايل نظام الدفع اليدوي الجديد */
+        .manual-payment-box { display: none; background: #f8fafc; border: 1px dashed var(--primary); padding: 20px; border-radius: 10px; margin-top: -5px; margin-bottom: 15px; animation: fadeIn 0.3s ease; }
+        .transfer-info { margin-bottom: 15px; font-size: 14px; color: var(--slate); line-height: 1.6; }
+        .transfer-info ul { list-style: none; padding-right: 5px; margin-top: 10px; }
+        .transfer-info li { margin-bottom: 10px; font-weight: 700; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .transfer-info li span { color: var(--primary-dark); font-family: monospace; font-size: 16px; background: #e0f2fe; padding: 4px 10px; border-radius: 6px; user-select: all; }
+        .file-upload-wrapper { border-top: 1px solid var(--border); padding-top: 15px; margin-top: 10px; }
+        .file-upload-wrapper label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 8px; color: var(--dark); }
+        .file-upload-wrapper input[type="file"] { width: 100%; padding: 10px; border: 2px dashed var(--border); border-radius: 8px; background: white; font-size: 14px; cursor: pointer; }
+        .file-upload-wrapper input[type="file"]:hover { border-color: var(--primary); }
+
         .btn-proceed-payment { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 800; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3); display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-proceed-payment:hover { background: var(--primary-dark); transform: translateY(-2px); }
 
@@ -116,7 +127,7 @@
                         <div class="method-card" onclick="selectPaymentUI('wallet')">
                             <div class="method-meta">
                                 <span class="method-icon">📱</span>
-                                <span class="method-title">المحافظ الإلكترونية (فودافون كاش / اتصالات / أورانج ...)</span>
+                                <span class="method-title">المحافظ الإلكترونية (من خلال البوابة)</span>
                             </div>
                             <input type="radio" name="pay_method" id="rad-wallet" value="wallet" style="cursor: pointer;">
                         </div>
@@ -129,12 +140,12 @@
                             <input type="radio" name="pay_method" id="rad-paypal" value="paypal" style="cursor: pointer;">
                         </div>
 
-                        <div class="method-card disabled">
+                        <div class="method-card" onclick="selectPaymentUI('manual')">
                             <div class="method-meta">
-                                <span class="method-icon">⚡</span>
-                                <span class="method-title">تطبيق انستا باي (InstaPay)</span>
+                                <span class="method-icon">🏦</span>
+                                <span class="method-title">تحويل بنكي / محافظ (تأكيد يدوي)</span>
                             </div>
-                            <span class="method-badge">قريباً 🔥</span>
+                            <input type="radio" name="pay_method" id="rad-manual" value="manual" style="cursor: pointer;">
                         </div>
                     </div>
 
@@ -143,7 +154,22 @@
                         <input type="tel" id="wallet_number" placeholder="01xxxxxxxxx" maxlength="11" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                     </div>
 
-                    <button class="btn-proceed-payment" onclick="startSecurePaymentProcess()">الانتقال للدفع الآمن 🚀</button>
+                    <div class="manual-payment-box" id="manual-payment-box">
+                        <div class="transfer-info">
+                            <p><strong>الرجاء تحويل المبلغ المستحق على أحد الحسابات التالية:</strong></p>
+                            <ul>
+                                <li>⚡ إنستاباي (InstaPay): <span>nivadent@instapay</span></li>
+                                <li>📱 فودافون كاش: <span>01012345678</span></li>
+                            </ul>
+                            <p style="font-size: 12px; color: var(--gray); margin-top: 8px;">* يرجى أخذ لقطة شاشة (Screenshot) لعملية التحويل الناجحة لإرفاقها هنا.</p>
+                        </div>
+                        <div class="file-upload-wrapper">
+                            <label for="receipt_image">📸 ارفع صورة إيصال التحويل:</label>
+                            <input type="file" id="receipt_image" accept="image/png, image/jpeg, image/jpg">
+                        </div>
+                    </div>
+
+                    <button class="btn-proceed-payment" onclick="startSecurePaymentProcess()">الانتقال للدفع / تأكيد الطلب 🚀</button>
                 </div>
 
                 <div class="gateway-loader" id="gateway-loading-screen">
@@ -211,15 +237,18 @@
         function selectPaymentUI(method) {
             document.querySelectorAll('.method-card').forEach(card => card.classList.remove('selected'));
             const walletBox = document.getElementById('wallet-field-box');
+            const manualBox = document.getElementById('manual-payment-box');
+            
+            // تصفير العرض
+            walletBox.style.display = 'none';
+            manualBox.style.display = 'none';
             
             if(method === 'visa') {
                 document.getElementById('rad-visa').checked = true;
                 document.getElementById('rad-visa').parentElement.classList.add('selected');
-                walletBox.style.display = 'none';
-            } else if(method === 'tap') { // 🔴 إضافة لوجيك Tap Payments 🔴
+            } else if(method === 'tap') { 
                 document.getElementById('rad-tap').checked = true;
                 document.getElementById('rad-tap').parentElement.classList.add('selected');
-                walletBox.style.display = 'none';
             } else if(method === 'wallet') {
                 document.getElementById('rad-wallet').checked = true;
                 document.getElementById('rad-wallet').parentElement.classList.add('selected');
@@ -227,7 +256,10 @@
             } else if(method === 'paypal') {
                 document.getElementById('rad-paypal').checked = true;
                 document.getElementById('rad-paypal').parentElement.classList.add('selected');
-                walletBox.style.display = 'none';
+            } else if(method === 'manual') { // 🔴 لوجيك الدفع اليدوي 🔴
+                document.getElementById('rad-manual').checked = true;
+                document.getElementById('rad-manual').parentElement.classList.add('selected');
+                manualBox.style.display = 'block';
             }
         }
 
@@ -272,11 +304,21 @@
             }
         };
 
-        // 🔴 دالة إطلاق المعاملة الآمنة الحقيقية بناءً على خيار الدكتور 🔴
+        // 🔴 دالة إطلاق المعاملة الآمنة بناءً على خيار الدكتور 🔴
         async function startSecurePaymentProcess() {
             const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
             const selectedMethod = document.querySelector('input[name="pay_method"]:checked').value;
             let walletNumber = "";
+
+            // 🟢 إذا كان الاختيار هو الدفع اليدوي، نوجه اللوجيك للـ Module اللي تحت 🟢
+            if (selectedMethod === 'manual') {
+                if (typeof window.processManualPayment === 'function') {
+                    window.processManualPayment(clinicId, userEmail, plan);
+                } else {
+                    alert(isAr ? "❌ خطأ في النظام: وحدة معالجة الدفع اليدوي غير متصلة." : "Manual payment module offline.");
+                }
+                return; // نوقف اللوجيك هنا عشان ميروحش للـ Cloudflare Worker
+            }
 
             // لو اختار محفظة، لازم نتأكد من صحة رقم الهاتف
             if(selectedMethod === 'wallet') {
@@ -300,8 +342,8 @@
                         clinicId: clinicId,
                         email: userEmail,
                         planId: plan.planId,
-                        paymentMethod: selectedMethod, // الـ Router الذكي هيبعت كلمة 'tap' لو اخترناها
-                        walletNumber: walletNumber      // رقم الهاتف للمحافظ
+                        paymentMethod: selectedMethod, 
+                        walletNumber: walletNumber      
                     })
                 });
 
@@ -314,14 +356,12 @@
 
                 // 🔄 التوجيه الذكي بناءً على رد الـ Worker
                 if (paymentData.type === 'redirect') {
-                    // لو محفظة أو بايبال أو Tap Payments: تحويل المتصفح بالكامل للرابط المولد
                     document.getElementById('loader-status-text').innerText = isAr ? "جاري تحويلك لصفحة التأمين البنكي الخارجية..." : "Redirecting to secure bank portal...";
                     setTimeout(() => {
                         window.location.href = paymentData.redirectUrl;
                     }, 1000);
                 } 
                 else if (paymentData.type === 'iframe') {
-                    // لو فيزا Paymob: نفتح الـ Iframe جوه الصفحة كالعادة
                     document.getElementById('gateway-loading-screen').style.display = 'none';
                     const iframeContainer = document.getElementById('payment-iframe-container');
                     iframeContainer.src = `https://accept.paymob.com/api/acceptance/iframes/${paymentData.iframeId}?payment_token=${paymentData.paymentToken}`;
@@ -331,11 +371,87 @@
             } catch (err) {
                 console.error("Payment Gateway Connection Failed:", err);
                 alert(isAr ? "❌ فشل الاتصال بخوادم البنك المحمية. يرجى التحقق من الشبكة وإعادة المحاولة." : "Bank connection failure.");
-                // إعادة فتح الاختيارات في حالة الفشل
                 document.getElementById('gateway-loading-screen').style.display = 'none';
                 document.getElementById('payment-methods-selector').style.display = 'block';
             }
         }
+    </script>
+
+    <script type="module">
+        // استدعاء الفايربيز من ملف الإعدادات الخاص بك (تأكد من صحة المسار)
+        import { db, storage } from './js/firebase-config.js'; 
+        import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+        // جعل الدالة عالمية (Global) ليتمكن زر الـ HTML من قراءتها
+        window.processManualPayment = async function(clinicId, userEmail, plan) {
+            const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
+            const fileInput = document.getElementById('receipt_image');
+            
+            // 1. التحقق من وجود الصورة
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert(isAr ? "❌ يرجى إرفاق صورة إيصال التحويل أولاً لتأكيد طلبك." : "❌ Please upload the receipt image first.");
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+            
+            // 2. حماية الـ Storage (فحص النوع والحجم)
+            if (!validTypes.includes(file.type)) {
+                alert(isAr ? "❌ صيغة الملف غير مدعومة. يرجى رفع صورة بصيغة (JPG, PNG)." : "❌ Invalid file type. Upload JPG or PNG.");
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) { // الحد الأقصى 5 ميجابايت
+                alert(isAr ? "❌ حجم الصورة كبير جداً. الحد الأقصى المسموح هو 5 ميجابايت." : "❌ Image too large. Max 5MB.");
+                return;
+            }
+
+            // إخفاء الواجهة وإظهار التحميل
+            document.getElementById('payment-methods-selector').style.display = 'none';
+            document.getElementById('gateway-loading-screen').style.display = 'flex';
+            document.getElementById('loader-status-text').innerText = isAr ? "جاري رفع الإيصال وتأمين الطلب سحابياً..." : "Uploading receipt and securing request...";
+
+            try {
+                // 3. رفع الصورة إلى Firebase Storage
+                const ext = file.name.split('.').pop();
+                // مسار الصورة: receipts/pending_clinicId_timestamp.jpg
+                const fileName = `receipts/pending_${clinicId}_${Date.now()}.${ext}`;
+                const storageRef = ref(storage, fileName);
+                
+                await uploadBytes(storageRef, file);
+                const downloadURL = await getDownloadURL(storageRef); // الحصول على الرابط السحابي
+
+                // 4. تسجيل الطلب في كوليكشن PendingPayments في Firestore
+                await addDoc(collection(db, "PendingPayments"), {
+                    clinicId: clinicId,
+                    userEmail: userEmail,
+                    planId: plan.planId,
+                    price: plan.price,
+                    packageType: plan.packageType || 'subscription',
+                    receiptUrl: downloadURL,
+                    status: "قيد المراجعة", // حالة الطلب
+                    createdAt: serverTimestamp()
+                });
+
+                // 5. عرض شاشة النجاح لصاحب العيادة
+                document.getElementById('gateway-loading-screen').innerHTML = `
+                    <div style="font-size: 60px; margin-bottom: 10px;">✅</div>
+                    <h3 style="font-weight: 800; color: var(--success);">تم إرسال طلب تفعيل الباقة بنجاح!</h3>
+                    <p style="color: var(--gray); font-size: 15px; text-align: center; margin-top: 10px; max-width: 350px;">
+                        تم استلام إيصال الدفع وحفظه بأمان. ستقوم الإدارة بمراجعة الطلب وتفعيل الباقة الخاصة بعيادتك في أقرب وقت ممكن.
+                    </p>
+                    <button onclick="window.location.href='home.html'" style="margin-top: 25px; width: 100%; max-width: 300px; padding: 14px; background: var(--dark); color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer;">العودة للوحة التحكم</button>
+                `;
+
+            } catch (error) {
+                console.error("Manual Payment Error:", error);
+                alert(isAr ? "❌ حدث خطأ أثناء الاتصال بقاعدة البيانات. تأكد من جودة الإنترنت وحاول مجدداً." : "❌ Error connecting to database.");
+                // إرجاع الواجهة في حالة الفشل
+                document.getElementById('gateway-loading-screen').style.display = 'none';
+                document.getElementById('payment-methods-selector').style.display = 'block';
+            }
+        };
     </script>
 </body>
 </html>
