@@ -36,6 +36,7 @@ function updatePageContent(lang) {
             msgWarnDel: "تحذير: هذا سيحذف العيادة تماماً ولن يمكن استرجاعها! اكتب '1234' للتأكيد:", msgDelSuccess: "تم حذف العيادة بنجاح.", btnSaving: "جاري الإنشاء...",
             ovrTitle: "تحكم يدوي في الاشتراك", ovrDiscount: "نسبة خصم خاصة (%)", ovrTrial: "تمديد تجربة (أيام إضافية)", ovrBtn: "حفظ التعديلات المالية",
             
+            
             mUpgTitle: "🚀 ترقية العيادة التجريبية", mUpgSub: "حدد الباقة وقيمة الاشتراك لتوليد كود الدخول الجديد للعيادة.",
             lUpgPkg: "باقة الاشتراك", optUpgMonth: "شهري (Monthly)", optUpgYear: "سنوي (Yearly)",
             lUpgPrice: "الاشتراك (ج.م)", lUpgLimit: "الحد الأقصى للمستخدمين", btnConfirmUpg: "تأكيد الترقية وتوليد الكود",
@@ -64,7 +65,12 @@ function updatePageContent(lang) {
             // 🔴 باقات النظام 🔴
             pkgStart: "تجريبي (7 أيام)", pkgPro: "شهري (Clinic Pro)", pkgGrowth: "ربع سنوي (Growth)", pkgElite: "سنوي (Elite)", pkgLife: "مدى الحياة (Lifetime)",
             msgPkgChanged: "✅ تم تغيير باقة العيادة وتحديث الحصص وتاريخ الانتهاء بنجاح!", msgPkgErr: "❌ حدث خطأ أثناء تغيير الباقة", btnPkgChange: "تغيير الباقة",
-            lblSelectPkg: "اختر الباقة الجديدة", btnSavePkg: "حفظ وتفعيل الباقة 🚀"
+            lblSelectPkg: "اختر الباقة الجديدة", btnSavePkg: "حفظ وتفعيل الباقة 🚀",
+            tabPending: "⏳ الطلبات المعلقة", tabRevenue: "💰 الماليات والإيرادات", tabAudit: "📡 سجل النشاط (Audit)",
+            toastNewReq: "طلب دفع جديد!", toastNewReqSub: "تم استلام رقم مرجعي من:",
+            msgApprove: "هل أنت متأكد من استلام المبلغ وتفعيل باقة هذه العيادة؟",
+            msgReject: "هل أنت متأكد من رفض هذا الطلب؟",
+            actSuccess: "تم تفعيل العيادة بنجاح!", actError: "حدث خطأ أثناء التفعيل.",
         },
         en: {
             title: "Central SaaS Management", sub: "Owner Dashboard - Super Admin", search: "Search by clinic name...", btnAdd: "Add New Clinic", btnAddUser: "Generate User Invite",
@@ -112,7 +118,12 @@ function updatePageContent(lang) {
             // 🔴 Packages 🔴
             pkgStart: "Trial (7 Days)", pkgPro: "Monthly (Clinic Pro)", pkgGrowth: "Quarterly (Growth)", pkgElite: "Yearly (Elite)", pkgLife: "Lifetime Partner",
             msgPkgChanged: "✅ Package changed and limits updated successfully!", msgPkgErr: "❌ Error changing package", btnPkgChange: "Change Package",
-            lblSelectPkg: "Select New Package", btnSavePkg: "Save & Activate 🚀"
+            lblSelectPkg: "Select New Package", btnSavePkg: "Save & Activate 🚀",
+            tabPending: "⏳ Pending Requests", tabRevenue: "💰 Revenue Hub", tabAudit: "📡 Audit Trail",
+            toastNewReq: "New Payment Request!", toastNewReqSub: "New reference received from:",
+            msgApprove: "Confirm payment receipt and activate clinic?",
+            msgReject: "Are you sure you want to reject this request?",
+            actSuccess: "Clinic activated successfully!", actError: "Activation Error.",
         }
     };
     const c = t[lang] || t.ar;
@@ -154,6 +165,9 @@ function updatePageContent(lang) {
     if(document.getElementById('tab-reviews')) document.getElementById('tab-reviews').innerHTML = c.tabReviews;
     if(document.getElementById('tab-chat')) document.getElementById('tab-chat').innerHTML = c.tabChat;
     if(document.getElementById('tab-team')) document.getElementById('tab-team').innerHTML = c.tabTeam;
+    if(document.getElementById('tab-pending')) document.getElementById('tab-pending').innerHTML = c.tabPending + '<span id="badge-pending" class="notification-badge" style="display: none;">0</span>';
+    if(document.getElementById('tab-revenue')) document.getElementById('tab-revenue').innerText = c.tabRevenue;
+    if(document.getElementById('tab-audit')) document.getElementById('tab-audit').innerText = c.tabAudit;
 
     setTxt('lbl-c-pat-limit', lang === 'ar' ? 'سعة المرضى' : 'Patients Limit');
     setTxt('lbl-c-wa-limit', lang === 'ar' ? 'رصيد الواتس' : 'WhatsApp Balance');
@@ -226,33 +240,36 @@ firebase.auth().onAuthStateChanged(async (user) => {
         loadSupportTickets();
         loadSystemReviews();
         loadNivaTeam(); 
+        loadPendingPayments();
+        loadTransactions();
+        loadAuditTrail();
         
     } else {
         window.location.href = "index.html";
     }
 });
 
+// المتغيرات الجديدة الخاصة بالمركز المالي والطلبات
+let isInitialPendingLoad = true;
+let revChartInstance = null;
+
+// دالة التابات المحدثة لتدعم الشاشات الجديدة
 function switchMainTab(tabName) {
     currentActiveTab = tabName;
     document.querySelectorAll('.sa-tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.main-view-container').forEach(v => v.style.display = 'none');
     
     if (tabName === 'active' || tabName === 'trials') {
-        document.getElementById(`tab-${tabName}`).classList.add('active');
+        const tabEl = document.getElementById(`tab-${tabName}`);
+        if(tabEl) tabEl.classList.add('active');
         document.getElementById('view-clinics').style.display = 'block';
         renderClinicsTable(); 
-    } else if (tabName === 'support') {
-        document.getElementById('tab-support').classList.add('active');
-        document.getElementById('view-support').style.display = 'block';
-    } else if (tabName === 'reviews') {
-        document.getElementById('tab-reviews').classList.add('active');
-        document.getElementById('view-reviews').style.display = 'block';
-    } else if (tabName === 'team') {
-        document.getElementById('tab-team').classList.add('active');
-        document.getElementById('view-team').style.display = 'block';
-    } else if (tabName === 'chat') {
-        document.getElementById('tab-chat').classList.add('active');
-        document.getElementById('view-chat').style.display = 'block';
+    } 
+    else {
+        const targetTab = document.getElementById(`tab-${tabName}`);
+        const targetView = document.getElementById(`view-${tabName}`);
+        if(targetTab) targetTab.classList.add('active');
+        if(targetView) targetView.style.display = 'block';
     }
 }
 
@@ -1823,5 +1840,326 @@ function updateSystemHealth() {
         loadBar.style.background = '#ef4444'; 
         statusText.innerHTML = isAr ? 'خطر / اقترب للحد 🔴' : 'Critical Load 🔴';
         statusText.style.color = '#ef4444';
+    }
+}
+// =====================================================================
+// 🌟 الموديولات الجديدة (المركز المالي، الطلبات، السجل، الكروت الذكية) 🌟
+// =====================================================================
+
+// 🟢 1. نظام التنبيهات الحية (Toasts)
+function showRealTimeToast(title, message) {
+    const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
+    const toast = document.createElement('div');
+    toast.style.cssText = `position: fixed; bottom: 30px; left: 30px; background: #0f172a; color: white; padding: 15px 25px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); z-index: 9999999; display: flex; align-items: center; gap: 20px; font-family: 'Tajawal', sans-serif; animation: slideUp 0.5s ease-out; border: 1px solid #334155; direction: ${isAr ? 'rtl' : 'ltr'};`;
+    toast.innerHTML = `
+        <div style="font-size: 24px;">🔔</div>
+        <div>
+            <h6 style="margin: 0; font-weight: bold; font-size: 15px; color: #10b981;">${title}</h6>
+            <small style="opacity: 0.85;">${message}</small>
+        </div>
+    `;
+    document.body.appendChild(toast);
+    
+    // تشغيل صوت تنبيه خفيف (اختياري)
+    try { const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'); audio.play(); } catch(e){}
+
+    setTimeout(() => {
+        toast.style.animation = "slideDown 0.5s ease-out forwards";
+        setTimeout(() => toast.remove(), 500);
+    }, 6000);
+}
+
+// 📡 2. نظام السجل الحي (Audit Trail Logger)
+async function logToSystemAudit(actionType, message, clinicId = "System") {
+    try {
+        await db.collection("SystemAuditLogs").add({
+            actionType: actionType, // 'success', 'warning', 'info', 'danger'
+            message: message,
+            clinicId: clinicId,
+            actor: currentNivaRole,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    } catch(e) { console.error("Audit Log Error:", e); }
+}
+
+function loadAuditTrail() {
+    db.collection("SystemAuditLogs").orderBy("createdAt", "desc").limit(50).onSnapshot(snap => {
+        const container = document.getElementById('audit-timeline-container');
+        if(!container) return;
+        const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
+        let html = '';
+
+        if (snap.empty) {
+            container.innerHTML = `<div style="text-align: center; color: #94a3b8; padding: 20px;">${isAr?'الرادار هادئ، لا توجد نشاطات حالياً.':'Radar is quiet. No activities.'}</div>`;
+            return;
+        }
+
+        snap.forEach(doc => {
+            const log = doc.data();
+            let iconClass = 'blue'; let icon = 'ℹ️';
+            if(log.actionType === 'success') { iconClass = 'green'; icon = '✅'; }
+            else if(log.actionType === 'warning') { iconClass = 'yellow'; icon = '⚠️'; }
+            else if(log.actionType === 'danger') { iconClass = 'red'; icon = '🛑'; }
+
+            let dateStr = log.createdAt ? new Date(log.createdAt.toDate()).toLocaleString(isAr?'ar-EG':'en-US') : (isAr?'الآن':'Now');
+
+            html += `
+                <div class="audit-item">
+                    <div class="audit-icon ${iconClass}">${icon}</div>
+                    <div class="audit-content">
+                        <span class="audit-time" dir="ltr">${dateStr} | ${log.actor || 'System'}</span>
+                        <p class="audit-text"><strong>[${log.clinicId || 'System'}]</strong> - ${log.message}</p>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    });
+}
+
+// 🟢 3. نظام الطلبات المعلقة والزرار السحري
+function loadPendingPayments() {
+    db.collection("PendingPayments").orderBy("createdAt", "desc").onSnapshot(snap => {
+        const tbody = document.getElementById('pendingPaymentsBody');
+        const badge = document.getElementById('badge-pending');
+        const statPending = document.getElementById('stat-pending-payments');
+        const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
+        const c = window.superLang;
+        
+        if(!tbody) return;
+        let pendingCount = 0;
+        let html = '';
+
+        snap.docChanges().forEach(change => {
+            if (change.type === "added" && !isInitialPendingLoad && change.doc.data().status === "قيد المراجعة") {
+                showRealTimeToast(c.toastNewReq || "طلب جديد!", `${c.toastNewReqSub || "إيصال من:"} ${change.doc.data().userEmail}`);
+            }
+        });
+        isInitialPendingLoad = false;
+
+        snap.forEach(doc => {
+            const req = doc.data();
+            if (req.status === 'قيد المراجعة' || req.status === 'pending') {
+                pendingCount++;
+                let dateStr = req.createdAt ? new Date(req.createdAt.toDate()).toLocaleDateString() : '---';
+                let pkgLabel = c[req.packageType === 'yearly' ? 'pkgElite' : 'pkgPro'] || req.packageType;
+                
+                let proofHtml = req.referenceNumber 
+                    ? `<span style="font-family: monospace; font-size: 16px; background: #e0f2fe; color: #0284c7; padding: 4px 10px; border-radius: 6px; font-weight: bold; border: 1px dashed #38bdf8;">#${req.referenceNumber}</span>`
+                    : `<a href="${req.receiptUrl}" target="_blank" style="background: #f1f5f9; color: #475569; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-weight: bold; border: 1px solid #cbd5e1;">📸 ${isAr?'عرض الإيصال':'View Receipt'}</a>`;
+
+                html += `
+                    <tr>
+                        <td style="font-weight: bold; color: #475569;">${dateStr}</td>
+                        <td><strong style="color: #0f172a;">${req.clinicId}</strong><br><small dir="ltr" style="color: #64748b;">${req.userEmail}</small></td>
+                        <td><span style="color: #8b5cf6; font-weight: bold;">${pkgLabel}</span><br><span style="color: #10b981; font-weight: bold;">${req.price} ج.م</span></td>
+                        <td>${proofHtml}</td>
+                        <td style="text-align: center;">
+                            <button onclick="approvePendingPayment('${doc.id}', '${req.clinicId}', '${req.packageType || 'monthly'}', ${req.price})" style="background: #10b981; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold;">✅ ${isAr?'تفعيل':'Approve'}</button>
+                            <button onclick="rejectPendingPayment('${doc.id}')" style="background: #ef4444; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-inline-start: 5px;">❌ ${isAr?'رفض':'Reject'}</button>
+                        </td>
+                    </tr>
+                `;
+            }
+        });
+
+        if (pendingCount === 0) tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #64748b;">${isAr?'لا توجد طلبات معلقة.':'No pending requests.'}</td></tr>`;
+        else tbody.innerHTML = html;
+
+        if(badge) { badge.innerText = pendingCount; badge.style.display = pendingCount > 0 ? 'flex' : 'none'; }
+        if(statPending) statPending.innerText = pendingCount;
+    });
+}
+
+async function approvePendingPayment(requestId, clinicId, pkgType, price) {
+    const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
+    const c = window.superLang;
+    if(!confirm(c.msgApprove || "هل أنت متأكد من التفعيل؟")) return;
+
+    if (window.showLoader) window.showLoader(isAr ? "جاري تفعيل الحساب..." : "Activating...");
+
+    try {
+        let maxU = 5, maxP = 10000, maxW = 500, monthsToAdd = 1;
+        if(pkgType === 'quarterly') { maxU = 10; maxP = 20000; maxW = 2000; monthsToAdd = 3; }
+        else if(pkgType === 'yearly') { maxU = 25; maxP = 50000; maxW = 5000; monthsToAdd = 12; }
+        else if(pkgType === 'lifetime') { maxU = 50; maxP = 100000; maxW = 10000; monthsToAdd = 1200; } 
+
+        const nextPayDate = new Date();
+        nextPayDate.setMonth(nextPayDate.getMonth() + monthsToAdd); 
+
+        await db.collection("Clinics").doc(clinicId).update({
+            status: 'active', package: pkgType, planType: firebase.firestore.FieldValue.delete(), 
+            maxUsers: maxU, maxPatients: maxP, maxWhatsapp: maxW, subPrice: price,
+            nextPaymentDate: nextPayDate, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        await db.collection("PendingPayments").doc(requestId).update({
+            status: "مقبول", approvedAt: firebase.firestore.FieldValue.serverTimestamp(), approvedBy: currentNivaRole
+        });
+
+        logToSystemAudit('success', `تم قبول الدفع وتفعيل باقة (${pkgType}) بمبلغ ${price} ج.م.`, clinicId);
+        alert(c.actSuccess || "✅ تم التفعيل بنجاح!");
+    } catch (e) {
+        console.error("Approval Error:", e);
+        alert(c.actError || "❌ حدث خطأ.");
+    } finally {
+        if (window.hideLoader) window.hideLoader();
+    }
+}
+
+async function rejectPendingPayment(requestId) {
+    const c = window.superLang;
+    if(!confirm(c.msgReject || "هل أنت متأكد من الرفض؟")) return;
+    try {
+        await db.collection("PendingPayments").doc(requestId).update({
+            status: "مرفوض", rejectedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        logToSystemAudit('danger', `تم رفض إيصال/طلب دفع.`, "System");
+    } catch(e) { console.error(e); }
+}
+
+// 🟢 4. المركز المالي (Revenue Hub)
+function loadTransactions() {
+    db.collection("PendingPayments").where("status", "==", "مقبول").orderBy("approvedAt", "desc").onSnapshot(snap => {
+        const tbody = document.getElementById('transactionsBody');
+        const revenueEl = document.getElementById('stat-total-revenue');
+        const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
+        const c = window.superLang;
+        
+        if(!tbody) return;
+        let totalRevenue = 0; let html = '';
+
+        if (snap.empty) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #64748b;">${isAr?'لا توجد معاملات مالية محصلة حتى الآن.':'No transactions yet.'}</td></tr>`;
+            if(revenueEl) revenueEl.innerText = '0';
+            return;
+        }
+
+        snap.forEach(doc => {
+            const t = doc.data();
+            totalRevenue += Number(t.price) || 0;
+            let dateStr = t.approvedAt ? new Date(t.approvedAt.toDate()).toLocaleDateString() : '---';
+            let method = t.referenceNumber ? (isAr ? 'مرجعي/إنستاباي' : 'Ref/InstaPay') : (isAr ? 'إيصال/تحويل' : 'Manual Receipt');
+            let pkgLabel = c[t.packageType === 'yearly' ? 'pkgElite' : 'pkgPro'] || t.packageType;
+
+            html += `
+                <tr>
+                    <td style="color: #64748b; font-size: 13px;">${dateStr}</td>
+                    <td><strong>${t.clinicId}</strong></td>
+                    <td><span style="background: #e0f2fe; color: #0284c7; padding: 4px 8px; border-radius: 6px; font-weight: bold; font-size: 12px;">${pkgLabel}</span></td>
+                    <td style="font-weight: bold; color: #10b981;">${t.price} ج.م</td>
+                    <td style="color: #475569;"><span style="font-size: 16px;">📱</span> ${method}</td>
+                    <td><span style="background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; padding: 4px 8px; border-radius: 20px; font-size: 11px; font-weight: bold;">${isAr?'مكتمل':'Completed'} ✅</span></td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+        if(revenueEl) revenueEl.innerText = Math.round(totalRevenue).toLocaleString();
+        updateRevenueChart(snap.docs);
+    });
+}
+
+function updateRevenueChart(docs) {
+    const canvas = document.getElementById('revenueChart');
+    if (!canvas) return;
+    const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
+    const monthlyData = {};
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    
+    docs.forEach(doc => {
+        const d = doc.data();
+        if(d.approvedAt) {
+            const date = new Date(d.approvedAt.toDate());
+            const key = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+            if(!monthlyData[key]) monthlyData[key] = 0;
+            monthlyData[key] += Number(d.price) || 0;
+        }
+    });
+
+    const labels = Object.keys(monthlyData).reverse();
+    const data = Object.values(monthlyData).reverse();
+
+    const ctx = canvas.getContext('2d');
+    if (revChartInstance) revChartInstance.destroy();
+    
+    revChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels.length > 0 ? labels : [isAr?'لا توجد بيانات':'No Data'],
+            datasets: [{
+                label: isAr ? 'الإيرادات المحصلة' : 'Revenue',
+                data: data.length > 0 ? data : [0],
+                borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderWidth: 3, fill: true, tension: 0.4
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    });
+}
+
+// 🟢 5. النوافذ الذكية لكروت الـ Dashboard
+async function openKpiDetails(type) {
+    const modal = document.getElementById('kpiDetailsModal');
+    const thead = document.getElementById('kpi-modal-thead');
+    const tbody = document.getElementById('kpi-modal-tbody');
+    const title = document.getElementById('kpi-modal-title');
+    const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
+
+    if(!modal || !thead || !tbody) return;
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center;">${isAr?'جاري جلب البيانات...':'Fetching data...'}</td></tr>`;
+    modal.style.display = 'flex';
+
+    try {
+        if (type === 'expired_subs') {
+            title.innerText = isAr ? '🛑 قائمة الاشتراكات المنتهية' : 'Expired Subscriptions';
+            thead.innerHTML = isAr ? `<th>العيادة</th><th>تاريخ الانتهاء</th><th>الإيميل</th><th>الموبايل</th>` : `<th>Clinic</th><th>Expired At</th><th>Email</th><th>Phone</th>`;
+            const expired = allClinicsList.filter(c => c.status === 'expired' || c.status === 'suspended');
+            if(expired.length === 0) { tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">${isAr?'لا يوجد عيادات منتهية.':'No expired clinics.'}</td></tr>`; return; }
+            
+            let html = '';
+            expired.forEach(c => {
+                let dateStr = c.nextPaymentDate ? new Date(c.nextPaymentDate.toDate ? c.nextPaymentDate.toDate() : c.nextPaymentDate).toLocaleDateString() : '---';
+                html += `<tr><td><strong style="color:#ef4444;">${c.clinicName}</strong></td><td dir="ltr">${dateStr}</td><td>${c.adminEmail}</td><td>${c.phone1 || c.adminPhone || '---'}</td></tr>`;
+            });
+            tbody.innerHTML = html;
+        } 
+        else if (type === 'expiring_soon') {
+            title.innerText = isAr ? '⚠️ عيادات ينتهي اشتراكها قريباً (أقل من 3 أيام)' : 'Expiring Soon (< 3 days)';
+            thead.innerHTML = isAr ? `<th>العيادة</th><th>تاريخ الانتهاء</th><th>الباقة</th><th>الإيميل</th>` : `<th>Clinic</th><th>Exp Date</th><th>Package</th><th>Email</th>`;
+            const now = new Date();
+            const soon = allClinicsList.filter(c => {
+                if(!c.nextPaymentDate || c.status !== 'active') return false;
+                const npDate = new Date(c.nextPaymentDate.toDate ? c.nextPaymentDate.toDate() : c.nextPaymentDate);
+                const diffDays = Math.ceil((npDate - now) / (1000 * 60 * 60 * 24));
+                return diffDays >= 0 && diffDays <= 3;
+            });
+
+            if(soon.length === 0) { tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">${isAr?'الوضع آمن. لا توجد باقات ستنتهي قريباً.':'Safe. No clinics expiring soon.'}</td></tr>`; return; }
+            let html = '';
+            soon.forEach(c => {
+                let dateStr = c.nextPaymentDate ? new Date(c.nextPaymentDate.toDate ? c.nextPaymentDate.toDate() : c.nextPaymentDate).toLocaleDateString() : '---';
+                html += `<tr><td><strong style="color:#d97706;">${c.clinicName}</strong></td><td dir="ltr" style="font-weight:bold;">${dateStr}</td><td>${c.package}</td><td>${c.adminEmail}</td></tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+        else if (type === 'clinic_staff') {
+            title.innerText = isAr ? '👨‍💻 إحصائية موظفي العيادات (عينة نشطة)' : 'Clinic Staff Stats';
+            thead.innerHTML = isAr ? `<th>الاسم</th><th>العيادة</th><th>الوظيفة</th><th>الحالة</th>` : `<th>Name</th><th>Clinic</th><th>Role</th><th>Status</th>`;
+            
+            const usersSnap = await db.collection("Users").orderBy("createdAt", "desc").limit(50).get();
+            if(usersSnap.empty) { tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">${isAr?'لا يوجد مستخدمين.':'No users.'}</td></tr>`; return; }
+
+            let html = '';
+            usersSnap.forEach(doc => {
+                const u = doc.data();
+                const clinicName = allClinicsList.find(c => c.id === u.clinicId)?.clinicName || u.clinicId;
+                let statusHtml = u.isOnline ? `<span style="color:#10b981;">${isAr?'متصل':'Online'}</span>` : `<span style="color:#94a3b8;">${isAr?'غير متصل':'Offline'}</span>`;
+                html += `<tr><td><strong>${u.name || u.email}</strong></td><td>${clinicName}</td><td>${u.role}</td><td>${statusHtml}</td></tr>`;
+            });
+            tbody.innerHTML = html;
+            document.getElementById('stat-clinic-staff').innerText = '+'+usersSnap.size;
+        }
+    } catch(e) {
+        console.error("Modal Data Error:", e);
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: red;">${isAr?'حدث خطأ أثناء جلب البيانات.':'Error loading data.'}</td></tr>`;
     }
 }
