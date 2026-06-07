@@ -2047,10 +2047,18 @@ function loadPendingPayments() {
                     ? `<span style="font-family: monospace; font-size: 16px; background: #e0f2fe; color: #0284c7; padding: 4px 10px; border-radius: 6px; font-weight: bold; border: 1px dashed #38bdf8;">#${req.referenceNumber}</span>`
                     : `<a href="${req.receiptUrl}" target="_blank" style="background: #f1f5f9; color: #475569; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-weight: bold; border: 1px solid #cbd5e1;">📸 ${isAr?'عرض الإيصال':'View Receipt'}</a>`;
 
+                // 🔴 جلب بيانات العيادة الحقيقية وجعلها قابلة للضغط
+                const matchedClinic = allClinicsList.find(clinic => clinic.id === req.clinicId);
+                const realClinicName = matchedClinic ? matchedClinic.clinicName : req.clinicId;
+                const realEmail = matchedClinic ? (matchedClinic.adminEmail || req.userEmail) : req.userEmail;
+
                 html += `
                     <tr>
                         <td style="font-weight: bold; color: #475569;">${dateStr}</td>
-                        <td><strong style="color: #0f172a;">${req.clinicId}</strong><br><small dir="ltr" style="color: #64748b;">${req.userEmail}</small></td>
+                        <td>
+                            <a class="clinic-link" onclick="openClinicDetailsModal('${req.clinicId}')" style="cursor: pointer; color: #0ea5e9; font-weight: bold; font-size: 15px; text-decoration: none;">🏢 ${realClinicName}</a><br>
+                            <small dir="ltr" style="color: #64748b;">${realEmail}</small>
+                        </td>
                         <td><span style="color: #8b5cf6; font-weight: bold;">${pkgLabel}</span><br><span style="color: #10b981; font-weight: bold;">${req.price} ج.م</span></td>
                         <td>${proofHtml}</td>
                         <td style="text-align: center;">
@@ -2141,10 +2149,14 @@ function loadTransactions() {
             let method = t.referenceNumber ? (isAr ? 'مرجعي/إنستاباي' : 'Ref/InstaPay') : (isAr ? 'إيصال/تحويل' : 'Manual Receipt');
             let pkgLabel = c[t.packageType === 'yearly' ? 'pkgElite' : 'pkgPro'] || t.packageType;
 
+            // 🔴 جلب اسم العيادة الحقيقي للمركز المالي وجعلها قابلة للضغط
+            const matchedClinic = allClinicsList.find(clinic => clinic.id === t.clinicId);
+            const realClinicName = matchedClinic ? matchedClinic.clinicName : t.clinicId;
+
             html += `
                 <tr>
                     <td style="color: #64748b; font-size: 13px;">${dateStr}</td>
-                    <td><strong>${t.clinicId}</strong></td>
+                    <td><a class="clinic-link" onclick="openClinicDetailsModal('${t.clinicId}')" style="cursor: pointer; color: #0ea5e9; font-weight: bold; font-size: 14px; text-decoration: none;">🏢 ${realClinicName}</a></td>
                     <td><span style="background: #e0f2fe; color: #0284c7; padding: 4px 8px; border-radius: 6px; font-weight: bold; font-size: 12px;">${pkgLabel}</span></td>
                     <td style="font-weight: bold; color: #10b981;">${t.price} ج.م</td>
                     <td style="color: #475569;"><span style="font-size: 16px;">📱</span> ${method}</td>
