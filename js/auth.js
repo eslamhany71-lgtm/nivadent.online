@@ -639,3 +639,51 @@ function checkPasswordStrength(password) {
             bar.style.width = '100%'; bar.style.background = '#10b981'; label.innerText = isAr ? 'قوية ✅' : 'Strong ✅'; label.style.color = '#10b981'; break;
     }
 }
+// ==========================================
+// 🎨 نظام التنقل السينمائي بين الشاشات (Blur & Slide)
+// ==========================================
+function toggleAuthForms(target) {
+    const loginSec = document.getElementById('login-section');
+    const actSec = document.getElementById('activate-section');
+    const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
+
+    if (target === 'activate') {
+        // خروج شاشة اللوجين للشمال (أو اليمين حسب اللغة)
+        loginSec.classList.remove('active', 'slide-in-right');
+        loginSec.classList.add('slide-out-left');
+        
+        // دخول شاشة التفعيل من اليمين (أو الشمال حسب اللغة)
+        actSec.classList.remove('slide-out-left');
+        actSec.classList.add('active');
+        
+        // تغيير نصوص الماركة (Brand Side) اختيارياً لو حابب
+        const brandTitle = document.getElementById('txt-brand');
+        const brandDesc = document.getElementById('brand-desc');
+        if(brandTitle) brandTitle.innerText = isAr ? "تفعيل حساب العيادة" : "Activate Clinic";
+        if(brandDesc) brandDesc.innerText = isAr ? "قم بتفعيل حسابك للوصول إلى لوحة تحكم عيادتك وإدارة مواعيدك وملفات مرضاك بكل سهولة." : "Activate your account to access your clinic's dashboard.";
+        
+    } else {
+        // خروج شاشة التفعيل
+        actSec.classList.remove('active', 'slide-in-right');
+        actSec.classList.add('slide-out-left');
+        
+        // عودة شاشة اللوجين
+        loginSec.classList.remove('slide-out-left');
+        loginSec.classList.add('active');
+
+        const brandTitle = document.getElementById('txt-brand');
+        const brandDesc = document.getElementById('brand-desc');
+        if(brandTitle) brandTitle.innerText = "NivaDent";
+        if(brandDesc) brandDesc.innerText = window.superLang ? window.superLang.brandDesc : (isAr ? "النظام السحابي الأذكى لإدارة عيادات طب الأسنان" : "The smartest cloud system for dental practice management");
+    }
+}
+
+// تعديل بسيط عشان يقبل الـ ID بتاع حقل الباسوورد لو عندنا أكتر من واحد (Login و Activate)
+window.togglePasswordVisibility = function(inputId = 'password') {
+    const passInput = document.getElementById(inputId);
+    const toggleIcon = passInput.nextElementSibling; // يجيب الأيقونة اللي جنبه
+    if (passInput && toggleIcon) {
+        if (passInput.type === 'password') { passInput.type = 'text'; toggleIcon.innerText = '🙈'; } 
+        else { passInput.type = 'password'; toggleIcon.innerText = '👁️'; }
+    }
+}
