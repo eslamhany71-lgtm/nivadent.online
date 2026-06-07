@@ -1000,7 +1000,9 @@ function loadClinics() {
     db.collection("Clinics").orderBy("createdAt", "desc").onSnapshot(async (snap) => {
         allClinicsList = []; 
         let activeCount = 0;
-        let suspendedCount = 0;
+        let trialsCount = 0;
+        let expiredCount = 0;
+        let expiringSoonCount = 0;
         const now = new Date();
 
         for (const doc of snap.docs) {
@@ -1009,24 +1011,43 @@ function loadClinics() {
 
             if (c.nextPaymentDate) {
                 const npDate = typeof c.nextPaymentDate.toDate === 'function' ? c.nextPaymentDate.toDate() : new Date(c.nextPaymentDate);
+                
+                // تحديث الحالة التلقائي للعيادات المنتهية
                 if (now > npDate && c.status !== 'expired' && c.status !== 'suspended') {
                     db.collection("Clinics").doc(c.id).update({
                         status: 'expired',
                         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                     }).catch(e => console.error("Auto-expire error:", e));
-                    
                     c.status = 'expired'; 
+                }
+
+                // حساب العيادات التي ستنتهي قريباً (أقل من 3 أيام)
+                const diffDays = Math.ceil((npDate - now) / (1000 * 60 * 60 * 24));
+                if (diffDays >= 0 && diffDays <= 3 && c.status === 'active') {
+                    expiringSoonCount++;
                 }
             }
 
             allClinicsList.push(c); 
+            
+            // تجميع الإحصائيات للكروت
             if (c.status === 'active') activeCount++;
-            else if (c.status === 'suspended') suspendedCount++;
+            if (c.package === 'trial_7') trialsCount++;
+            if (c.status === 'expired' || c.status === 'suspended') expiredCount++;
         }
         
-        document.getElementById('stat-clinics').innerText = activeCount;
-        document.getElementById('stat-susp-clinics').innerText = suspendedCount;
+        // تغذية الكروت الجديدة بالأرقام بأمان
+        const elActive = document.getElementById('stat-clinics');
+        const elTrials = document.getElementById('stat-trials');
+        const elExpired = document.getElementById('stat-expired-subs');
+        const elSoon = document.getElementById('stat-expiring-soon');
+
+        if(elActive) elActive.innerText = activeCount;
+        if(elTrials) elTrials.innerText = trialsCount;
+        if(elExpired) elExpired.innerText = expiredCount;
+        if(elSoon) elSoon.innerText = expiringSoonCount;
         
+        // تشغيل باقي الموديولات
         renderClinicsTable(); 
         updateMRRStats(); 
         updateSystemHealth(); 
@@ -1394,10 +1415,17 @@ async function deleteClinic(clinicId, accessCode) {
 }
 
 function loadGlobalStats() {
+    // حساب إجمالي المرضى في كل العيادات
     db.collection("Patients").get().then(snap => {
         const countEl = document.getElementById('stat-all-patients');
         if(countEl) countEl.innerText = snap.size;
     }).catch(e => console.error("Error loading patients stats:", e));
+
+    // حساب إجمالي المستخدمين والموظفين في العيادات
+    db.collection("Users").get().then(snap => {
+        const staffEl = document.getElementById('stat-clinic-staff');
+        if(staffEl) staffEl.innerText = snap.size;
+    }).catch(e => console.error("Error loading users stats:", e));
 }
 
 function filterData() {
@@ -1739,6 +1767,11 @@ function loadNivaTeam() {
     db.collection("NivaAdmins").onSnapshot(snap => {
         const tbody = document.getElementById('nivaTeamBody');
         const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
+        
+        // تغذية كارت فريق النظام المركزى
+        const elAdmins = document.getElementById('stat-system-admins');
+        if(elAdmins) elAdmins.innerText = snap.size;
+
         if (!tbody) return;
         tbody.innerHTML = '';
 
