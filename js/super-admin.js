@@ -2081,11 +2081,12 @@ function loadPendingPayments() {
 async function approvePendingPayment(requestId, clinicId, pkgType, price) {
     const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
     const c = window.superLang;
-    if(!confirm(c.msgApprove || "هل أنت متأكد من التفعيل؟")) return;
+    if(!confirm(c.msgApprove || "هل أنت متأكد من استلام المبلغ وتفعيل باقة هذه العيادة؟")) return;
 
-    if (window.showLoader) window.showLoader(isAr ? "جاري تفعيل الحساب..." : "Activating...");
+    if (window.showLoader) window.showLoader(isAr ? "جاري تفعيل الحساب وإرسال الإشعار..." : "Activating...");
 
     try {
+        // 1. تحديد حصص الباقة
         let maxU = 5, maxP = 10000, maxW = 500, monthsToAdd = 1;
         if(pkgType === 'quarterly') { maxU = 10; maxP = 20000; maxW = 2000; monthsToAdd = 3; }
         else if(pkgType === 'yearly') { maxU = 25; maxP = 50000; maxW = 5000; monthsToAdd = 12; }
@@ -2094,21 +2095,42 @@ async function approvePendingPayment(requestId, clinicId, pkgType, price) {
         const nextPayDate = new Date();
         nextPayDate.setMonth(nextPayDate.getMonth() + monthsToAdd); 
 
+        // 2. تفعيل العيادة وتحديث البيانات
         await db.collection("Clinics").doc(clinicId).update({
             status: 'active', package: pkgType, planType: firebase.firestore.FieldValue.delete(), 
             maxUsers: maxU, maxPatients: maxP, maxWhatsapp: maxW, subPrice: price,
             nextPaymentDate: nextPayDate, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
+        // 3. إغلاق الطلب المعلق
         await db.collection("PendingPayments").doc(requestId).update({
             status: "مقبول", approvedAt: firebase.firestore.FieldValue.serverTimestamp(), approvedBy: currentNivaRole
         });
 
-        logToSystemAudit('success', `تم قبول الدفع وتفعيل باقة (${pkgType}) بمبلغ ${price} ج.م.`, clinicId);
-        alert(c.actSuccess || "✅ تم التفعيل بنجاح!");
+        // 💌 4. إرسال الإشعار الجميل للعيادة 💌
+        const d = new Date();
+        const todayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        
+        let pkgLabel = c[pkgType === 'yearly' ? 'pkgElite' : 'pkgPro'] || pkgType;
+
+        await db.collection("Notifications").add({
+            clinicId: clinicId,
+            branchId: 'main', 
+            title: isAr ? "🎉 تم تفعيل باقتك بنجاح!" : "🎉 Subscription Activated!",
+            message: isAr ? `مرحباً بك في NivaDent 💙! تم تأكيد استلام اشتراكك بقيمة ${price} ج.م وتفعيل باقة (${pkgLabel}). نتمنى لك تجربة عمل مميزة معنا.` : `Payment of ${price} EGP received. Package (${pkgLabel}) is now active. Thank you for trusting NivaDent! 💙`,
+            type: "success",
+            isRead: false,
+            date: todayStr, 
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        // 5. تسجيل الحركة في الرادار الخاص بك
+        logToSystemAudit('success', `تم قبول الدفع وتفعيل باقة (${pkgLabel}) بمبلغ ${price} ج.م وإرسال إشعار ترحيبي للعيادة.`, clinicId);
+        
+        alert(c.actSuccess || "✅ تم التفعيل بنجاح وإرسال الإشعار للعيادة!");
     } catch (e) {
         console.error("Approval Error:", e);
-        alert(c.actError || "❌ حدث خطأ.");
+        alert(c.actError || "❌ حدث خطأ أثناء التفعيل.");
     } finally {
         if (window.hideLoader) window.hideLoader();
     }
