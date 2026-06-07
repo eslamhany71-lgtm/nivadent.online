@@ -25,6 +25,29 @@
             display: flex; justify-content: center; align-items: center; gap: 8px;
             transition: 0.3s; font-family: inherit; text-decoration: none;
         }
+        /* 🔴 تأثيرات الزغللة والانزلاق (Blur & Slide Transition) 🔴 */
+        .split-layout { overflow: hidden; position: relative; } /* منع ظهور السكرول أثناء الحركة */
+        
+        .form-section {
+            width: 100%; transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.5s ease, filter 0.5s ease;
+            position: absolute; top: 0; left: 0; right: 0; opacity: 0; filter: blur(10px); pointer-events: none; z-index: 0;
+            display: flex; flex-direction: column; align-items: center; padding: 20px; box-sizing: border-box;
+        }
+
+        .form-section.active {
+            position: relative; opacity: 1; filter: blur(0); transform: translateX(0); pointer-events: auto; z-index: 10;
+        }
+
+        /* حركات الخروج والدخول */
+        .form-section.slide-out-left { transform: translateX(-150%); opacity: 0; filter: blur(15px); }
+        .form-section.slide-in-right { transform: translateX(150%); opacity: 0; filter: blur(15px); }
+        
+        [dir="ltr"] .form-section.slide-out-left { transform: translateX(150%); }
+        [dir="ltr"] .form-section.slide-in-right { transform: translateX(-150%); }
+
+        /* حاوية النماذج (عشان التوسيط يكون مظبوط) */
+        #login-section, #activate-section { width: 100%; max-width: 400px; margin: 0 auto; }
+        
         .btn-pricing:hover { background: #fffbeb; border-color: #f59e0b; transform: translateY(-2px); }
         
         .privacy-content p { line-height: 1.8; color: #475569; margin-bottom: 15px; font-size: 14.5px; }
@@ -34,74 +57,124 @@
 <body style="touch-action: manipulation; overflow-x: hidden;">
     <div class="split-layout">
         <div class="form-side">
-            <div class="form-container">
-                <div class="lang-switcher">
+<div class="form-container" style="position: relative; min-height: 80vh; display: flex; align-items: center; justify-content: center; width: 100%;">
+                
+                <div class="lang-switcher" style="position: absolute; top: 20px; right: 20px; z-index: 100;">
                     <span onclick="setLanguage('ar')">عربي</span> | 
                     <span onclick="setLanguage('en')">EN</span>
                 </div>
 
-                <div class="mobile-brand-icon" style="background: transparent; box-shadow: none;">
-                    <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect width="100" height="100" rx="20" fill="#E0F2FE"/>
-                        <path d="M30 40C30 28.9543 38.9543 20 50 20C61.0457 20 70 28.9543 70 40V60C70 65.5228 65.5228 70 60 70C54.4772 70 50 65.5228 50 60C50 65.5228 45.5228 70 40 70C34.4772 70 30 65.5228 30 60V40Z" fill="#0284C7"/>
-                        <path d="M50 20C38.9543 20 30 28.9543 30 40V60C30 65.5228 34.4772 70 40 70C45.5228 70 50 65.5228 50 60V20Z" fill="#0EA5E9"/>
-                        <circle cx="50" cy="50" r="8" fill="#FFFFFF"/>
-                    </svg>
-                </div>
-
-                <h3 id="txt-welcome">أهلاً بك في NivaDent</h3>
-                <p class="sub-text" id="sub-login">قم بتسجيل الدخول لإدارة عيادتك</p>
-                
-                <div class="input-group">
-                    <label id="lbl-code">البريد الإلكتروني أو كود العيادة</label>
-                    <div class="input-wrapper">
-                        <span class="input-icon">👤</span>
-                        <input type="text" id="empCode" placeholder="أدخل البريد أو الكود الخاص بك" required>
+                <div id="login-section" class="form-section active">
+                    <div class="mobile-brand-icon" style="background: transparent; box-shadow: none; margin-bottom: 20px;">
+                        <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="100" height="100" rx="20" fill="#E0F2FE"/>
+                            <path d="M30 40C30 28.9543 38.9543 20 50 20C61.0457 20 70 28.9543 70 40V60C70 65.5228 65.5228 70 60 70C54.4772 70 50 65.5228 50 60C50 65.5228 45.5228 70 40 70C34.4772 70 30 65.5228 30 60V40Z" fill="#0284C7"/>
+                            <path d="M50 20C38.9543 20 30 28.9543 30 40V60C30 65.5228 34.4772 70 40 70C45.5228 70 50 65.5228 50 60V20Z" fill="#0EA5E9"/>
+                            <circle cx="50" cy="50" r="8" fill="#FFFFFF"/>
+                        </svg>
                     </div>
-                </div>
 
-                <div class="input-group">
-                    <label id="lbl-pass">كلمة المرور</label>
-                    <div class="input-wrapper">
-                        <span class="input-icon">🔒</span>
-                        <input type="password" id="password" placeholder="********" required>
-                        <span class="toggle-password" onclick="togglePasswordVisibility()" title="إظهار/إخفاء كلمة المرور">👁️</span>
-                    </div>
-                </div>
-
-                <button id="btn-login" class="btn-primary" onclick="loginById()">تسجيل الدخول</button>
-                
-                <div class="forgot-password-container" style="text-align: center; margin-top: 15px;">
-                    <a href="#" onclick="openResetModal()" id="link-forgot" style="color: #0284C7; text-decoration: none; font-size: 14px; font-weight: 700;">نسيت كلمة المرور؟</a>
-                </div>
-
-                <div id="errorMessage" class="error-msg"></div>
-
-                <div class="register-link" style="display: flex; flex-direction: column; gap: 10px; margin-top: 25px;">
-                    <div>
-                        <span id="txt-new">حساب جديد؟</span> 
-                        <a href="activate.html" id="link-activate">تفعيل حساب العيادة من هنا</a>
-                    </div>
+                    <h3 id="txt-welcome" style="margin-bottom: 5px; font-size: 24px; color: #0f172a;">أهلاً بك في NivaDent</h3>
+                    <p class="sub-text" id="sub-login" style="margin-bottom: 25px; color: #64748b;">قم بتسجيل الدخول لإدارة عيادتك</p>
                     
-                    <div style="border-top: 1px solid #e2e8f0; padding-top: 15px; margin-top: 5px;">
-                        <a href="#" onclick="openStaffModal()" style="color: #10b981; text-decoration: none; font-size: 15px; font-weight: bold;"><span id="txt-staff-invite">🔑 لدي كود دعوة (تفعيل حساب موظف)</span></a>
+                    <div class="input-group" style="width: 100%;">
+                        <label id="lbl-code">البريد الإلكتروني أو كود العيادة</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">👤</span>
+                            <input type="text" id="empCode" placeholder="أدخل البريد أو الكود الخاص بك" required>
+                        </div>
                     </div>
 
-                    <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px;">
-                        <button type="button" class="btn-trial" onclick="openTrialModal()">
-                            🚀 <span id="btn-trial-txt">ابدأ فترة تجريبية مجانية (7 أيام)</span>
-                        </button>
-                        <a href="pricing.html" class="btn-pricing">
-                            👑 <span id="btn-pricing-txt">استكشف خطط الأسعار والاشتراكات</span>
-                        </a>
+                    <div class="input-group" style="width: 100%;">
+                        <label id="lbl-pass">كلمة المرور</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">🔒</span>
+                            <input type="password" id="password" placeholder="********" required>
+                            <span class="toggle-password" onclick="togglePasswordVisibility('password')" title="إظهار/إخفاء كلمة المرور">👁️</span>
+                        </div>
+                    </div>
+
+                    <button id="btn-login" class="btn-primary" onclick="loginById()" style="width: 100%;">تسجيل الدخول</button>
+                    
+                    <div class="forgot-password-container" style="text-align: center; margin-top: 15px;">
+                        <a href="#" onclick="openResetModal()" id="link-forgot" style="color: #0284C7; text-decoration: none; font-size: 14px; font-weight: 700;">نسيت كلمة المرور؟</a>
+                    </div>
+
+                    <div id="errorMessage" class="error-msg" style="width: 100%; text-align: center;"></div>
+
+                    <div class="register-link" style="display: flex; flex-direction: column; gap: 10px; margin-top: 25px; width: 100%;">
+                        <div style="text-align: center;">
+                            <span id="txt-new">حساب جديد؟</span> 
+                            <a href="#" onclick="toggleAuthForms('activate')" id="link-activate" style="color: #10b981; font-weight: bold; cursor: pointer;">تفعيل حساب العيادة من هنا</a>
+                        </div>
+                        
+                        <div style="border-top: 1px solid #e2e8f0; padding-top: 15px; margin-top: 5px; text-align: center;">
+                            <a href="#" onclick="openStaffModal()" style="color: #0ea5e9; text-decoration: none; font-size: 15px; font-weight: bold;"><span id="txt-staff-invite">🔑 لدي كود دعوة (تفعيل حساب موظف)</span></a>
+                        </div>
+
+                        <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px;">
+                            <button type="button" class="btn-trial" onclick="openTrialModal()">
+                                🚀 <span id="btn-trial-txt">ابدأ فترة تجريبية مجانية (7 أيام)</span>
+                            </button>
+                            <a href="pricing.html" class="btn-pricing">
+                                👑 <span id="btn-pricing-txt">استكشف خطط الأسعار والاشتراكات</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 35px; font-size: 12px; color: #94a3b8; border-top: 1px solid #f1f5f9; padding-top: 15px; width: 100%;">
+                        <span id="txt-copyright">© 2026 Start Online Agency. جميع الحقوق محفوظة.</span><br>
+                        <a href="#" onclick="openPrivacyModal()" id="link-privacy" style="color: #0284c7; text-decoration: none; display: inline-block; margin-top: 5px;">سياسة الخصوصية والتأمين (Privacy Policy)</a>
                     </div>
                 </div>
 
-                <div style="text-align: center; margin-top: 35px; font-size: 12px; color: #94a3b8; border-top: 1px solid #f1f5f9; padding-top: 15px;">
-                    <span id="txt-copyright">© 2026 Start Online Agency. جميع الحقوق محفوظة.</span><br>
-                    <a href="#" onclick="openPrivacyModal()" id="link-privacy" style="color: #0284c7; text-decoration: none; display: inline-block; margin-top: 5px;">سياسة الخصوصية والتأمين (Privacy Policy)</a>
+                <div id="activate-section" class="form-section slide-in-right">
+                    <h3 id="txt-act-welcome" style="margin-bottom: 5px; font-size: 24px; color: #0f172a; margin-top: 20px;">تفعيل حساب العيادة</h3>
+                    <p class="sub-text" id="txt-act-sub" style="margin-bottom: 25px; color: #64748b;">يرجى إدخال البيانات المسجلة لدى إدارة النظام</p>
+                    
+                    <div class="input-group" style="width: 100%;">
+                        <label id="lbl-act-code">كود الدخول (استلمته من الإدارة)</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">🔑</span>
+                            <input type="text" id="reg-code" placeholder="أدخل كود العيادة" required style="direction: ltr; text-align: left;">
+                        </div>
+                    </div>
+
+                    <div class="input-group" style="width: 100%;">
+                        <label id="lbl-act-phone">رقم الموبايل المسجل</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">📱</span>
+                            <input type="tel" id="reg-phone" placeholder="01xxxxxxxxx" required style="direction: ltr; text-align: left;">
+                        </div>
+                    </div>
+
+                    <div class="input-group" style="width: 100%;">
+                        <label id="lbl-act-email">البريد الإلكتروني للعيادة (لتسجيل الدخول لاحقاً)</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">📧</span>
+                            <input type="email" id="reg-email" placeholder="أدخل البريد الإلكتروني" required style="direction: ltr; text-align: left;">
+                        </div>
+                    </div>
+
+                    <div class="input-group" style="width: 100%;">
+                        <label id="lbl-act-pass">اختر كلمة مرور جديدة للعيادة</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">🔒</span>
+                            <input type="password" id="reg-pass" placeholder="********" required>
+                            <span class="toggle-password" onclick="togglePasswordVisibility('reg-pass')" title="إظهار/إخفاء كلمة المرور">👁️</span>
+                        </div>
+                    </div>
+
+                    <button id="btn-activate" class="btn-primary" onclick="activateAccount()" style="width: 100%; background-color: #10b981; margin-top: 10px;">تفعيل الحساب الآن</button>
+                    
+                    <div id="reg-msg" class="error-msg" style="width: 100%; text-align: center; margin-top: 10px;"></div>
+
+                    <div class="register-link" style="text-align: center; margin-top: 25px; width: 100%;">
+                        <span id="txt-back-str">لديك حساب بالفعل؟</span> 
+                        <a href="#" onclick="toggleAuthForms('login')" id="link-back-login" style="color: #0284c7; font-weight: bold; cursor: pointer;">العودة للدخول</a>
+                    </div>
                 </div>
-                
+
             </div>
         </div>
 
