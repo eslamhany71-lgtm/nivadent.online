@@ -642,21 +642,23 @@ function checkPasswordStrength(password) {
 // ==========================================
 // 🎨 نظام التنقل السينمائي بين الشاشات (Blur & Slide)
 // ==========================================
-function toggleAuthForms(target) {
+function toggleAuthForms(target, event) {
+    if (event) event.preventDefault(); // 🔴 منع المتصفح من القفز وتوليد خطأ 404
+
     const loginSec = document.getElementById('login-section');
     const actSec = document.getElementById('activate-section');
     const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
 
     if (target === 'activate') {
-        // خروج شاشة اللوجين للشمال (أو اليمين حسب اللغة)
+        // خروج شاشة اللوجين
         loginSec.classList.remove('active', 'slide-in-right');
         loginSec.classList.add('slide-out-left');
         
-        // دخول شاشة التفعيل من اليمين (أو الشمال حسب اللغة)
-        actSec.classList.remove('slide-out-left');
+        // دخول شاشة التفعيل (إزالة كلاسات الاختفاء إجبارياً) 🔴
+        actSec.classList.remove('slide-out-left', 'slide-in-right');
         actSec.classList.add('active');
         
-        // تغيير نصوص الماركة (Brand Side) اختيارياً لو حابب
+        // تغيير نصوص الماركة
         const brandTitle = document.getElementById('txt-brand');
         const brandDesc = document.getElementById('brand-desc');
         if(brandTitle) brandTitle.innerText = isAr ? "تفعيل حساب العيادة" : "Activate Clinic";
@@ -667,8 +669,8 @@ function toggleAuthForms(target) {
         actSec.classList.remove('active', 'slide-in-right');
         actSec.classList.add('slide-out-left');
         
-        // عودة شاشة اللوجين
-        loginSec.classList.remove('slide-out-left');
+        // عودة شاشة اللوجين (إزالة كلاسات الاختفاء إجبارياً) 🔴
+        loginSec.classList.remove('slide-out-left', 'slide-in-right');
         loginSec.classList.add('active');
 
         const brandTitle = document.getElementById('txt-brand');
