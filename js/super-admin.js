@@ -19,46 +19,58 @@ let currentActiveTab = 'active';
 function updatePageContent(lang) {
     const t = {
         ar: {
-            title: "إدارة النظام المركزية (SaaS)", sub: "لوحة تحكم المالك - صلاحيات عليا", search: "بحث باسم العيادة...", btnAdd: "إضافة عيادة جديدة", btnAddUser: "توليد كود دعوة موظف",
+            // 🔴 الأساسيات
+            title: "إدارة النظام المركزية (SaaS)", sub: "لوحة تحكم المالك - صلاحيات عليا", search: "بحث بالاسم، الإيميل، أو الرقم المرجعي...", btnAdd: "إضافة عيادة يدوياً", btnAddUser: "توليد كود دعوة",
             totClinics: "العيادات النشطة", totSusp: "العيادات الموقوفة", totPatients: "المرضى (في كل النظام)",
             thDate: "تاريخ الاشتراك", thNextPay: "ميعاد الانتهاء", thName: "اسم العيادة / الباقة", thEmail: "إيميل الأدمن", thStatus: "الحالة", thAction: "إجراءات",
             loading: "جاري تحميل البيانات...", empty: "لا توجد عيادات مسجلة حالياً.",
+            
+            // 🔴 إضافة عيادة
             mTitle: "تسجيل عيادة جديدة بالنظام", lName: "اسم العيادة / المركز الطبي", lEmail: "البريد الإلكتروني للأدمن", 
             lHint: "* يجب إنشاء هذا الحساب لاحقاً من شاشة تسجيل الدخول.", lPhone: "رقم الموبايل",
             lPkg: "باقة الاشتراك", optPkgT7: "تجريبي (7 أيام)", optPkgT14: "تجريبي (14 يوم)", optPkgMonth: "شهري (Monthly)", optPkgYear: "سنوي (Yearly)",
             lPlan: "حالة الحساب", optAct: "نشط (Active)", optSusp: "موقوف (Suspended)", btnSave: "إنشاء العيادة وتوليد المعرف",
             lLimit: "الحد الأقصى للمستخدمين", hintLimit: "شاملاً حساب الدكتور المالك", lPrice: "قيمة الاشتراك (ج.م)",
+            
+            // 🔴 الحالات والإجراءات
             sAct: "نشط", sSusp: "موقوف", sExpired: "منتهي (خلص وقته)", 
             btnPaid: "تم الدفع", btnCancelSub: "إيقاف الحساب", btnRenew: "تفعيل الحساب", btnDelete: "حذف العيادة",
             msgSuccess: "تم إنشاء العيادة بنجاح!\n\nكود الدخول: {id}\nإيميل الأدمن: {email}\n\nيرجى إرسال الكود للدكتور لتفعيل الحساب.",
             msgError: "حدث خطأ أثناء الإنشاء!", msgConfirmToggle: "هل متأكد من تغيير حالة العيادة؟",
             msgConfirmPaid: "هل تريد تأكيد استلام الدفعة وتجديد الاشتراك؟",
             msgWarnDel: "تحذير: هذا سيحذف العيادة تماماً ولن يمكن استرجاعها! اكتب '1234' للتأكيد:", msgDelSuccess: "تم حذف العيادة بنجاح.", btnSaving: "جاري الإنشاء...",
+            
+            // 🔴 النوافذ المنبثقة
             ovrTitle: "تحكم يدوي في الاشتراك", ovrDiscount: "نسبة خصم خاصة (%)", ovrTrial: "تمديد تجربة (أيام إضافية)", ovrBtn: "حفظ التعديلات المالية",
-            
-            
             mUpgTitle: "🚀 ترقية العيادة التجريبية", mUpgSub: "حدد الباقة وقيمة الاشتراك لتوليد كود الدخول الجديد للعيادة.",
             lUpgPkg: "باقة الاشتراك", optUpgMonth: "شهري (Monthly)", optUpgYear: "سنوي (Yearly)",
             lUpgPrice: "الاشتراك (ج.م)", lUpgLimit: "الحد الأقصى للمستخدمين", btnConfirmUpg: "تأكيد الترقية وتوليد الكود",
-            
             mUserTitle: "توليد كود دعوة مستخدم", mUserSub: "اختر العيادة والوظيفة لتوليد كود (يعمل كـ Override في حالة الطوارئ).",
             lUClinic: "العيادة التابعة لها", lUName: "اسم المستخدم", lURole: "الصلاحية الممنوحة (Role)",
             optUAdmin: "مدير نظام (Doctor/Admin)", optUDoc: "طبيب (صلاحية محدودة)", optURec: "موظف استقبال", optUNur: "مساعد / ممرضة", btnSubUser: "توليد كود الدعوة",
-            
             modDetTitle: "لوحة تحكم العيادة المتقدمة", lblDetName: "اسم العيادة", lblDetCode: "كود العيادة", lblDetEmail: "إيميل الأدمن", lblDetPhone: "الموبايل",
             lblDetPkg: "نوع الباقة", lblDetCreated: "تاريخ الإنشاء", lblDetLimit: "الحد الأقصى للمستخدمين", lblDetPrice: "قيمة الاشتراك المتفق عليها:",
             txtTeamTitle: "👥 فريق العمل والمستخدمين", thUName: "اسم المستخدم", thUEmail: "البريد / الكود", thURole: "الصلاحية",
             thUDate: "تاريخ الانضمام", thUOnline: "متصل الآن؟", thULast: "آخر ظهور", txtULoad: "جاري تحميل المستخدمين...",
             
-            tabActive: "🏢 العيادات النشطة والموقوفة", tabTrials: "🚀 التجارب المجانية (Trials)", tabSupport: "🎧 تذاكر الدعم الفني", tabReviews: "⭐ تقييمات النظام",
-            tabChat: "💬 المراسلة (Live Chat)", tabTeam: "🛡️ فريق الإدارة (Niva Team)",
-            noSupport: "لا توجد تذاكر دعم فني.", noReviews: "لا توجد تقييمات حتى الآن.", btnReply: "رد وإغلاق",
-            msgReplySent: "تم إرسال الرد وإغلاق التذكرة بنجاح.",
+            // 🔴 التابات (Tabs)
+            tabActive: "🏢 العيادات النشطة", tabTrials: "🚀 التجارب المجانية", tabSupport: "🎧 الدعم الفني", tabReviews: "⭐ التقييمات",
+            tabChat: "💬 المراسلة", tabTeam: "🛡️ فريق الإدارة", tabPending: "⏳ الطلبات المعلقة", tabRevenue: "💰 الماليات والإيرادات", tabAudit: "📡 سجل النشاط (Audit)",
             
+            // 🔴 الموديولات الجديدة (الطلبات، الماليات، الرادار)
+            kpiPending: "طلبات دفع معلقة", kpiExpired: "اشتراكات منتهية", kpiSoon: "ينتهي خلال 3 أيام", kpiActive: "إجمالي العيادات النشطة", 
+            kpiTrials: "تجارب مجانية (Trials)", kpiTeam: "مديرين السوبر أدمن", kpiStaff: "موظفين العيادات", kpiPatients: "إجمالي المرضى بالأنظمة",
+            pendTitle: "⚡ تفعيل الباقات يدوياً", pendSub: "راجع الرقم المرجعي أو الإيصال مع حساباتك البنكية، ثم اضغط على زر التفعيل لتحديث باقة العيادة فوراً.",
+            thReqDate: "تاريخ الطلب", thReqClinic: "العيادة / الإيميل", thReqPkg: "الباقة والمبلغ", thReqRef: "الرقم المرجعي / الإيصال", thReqAction: "إجراءات التفعيل",
+            revMRR: "الإيرادات الشهرية المتكررة (MRR)", revTotal: "إجمالي الأرباح المحصلة", revChart: "📈 مؤشر نمو الإيرادات", revTable: "🧾 سجل المعاملات المالية الأخيرة",
+            thRevDate: "التاريخ", thRevClinic: "العيادة", thRevPkg: "الباقة", thRevAmt: "المبلغ المدفوع", thRevMethod: "وسيلة الدفع", thRevStatus: "الحالة",
+            auditTitle: "📡 رادار النظام الحي (Live Audit Trail)", auditSub: "سجل دقيق بكل حركة تحدث في النظام (تسجيل، دفع، تفعيل، انتهاء).",
+            
+            // 🔴 الإشعارات وصحة السيرفر
+            noSupport: "لا توجد تذاكر دعم فني.", noReviews: "لا توجد تقييمات حتى الآن.", btnReply: "رد وإغلاق", msgReplySent: "تم إرسال الرد وإغلاق التذكرة بنجاح.",
             sysHealthTitle: "صحة السيرفر (System Health)", sysHealthDb: "حالة قواعد البيانات", sysHealthUsage: "مؤشر الاستهلاك",
             annTitle: "📢 الإذاعة المركزية (Global Announcements)", annSub: "إرسال إشعار فوري للعيادات على النظام (سيظهر في جرس الإشعارات لديهم).",
-            annBtn: "🚀 إرسال الآن",
-            chatWith: "تواصل مع:", chatPlaceholder: "اكتب رسالتك للعيادة هنا...", chatSend: "إرسال 🚀",
+            annBtn: "🚀 إرسال الآن", chatWith: "تواصل مع:", chatPlaceholder: "اكتب رسالتك للعيادة هنا...", chatSend: "إرسال 🚀",
             teamAddTitle: "إضافة موظف إدارة جديد", teamEmail: "البريد الإلكتروني (جيميل)", teamRole: "الرتبة (الصلاحية)", teamAddBtn: "إضافة الموظف",
             roleSales: "مبيعات (Sales - رؤية فقط)", roleSupport: "دعم فني (Support)",
             
@@ -66,22 +78,25 @@ function updatePageContent(lang) {
             pkgStart: "تجريبي (7 أيام)", pkgPro: "شهري (Clinic Pro)", pkgGrowth: "ربع سنوي (Growth)", pkgElite: "سنوي (Elite)", pkgLife: "مدى الحياة (Lifetime)",
             msgPkgChanged: "✅ تم تغيير باقة العيادة وتحديث الحصص وتاريخ الانتهاء بنجاح!", msgPkgErr: "❌ حدث خطأ أثناء تغيير الباقة", btnPkgChange: "تغيير الباقة",
             lblSelectPkg: "اختر الباقة الجديدة", btnSavePkg: "حفظ وتفعيل الباقة 🚀",
-            tabPending: "⏳ الطلبات المعلقة", tabRevenue: "💰 الماليات والإيرادات", tabAudit: "📡 سجل النشاط (Audit)",
-            toastNewReq: "طلب دفع جديد!", toastNewReqSub: "تم استلام رقم مرجعي من:",
-            msgApprove: "هل أنت متأكد من استلام المبلغ وتفعيل باقة هذه العيادة؟",
-            msgReject: "هل أنت متأكد من رفض هذا الطلب؟",
-            actSuccess: "تم تفعيل العيادة بنجاح!", actError: "حدث خطأ أثناء التفعيل.",
+            toastNewReq: "طلب دفع جديد!", toastNewReqSub: "تم استلام مرفق جديد من:",
+            msgApprove: "هل أنت متأكد من استلام المبلغ وتفعيل باقة هذه العيادة؟", msgReject: "هل أنت متأكد من رفض هذا الطلب؟",
+            actSuccess: "تم تفعيل العيادة بنجاح!", actError: "حدث خطأ أثناء التفعيل."
         },
         en: {
-            title: "Central SaaS Management", sub: "Owner Dashboard - Super Admin", search: "Search by clinic name...", btnAdd: "Add New Clinic", btnAddUser: "Generate User Invite",
+            // 🔴 Core
+            title: "Central SaaS Management", sub: "Owner Dashboard - Super Admin", search: "Search by name, email, or reference...", btnAdd: "Add Clinic Manually", btnAddUser: "Generate User Invite",
             totClinics: "Active Clinics", totSusp: "Suspended Clinics", totPatients: "Total Patients",
             thDate: "Sub Date", thNextPay: "Next Payment", thName: "Clinic / Package", thEmail: "Admin Email", thStatus: "Status", thAction: "Actions",
             loading: "Loading data...", empty: "No clinics registered yet.",
+            
+            // 🔴 Add Clinic
             mTitle: "Register New Clinic", lName: "Clinic / Center Name", lEmail: "Admin Email", 
             lHint: "* This account must be created later from login screen.", lPhone: "Mobile Number",
             lPkg: "Subscription Package", optPkgT7: "Trial (7 Days)", optPkgT14: "Trial (14 Days)", optPkgMonth: "Monthly", optPkgYear: "Yearly",
             lPlan: "Account Status", optAct: "Active", optSusp: "Suspended", btnSave: "Create Clinic & Generate ID",
             lLimit: "Max Users", hintLimit: "Including Admin doctor", lPrice: "Subscription Price",
+            
+            // 🔴 Actions & Statuses
             sAct: "Active", sSusp: "Suspended", sExpired: "Expired", 
             btnPaid: "Paid", btnCancelSub: "Suspend Acc", btnRenew: "Activate Acc", btnDelete: "Delete Clinic",
             msgSuccess: "Clinic created successfully!\n\nAccess Code: {id}\nAdmin Email: {email}\n\nPlease send code to the doctor.",
@@ -89,29 +104,37 @@ function updatePageContent(lang) {
             msgConfirmPaid: "Confirm payment receipt and renew subscription?",
             msgWarnDel: "WARNING: Type '1234' to confirm permanent deletion:", msgDelSuccess: "Clinic deleted successfully.", btnSaving: "Creating...",
             
+            // 🔴 Modals
+            ovrTitle: "Subscription Override", ovrDiscount: "Special Discount (%)", ovrTrial: "Trial Extension (Days)", ovrBtn: "Save Financial Changes",
             mUpgTitle: "🚀 Upgrade Trial Clinic", mUpgSub: "Select package and price to generate a new access code.",
             lUpgPkg: "Subscription Package", optUpgMonth: "Monthly", optUpgYear: "Yearly",
             lUpgPrice: "Price (EGP)", lUpgLimit: "Max Users Limit", btnConfirmUpg: "Confirm Upgrade & Generate",
-            
             mUserTitle: "Generate User Invite", mUserSub: "Select clinic and role to override and generate code.",
             lUClinic: "Select Clinic", lUName: "User Name", lURole: "Assigned Role",
             optUAdmin: "System Admin", optUDoc: "Doctor", optURec: "Receptionist", optUNur: "Nurse / Assistant", btnSubUser: "Generate Invite Code",
-            
             modDetTitle: "Advanced Clinic Dashboard", lblDetName: "Clinic Name", lblDetCode: "Access Code", lblDetEmail: "Admin Email", lblDetPhone: "Phone",
             lblDetPkg: "Package", lblDetCreated: "Created At", lblDetLimit: "Max Users Limit", lblDetPrice: "Agreed Subscription Price:",
             txtTeamTitle: "👥 Staff & Users", thUName: "User Name", thUEmail: "Email / Code", thURole: "Role",
             thUDate: "Join Date", thUOnline: "Online?", thULast: "Last Seen", txtULoad: "Loading users...",
 
-            tabActive: "🏢 Active & Suspended Clinics", tabTrials: "🚀 Free Trials", tabSupport: "🎧 Support Tickets", tabReviews: "⭐ System Reviews",
-            tabChat: "💬 Live Chat", tabTeam: "🛡️ Niva Team",
-            noSupport: "No support tickets found.", noReviews: "No reviews yet.", btnReply: "Reply & Close",
-            msgReplySent: "Reply sent and ticket closed successfully.",
-            ovrTitle: "Subscription Override", ovrDiscount: "Special Discount (%)", ovrTrial: "Trial Extension (Days)", ovrBtn: "Save Financial Changes",
+            // 🔴 Tabs
+            tabActive: "🏢 Active Clinics", tabTrials: "🚀 Free Trials", tabSupport: "🎧 Support", tabReviews: "⭐ Reviews",
+            tabChat: "💬 Live Chat", tabTeam: "🛡️ Niva Team", tabPending: "⏳ Pending Requests", tabRevenue: "💰 Revenue Hub", tabAudit: "📡 Audit Trail",
             
+            // 🔴 New Modules (Pending, Revenue, Audit)
+            kpiPending: "Pending Payments", kpiExpired: "Expired Subs", kpiSoon: "Expiring in 3 Days", kpiActive: "Total Active Clinics", 
+            kpiTrials: "Free Trials", kpiTeam: "System Admins", kpiStaff: "Clinics Staff", kpiPatients: "Total Patients",
+            pendTitle: "⚡ Manual Activation", pendSub: "Review the reference number or receipt with your bank accounts, then approve to activate.",
+            thReqDate: "Req Date", thReqClinic: "Clinic / Email", thReqPkg: "Package & Amount", thReqRef: "Ref Number / Receipt", thReqAction: "Actions",
+            revMRR: "Monthly Recurring Revenue (MRR)", revTotal: "Total Collected Revenue", revChart: "📈 Revenue Growth Index", revTable: "🧾 Recent Transactions",
+            thRevDate: "Date", thRevClinic: "Clinic", thRevPkg: "Package", thRevAmt: "Amount Paid", thRevMethod: "Payment Method", thRevStatus: "Status",
+            auditTitle: "📡 Live System Radar", auditSub: "Detailed log of every system action (Registration, Payment, Activation).",
+            
+            // 🔴 System Health & Broadcast
+            noSupport: "No support tickets found.", noReviews: "No reviews yet.", btnReply: "Reply & Close", msgReplySent: "Reply sent and ticket closed successfully.",
             sysHealthTitle: "System Health", sysHealthDb: "Database Status", sysHealthUsage: "Usage Indicator",
             annTitle: "📢 Global Announcements", annSub: "Send instant notification to clinics on the system (appears in their bell).",
-            annBtn: "🚀 Send Now",
-            chatWith: "Chat with:", chatPlaceholder: "Type your message here...", chatSend: "Send 🚀",
+            annBtn: "🚀 Send Now", chatWith: "Chat with:", chatPlaceholder: "Type your message here...", chatSend: "Send 🚀",
             teamAddTitle: "Add New Admin", teamEmail: "Email (Gmail)", teamRole: "Role (Permission)", teamAddBtn: "Add Member",
             roleSales: "Sales (View Only)", roleSupport: "Support (Tech Support)",
             
@@ -119,21 +142,19 @@ function updatePageContent(lang) {
             pkgStart: "Trial (7 Days)", pkgPro: "Monthly (Clinic Pro)", pkgGrowth: "Quarterly (Growth)", pkgElite: "Yearly (Elite)", pkgLife: "Lifetime Partner",
             msgPkgChanged: "✅ Package changed and limits updated successfully!", msgPkgErr: "❌ Error changing package", btnPkgChange: "Change Package",
             lblSelectPkg: "Select New Package", btnSavePkg: "Save & Activate 🚀",
-            tabPending: "⏳ Pending Requests", tabRevenue: "💰 Revenue Hub", tabAudit: "📡 Audit Trail",
-            toastNewReq: "New Payment Request!", toastNewReqSub: "New reference received from:",
-            msgApprove: "Confirm payment receipt and activate clinic?",
-            msgReject: "Are you sure you want to reject this request?",
-            actSuccess: "Clinic activated successfully!", actError: "Activation Error.",
+            toastNewReq: "New Payment Request!", toastNewReqSub: "New attachment received from:",
+            msgApprove: "Confirm payment receipt and activate clinic?", msgReject: "Are you sure you want to reject this request?",
+            actSuccess: "Clinic activated successfully!", actError: "Activation Error."
         }
     };
     const c = t[lang] || t.ar;
+    window.superLang = c; // حفظ الترجمة عالمياً عشان باقي الدوال تقرأ منها
     const setTxt = (id, txt) => { if(document.getElementById(id)) document.getElementById(id).innerText = txt; };
 
+    // 🔴 ترجمة العناوين والأزرار القديمة
     setTxt('txt-title', c.title); setTxt('txt-subtitle', c.sub); 
     if(document.getElementById('searchInput')) document.getElementById('searchInput').placeholder = c.search;
     setTxt('btn-add-clinic', c.btnAdd); setTxt('btn-add-user', c.btnAddUser);
-    
-    setTxt('lbl-tot-clinics', c.totClinics); setTxt('lbl-tot-susp', c.totSusp); setTxt('lbl-tot-patients', c.totPatients);
     
     setTxt('th-date', c.thDate); setTxt('th-next-pay', c.thNextPay); setTxt('th-name', c.thName); setTxt('th-email', c.thEmail); setTxt('th-status', c.thStatus); setTxt('th-action', c.thAction);
     if(document.getElementById('txt-loading')) setTxt('txt-loading', c.loading);
@@ -157,18 +178,66 @@ function updatePageContent(lang) {
     setTxt('th-u-date', c.thUDate); setTxt('th-u-online', c.thUOnline); setTxt('th-u-last', c.thULast);
     if(document.getElementById('txt-u-load')) setTxt('txt-u-load', c.txtULoad);
 
+    // 🔴 ترجمة التابات
     if(document.getElementById('tab-active')) document.getElementById('tab-active').innerHTML = c.tabActive;
     if(document.getElementById('tab-trials')) document.getElementById('tab-trials').innerHTML = c.tabTrials;
     const supBadge = document.getElementById('badge-support');
-    const badgeHtml = supBadge ? supBadge.outerHTML : '';
-    if(document.getElementById('tab-support')) document.getElementById('tab-support').innerHTML = c.tabSupport + badgeHtml;
+    if(document.getElementById('tab-support')) document.getElementById('tab-support').innerHTML = c.tabSupport + (supBadge ? supBadge.outerHTML : '');
     if(document.getElementById('tab-reviews')) document.getElementById('tab-reviews').innerHTML = c.tabReviews;
     if(document.getElementById('tab-chat')) document.getElementById('tab-chat').innerHTML = c.tabChat;
     if(document.getElementById('tab-team')) document.getElementById('tab-team').innerHTML = c.tabTeam;
-    if(document.getElementById('tab-pending')) document.getElementById('tab-pending').innerHTML = c.tabPending + '<span id="badge-pending" class="notification-badge" style="display: none;">0</span>';
+    const pendBadge = document.getElementById('badge-pending');
+    if(document.getElementById('tab-pending')) document.getElementById('tab-pending').innerHTML = c.tabPending + (pendBadge ? pendBadge.outerHTML : '');
     if(document.getElementById('tab-revenue')) document.getElementById('tab-revenue').innerText = c.tabRevenue;
     if(document.getElementById('tab-audit')) document.getElementById('tab-audit').innerText = c.tabAudit;
 
+    // 🔴 ترجمة الكروت الجديدة الذكية (KPIs)
+    const kpiHeaders = document.querySelectorAll('.kpi-card h4');
+    if(kpiHeaders.length >= 8) {
+        kpiHeaders[0].innerText = c.kpiPending;
+        kpiHeaders[1].innerText = c.kpiExpired;
+        kpiHeaders[2].innerText = c.kpiSoon;
+        kpiHeaders[3].innerText = c.kpiActive;
+        kpiHeaders[4].innerText = c.kpiTrials;
+        kpiHeaders[5].innerText = c.kpiTeam;
+        kpiHeaders[6].innerText = c.kpiStaff;
+        kpiHeaders[7].innerText = c.kpiPatients;
+    }
+
+    // 🔴 ترجمة شاشة الطلبات المعلقة
+    const pendTitleEl = document.querySelector('#view-pending h3');
+    if(pendTitleEl) pendTitleEl.innerText = c.pendTitle;
+    const pendSubEl = document.querySelector('#view-pending p');
+    if(pendSubEl) pendSubEl.innerText = c.pendSub;
+    const pendTh = document.querySelectorAll('#pendingPaymentsTable th');
+    if(pendTh.length >= 5) {
+        pendTh[0].innerText = c.thReqDate; pendTh[1].innerText = c.thReqClinic; pendTh[2].innerText = c.thReqPkg;
+        pendTh[3].innerText = c.thReqRef; pendTh[4].innerText = c.thReqAction;
+    }
+
+    // 🔴 ترجمة شاشة المركز المالي
+    const revMrrEl = document.querySelector('#view-revenue .stat-card:nth-child(1) h3');
+    if(revMrrEl) revMrrEl.innerText = c.revMRR;
+    const revTotEl = document.querySelector('#view-revenue .stat-card:nth-child(2) h3');
+    if(revTotEl) revTotEl.innerText = c.revTotal;
+    const revChartEl = document.querySelector('#view-revenue > .stat-card:nth-of-type(2) h3');
+    if(revChartEl) revChartEl.innerText = c.revChart;
+    const revTableTitle = document.querySelector('#view-revenue > h3');
+    if(revTableTitle) revTableTitle.innerText = c.revTable;
+    
+    const revTh = document.querySelectorAll('#transactionsTable th');
+    if(revTh.length >= 6) {
+        revTh[0].innerText = c.thRevDate; revTh[1].innerText = c.thRevClinic; revTh[2].innerText = c.thRevPkg;
+        revTh[3].innerText = c.thRevAmt; revTh[4].innerText = c.thRevMethod; revTh[5].innerText = c.thRevStatus;
+    }
+
+    // 🔴 ترجمة شاشة الرادار
+    const auditTitleEl = document.querySelector('#view-audit h3');
+    if(auditTitleEl) auditTitleEl.innerText = c.auditTitle;
+    const auditSubEl = document.querySelector('#view-audit p');
+    if(auditSubEl) auditSubEl.innerText = c.auditSub;
+
+    // 🔴 ترجمة التنبيهات وصحة السيرفر
     setTxt('lbl-c-pat-limit', lang === 'ar' ? 'سعة المرضى' : 'Patients Limit');
     setTxt('lbl-c-wa-limit', lang === 'ar' ? 'رصيد الواتس' : 'WhatsApp Balance');
     setTxt('lbl-det-pat-limit', lang === 'ar' ? 'سعة المرضى بالباقة' : 'Plan Patients Limit');
@@ -215,10 +284,7 @@ function updatePageContent(lang) {
         roleSelect.options[0].text = c.roleSales;
         roleSelect.options[1].text = c.roleSupport;
     }
-
-    window.superLang = c;
 }
-
 firebase.auth().onAuthStateChanged(async (user) => {
     if (user) {
         const emailEl = document.getElementById('userEmail');
