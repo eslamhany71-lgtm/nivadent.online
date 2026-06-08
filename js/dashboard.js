@@ -29,25 +29,20 @@ function getLocalTodayString() {
 
 async function loadBranchesForModal() {
     if (userRole !== 'admin' && userRole !== 'superadmin') return;
-    
-    // 🔍 إضافة سطر للـ Debugging
-    console.log("🛠️ جاري تحميل الفروع لـ ClinicID:", clinicId);
-    
-    if (!clinicId) {
-        console.error("❌ خطأ: الـ clinicId فارغ!");
-        return;
-    }
-
     try {
-        const snap = await db.collection("Branches")
-            .where("clinicId", "==", clinicId)
-            .get();
-        
-        // ... باقي الكود زي ما هو
-    } catch (e) { 
-        console.error("Error loading branches:", e); 
-        // 🔴 لو الـ Error ظهر هنا، يبقى المشكلة في الـ Rules فعلاً
-    }
+        const snap = await db.collection("Branches").where("clinicId", "==", clinicId).get();
+        const modalSelect = document.getElementById('app_branch');
+        if (!modalSelect) return;
+
+        let modalOptionsHtml = `<option value="main">الفرع الرئيسي</option>`;
+        snap.forEach(doc => {
+            modalOptionsHtml += `<option value="${doc.id}">${doc.data().name}</option>`;
+        });
+
+        modalSelect.innerHTML = modalOptionsHtml;
+        document.getElementById('admin-branch-group').style.display = 'block';
+        modalSelect.value = userBranch;
+    } catch (e) { console.error("Error loading branches:", e); }
 }
 
 function updatePageContent(lang) {
