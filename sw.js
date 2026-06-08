@@ -1,5 +1,5 @@
 // 🔴 1. رقم الإصدار: غيره في كل مرة ترفع فيها تعديل (مثلاً 1.2, 1.3)
-const APP_VERSION = '1.3'; 
+const APP_VERSION = '1.4'; 
 const CACHE_NAME = `nivadent-erp-cache-v${APP_VERSION}`; // 👈 تم تعريفه مرة واحدة فقط
  
 // 2. الملفات اللي هتتكيش
