@@ -461,6 +461,9 @@ firebase.auth().onAuthStateChanged(async (user) => {
     }
 });
 
+// =========================================================================
+// 🛡️ نظام الحماية وتتبع الحالة (Presence & Idle Timeout)
+// =========================================================================
 const IDLE_TIMEOUT_MINUTES = 30; 
 const OFFLINE_MARK_MINUTES = 15; 
 let currentPresenceStatus = "online"; 
@@ -494,22 +497,40 @@ function updateLastActiveTime() {
     }
 }
 
+// الاستماع لحركات المستخدم (ضفت النقر لزيادة دقة الرصد)
 document.onmousemove = updateLastActiveTime; 
 document.onkeypress = updateLastActiveTime; 
 document.ontouchstart = updateLastActiveTime;
+document.onclick = updateLastActiveTime;
 
 setInterval(() => {
     const lastActive = localStorage.getItem('lastActiveNiva');
     if (lastActive && firebase.auth().currentUser) {
         const diffMinutes = (Date.now() - Number(lastActive)) / (1000 * 60);
+        
         if (diffMinutes >= IDLE_TIMEOUT_MINUTES) {
             if(firebase.auth().currentUser) {
                 updateUserPresence(false);
+                
                 firebase.auth().signOut().then(() => {
+                    // 1. مسح الذاكرة المؤقتة بالكامل
                     sessionStorage.clear(); 
-                    localStorage.removeItem('lastActiveNiva');
-                    alert("🔒 تم تسجيل الخروج تلقائياً لعدم الاستخدام لفترة طويلة (حماية لبيانات العيادة)."); 
-                    window.top.location.href = 'index.html';
+                    
+                    // 2. المسح الشامل القاسي للـ LocalStorage مع الحفاظ على مظهر الموقع
+                    const lang = localStorage.getItem('preferredLang');
+                    const theme = localStorage.getItem('niva_theme');
+                    localStorage.clear(); // ده بيمسح وتد الأمان (niva_logged_in) وأي داتا تانية
+                    if(lang) localStorage.setItem('preferredLang', lang);
+                    if(theme) localStorage.setItem('niva_theme', theme);
+
+                    // 3. عرض رسالة التنبيه باللغة المحددة
+                    const isAr = (lang || 'ar') === 'ar';
+                    alert(isAr ? "🔒 تم تسجيل الخروج تلقائياً لعدم الاستخدام لفترة طويلة (حماية لبيانات العيادة)." : "🔒 Logged out automatically due to inactivity (Data Protection)."); 
+                    
+                    // 4. التوجيه الإجباري الآمن (replace تمنع العودة للخلف)
+                    window.top.location.replace('index.html');
+                }).catch(() => {
+                    window.top.location.replace('index.html');
                 });
             }
         } else if (diffMinutes >= OFFLINE_MARK_MINUTES && currentPresenceStatus === "online") {
