@@ -1051,11 +1051,31 @@ window.onload = async () => {
     // 🔴 تشغيل جلب الطقس بمجرد فتح الداشبورد 🔴
     fetchWeatherAPI();
 
+    // 🛡️ الحارس الأمني (Auth State & Clinic Isolation) 🛡️
     firebase.auth().onAuthStateChanged(async (user) => {
         if (user) {
-            await loadBranchesForModal();
-            await setupDashboardBranchFilter(); // تفعيل الفلتر قبل الإحصائيات
-            loadDashboardStats();
+            // 1. التأكد من وجود الـ clinicId في الجلسة قبل أي استعلام
+            const currentClinicId = sessionStorage.getItem('clinicId');
+            
+            if (currentClinicId) {
+                console.log("✅ الحارس سمح بالدخول، جاري تحميل داتا العيادة:", currentClinicId);
+                
+                // 2. تشغيل استعلامات الفايربيز بأمان
+                try {
+                    await loadBranchesForModal();
+                    await setupDashboardBranchFilter(); // تفعيل الفلتر قبل الإحصائيات
+                    loadDashboardStats();
+                } catch (error) {
+                    console.error("❌ خطأ أثناء تحميل بيانات الداشبورد:", error);
+                }
+            } else {
+                console.warn("⏳ المستخدم مسجل بس الـ clinicId مش موجود في الجلسة.");
+                // لو حابب زيادة أمان، ممكن ترجعه لصفحة الدخول هنا
+                // window.location.replace("index.html");
+            }
+        } else {
+            console.log("🔒 مستخدم غير مصرح له، جاري إيقاف الاستعلامات والتحويل...");
+            window.location.replace("index.html");
         }
     });
 };
