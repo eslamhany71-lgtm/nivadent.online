@@ -469,15 +469,24 @@ async function activateAccount() {
         }
 
         const empData = empDoc.data();
+        
+        // ==========================================
+        // 🔒 القفل المزدوج لمنع اختراق الحسابات المفعلة
+        // ==========================================
+        // هنفحص لو الحساب متفعل سواء كان Boolean أو String، وهنفحص لو ليه إيميل مسجل مسبقاً
+        const isActivated = empData.activated === true || empData.activated === "true";
+        const hasEmailAssigned = empData.email && empData.email.trim() !== "";
+
+        if (isActivated || hasEmailAssigned) {
+            if(window.hideLoader) window.hideLoader();
+            if(msg) msg.innerText = document.body.dir === 'rtl' ? "هذا الكود مستخدم ومفعل بالفعل ولا يمكن إعادة استخدامه!" : "This code is already activated and cannot be reused!"; 
+            return; // 🔴 طرد فوري ومنع تنفيذ باقي الكود
+        }
+        // ==========================================
+
         if (empData.phone !== phone) {
             if(window.hideLoader) window.hideLoader();
             if(msg) msg.innerText = document.body.dir === 'rtl' ? "رقم الموبايل غير مطابق للسجلات" : "Phone number does not match records"; 
-            return;
-        }
-
-        if (empData.activated === true) {
-            if(window.hideLoader) window.hideLoader();
-            if(msg) msg.innerText = document.body.dir === 'rtl' ? "هذا الحساب مفعل بالفعل" : "Account already activated"; 
             return;
         }
 
@@ -485,6 +494,7 @@ async function activateAccount() {
         if(msg) msg.innerText = document.body.dir === 'rtl' ? "جاري إنشاء الحساب... برجاء الانتظار" : "Creating account... Please wait";
 
         isLoginInProgress = true;
+        
         // 🔴 التعديل السحري هنا أيضاً 🔴
         await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
         await auth.createUserWithEmailAndPassword(realEmail, pass);
@@ -495,6 +505,7 @@ async function activateAccount() {
             permissions: { patients: true, calendar: true, finances: true, inventory: true, reports: true, settings: true, services: true, contracts: true, branches: true, hr: true, notifications: true }
         });
 
+        // هنا بنأكد على الفايربيز إنه يحفظها كـ Boolean حقيقي عشان متعملش مشاكل بعد كده
         await db.collection("clinicId").doc(codeRaw).update({ activated: true, email: realEmail });
 
         if(window.hideLoader) window.hideLoader();
