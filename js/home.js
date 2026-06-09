@@ -738,7 +738,7 @@ function startLiveChat() {
                     <div style="max-width: 80%; padding: 10px 15px; border-radius: 12px; ${alignStyles} box-shadow: 0 1px 2px rgba(0,0,0,0.05); margin-bottom: 5px;">
                         <div style="font-size: 11px; font-weight: bold; margin-bottom: 4px; opacity: 0.9;">${msg.senderName || '---'}</div>
                         <div style="font-size: 14px; line-height: 1.4;">${msg.text}</div>
-                        <div style="font-size: 10px; opacity: 0.7; margin-top: 5px; text-align: ${isSuperAdmin?'left':'right'};">${msg.createdAt ? new Date(msg.createdAt.toDate()).toLocaleTimeString(isAr?'ar-EG':'en-US', {hour: '2-digit', minute:'2-digit'}) : ''}</div>
+                        <div style="font-size: 10px; opacity: 0.7; margin-top: 5px; text-align: ${isSuperAdmin?'left':'right'};">${msg.createdAt ? new Date(msg.createdAt.toDate()).toLocaleTimeString(isAr?'ar-EG':'en-US', {hour: '2-digit', minute:'2-digit', timeZone: 'Africa/Cairo'}) : ''}</div>
                     </div>
                 `;
             });
@@ -899,10 +899,10 @@ async function askAI(promptType) {
     appendToAIChat(`<span id="${loadingId}" style="color:#64748b;">${isAr ? 'جاري الفحص السريع...' : 'Checking data...'}</span>`);
 
     try {
-        const todayStr = new Date().toISOString().split('T')[0];
+        const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Cairo' }).format(new Date());
         const tomorrowDate = new Date();
         tomorrowDate.setDate(tomorrowDate.getDate() + 1);
-        const tomorrowStr = tomorrowDate.toISOString().split('T')[0];
+        const tomorrowStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Cairo' }).format(tomorrowDate);
         let aiResponse = "";
 
         if (promptType === 'income') {
