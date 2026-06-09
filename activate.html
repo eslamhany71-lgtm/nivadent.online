@@ -59,9 +59,9 @@
                 <div class="input-group">
                     <label id="lbl-act-pass">اختر كلمة مرور جديدة</label>
                     <div class="input-wrapper" style="position: relative; display: flex; align-items: center;">
-                        <span class="input-icon">🔐</span>
+                        <span class="input-icon"></span>
                         <input type="password" id="reg-pass" placeholder="6 أرقام أو حروف على الأقل" required style="width: 100%; padding-left: 40px; box-sizing: border-box;">
-                        <span id="toggle-eye" onclick="togglePassword()" style="position: absolute; left: 15px; cursor: pointer; font-size: 1.2rem; user-select: none;">👁️</span>
+                        <span id="toggle-eye" onclick="togglePassword()" style="position: absolute; left: 15px; cursor: pointer; font-size: 1.2rem; user-select: none;"></span>
                     </div>
                 </div>
 
@@ -107,18 +107,18 @@
     <script src="js/auth.js"></script>
 
     <script>
-        function togglePassword() {
-            const passInput = document.getElementById('reg-pass');
-            const eyeIcon = document.getElementById('toggle-eye');
-            
-            if (passInput.type === 'password') {
-                passInput.type = 'text';
-                eyeIcon.textContent = '🙈';
-            } else {
-                passInput.type = 'password';
-                eyeIcon.textContent = '👁️';
-            }
-        }
+function togglePasswordVisibility(inputId) {
+    const input = document.getElementById(inputId);
+    const icon = input.nextElementSibling;
+    
+    if (input.type === "password") {
+        input.type = "text";
+        icon.innerText = "visibility"; // أيقونة جوجل: عين مفتوحة
+    } else {
+        input.type = "password";
+        icon.innerText = "visibility_off"; // أيقونة جوجل: عين مقفولة عليها خط
+    }
+}
     </script>
 </body>
 </html>
