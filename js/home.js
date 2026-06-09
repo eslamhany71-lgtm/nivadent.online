@@ -1031,3 +1031,44 @@ window.addEventListener('message', function(event) {
         loadClinicBranding(event.data.clinicId);
     }
 });
+// ===============================================
+// 🔴 دالة الساعة والتاريخ الحي في الهيدر 🔴
+// ===============================================
+function startLiveClock() {
+    const timeDisplay = document.getElementById('live-time-display');
+    const dateDisplay = document.getElementById('live-date-display');
+    
+    if (!timeDisplay || !dateDisplay) return;
+
+    setInterval(() => {
+        const now = new Date();
+        const lang = localStorage.getItem('preferredLang') || 'ar';
+        const locale = lang === 'ar' ? 'ar-EG' : 'en-US';
+        
+        // استخراج الوقت (ساعات : دقائق : ثواني) بتوقيت مصر
+        const timeStr = new Intl.DateTimeFormat(locale, {
+            timeZone: 'Africa/Cairo',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true // AM / PM
+        }).format(now);
+        
+        // استخراج التاريخ (اليوم، الشهر، السنة) بتوقيت مصر
+        const dateStr = new Intl.DateTimeFormat(locale, {
+            timeZone: 'Africa/Cairo',
+            weekday: 'long', // اسم اليوم (السبت، الأحد...)
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        }).format(now);
+
+        timeDisplay.innerText = timeStr;
+        dateDisplay.innerText = dateStr;
+    }, 1000);
+}
+
+// تشغيل الساعة بمجرد تحميل الصفحة
+document.addEventListener('DOMContentLoaded', () => {
+    startLiveClock();
+});
