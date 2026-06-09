@@ -135,7 +135,7 @@ function switchAppLanguage(lang) {
 }
 
 function updatePageContent(lang) {
-    const t = {
+const t = {
         ar: {
             header: "لوحة التحكم", navDash: "الداشبورد", navPatients: "المرضى والأشعة", 
             navCalendar: "المواعيد والتقويم", navServices: "الخدمات والأسعار", navContracts: "التعاقدات والخصومات",
@@ -143,14 +143,14 @@ function updatePageContent(lang) {
             navReports: "التقارير التحليلية", navBranches: "إدارة الفروع", navHr: "شؤون الموظفين",
             navNotif: "الإشعارات", navPortal: "بوابة العيادة (للمرضى)", navSettings: "إعدادات العيادة", 
             navSuper: "إدارة النظام المركزية", logout: "تسجيل خروج",
-            alertText: "⚠️ تنبيه هام: اشتراك العيادة سينتهي خلال {days} أيام. يرجى التواصل مع الإدارة للتجديد.",
-            alertToday: "⚠️ تنبيه هام: اشتراك العيادة ينتهي اليوم! يرجى التجديد فوراً.",
+            alertText: "تنبيه هام: اشتراك العيادة سينتهي خلال {days} أيام. يرجى التواصل مع الإدارة للتجديد.",
+            alertToday: "تنبيه هام: اشتراك العيادة ينتهي اليوم! يرجى التجديد فوراً.",
             navSupport: "الدعم الفني والتقييمات", modSupTitle: "مركز المساعدة والتقييم", 
-            tabTicket: " طلب دعم فني", tabReview: "⭐ تقييم النظام", tabChat: "💬 مراسلة الإدارة (Live)",
-            modSupDesc: "هل تواجه مشكلة أو تحتاج إلى إضافة ميزة جديدة للعيادة？ اكتب رسالتك وسنقوم بالرد عليك في أسرع وقت.", 
+            tabTicket: "طلب دعم فني", tabReview: "تقييم النظام", tabChat: "مراسلة الإدارة (Live)",
+            modSupDesc: "هل تواجه مشكلة أو تحتاج إلى إضافة ميزة جديدة للعيادة؟ اكتب رسالتك وسنقوم بالرد عليك في أسرع وقت.", 
             btnSupSend: "إرسال طلب الدعم (Ticket)", rateTitle: "ما تقييمك لسيستم NivaDent؟", rateSub: "رأيك يهمنا ويساعدنا على تطوير النظام.",
-            btnRevSend: "نشر التقييم ⭐", aiTitle: "المساعد الذكي Niva", aiWelcome: "مرحباً دكتور! 👋 أنا مساعدك الذكي Niva. كيف يمكنني مساعدتك اليوم?",
-            poweredBy: "Powered by", chatInputPlaceholder: "اكتب رسالتك هنا للإدارة...", btnChatSend: "إرسال 🚀",
+            btnRevSend: "نشر التقييم", aiTitle: "المساعد الذكي Niva", aiWelcome: "مرحباً دكتور! أنا مساعدك الذكي Niva. كيف يمكنني مساعدتك اليوم؟",
+            poweredBy: "Powered by", chatInputPlaceholder: "اكتب رسالتك هنا للإدارة...", btnChatSend: "إرسال",
             btnUpgradeHeader: "إدارة الاشتراك",
         },
         en: {
@@ -160,14 +160,14 @@ function updatePageContent(lang) {
             navReports: "Analytical Reports", navBranches: "Branches Management", navHr: "Staff Management",
             navNotif: "Notifications", navPortal: "Patient Portal", navSettings: "Clinic Settings", 
             navSuper: "Super Admin", logout: "Logout",
-            alertText: "⚠️ Important: Clinic subscription expires in {days} days. Please renew.",
-            alertToday: "⚠️ Important: Clinic subscription expires TODAY! Please renew.",
+            alertText: "Important: Clinic subscription expires in {days} days. Please renew.",
+            alertToday: "Important: Clinic subscription expires TODAY! Please renew.",
             navSupport: "Support & Reviews", modSupTitle: "Help & Rating Center", 
-            tabTicket: " Support Ticket", tabReview: "⭐ System Review", tabChat: "💬 Live Chat",
+            tabTicket: "Support Ticket", tabReview: "System Review", tabChat: "Live Chat",
             modSupDesc: "Facing an issue or need a new feature? Write your ticket and we'll reply ASAP.", 
             btnSupSend: "Submit Support Ticket", rateTitle: "How do you rate NivaDent?", rateSub: "Your feedback helps us improve the system.",
-            btnRevSend: "Post Review ⭐", aiTitle: "Niva Assistant", aiWelcome: "Hello Doctor! 👋 I'm Niva, your smart assistant. How can I help you today?",
-            poweredBy: "Powered by", chatInputPlaceholder: "Type your message to admin...", btnChatSend: "Send 🚀",
+            btnRevSend: "Post Review", aiTitle: "Niva Assistant", aiWelcome: "Hello Doctor! I'm Niva, your smart assistant. How can I help you today?",
+            poweredBy: "Powered by", chatInputPlaceholder: "Type your message to admin...", btnChatSend: "Send",
             btnUpgradeHeader: "Upgrade",
         }
     };
@@ -386,7 +386,7 @@ firebase.auth().onAuthStateChanged(async (user) => {
                     const logoutBtn = document.getElementById('btn-logout');
                     if (logoutBtn) {
                         const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
-                        logoutBtn.innerHTML = isAr ? "❌ إغلاق العيادة والعودة" : "❌ Close & Return";
+                        logoutBtn.innerHTML = isAr ? " إغلاق العيادة والعودة" : " Close & Return";
                         logoutBtn.classList.remove('btn-danger');
                         logoutBtn.style.backgroundColor = '#e11d48';
                         logoutBtn.onclick = (e) => {
@@ -414,7 +414,7 @@ firebase.auth().onAuthStateChanged(async (user) => {
                 // 🔴 رادار الطرد الإجباري 🔴
                 db.collection("Users").doc(user.email).onSnapshot(async (doc) => {
                     if (doc.exists && doc.data().forceLogout === true) {
-                        alert("🔒 تم تسجيل خروجك إدارياً من قبل السوبر أدمن.");
+                        alert(" تم تسجيل خروجك إدارياً من قبل السوبر أدمن.");
                         await db.collection("Users").doc(user.email).update({ forceLogout: false });
                         firebase.auth().signOut().then(() => {
                             sessionStorage.clear();
@@ -428,7 +428,7 @@ firebase.auth().onAuthStateChanged(async (user) => {
                 if (clinicId && clinicId !== 'default') {
                     db.collection("Clinics").doc(clinicId).onSnapshot(doc => {
                         if (!doc.exists || doc.data().status === 'deleted') {
-                            alert("🚫 تم إغلاق أو إزالة هذه العيادة من قِبل إدارة النظام. سيتم تسجيل خروجك الآن.");
+                            alert(" تم إغلاق أو إزالة هذه العيادة من قِبل إدارة النظام. سيتم تسجيل خروجك الآن.");
                             firebase.auth().signOut().then(() => {
                                 sessionStorage.clear();
                                 localStorage.removeItem('niva_logged_in');
@@ -525,7 +525,7 @@ setInterval(() => {
 
                     // 3. عرض رسالة التنبيه باللغة المحددة
                     const isAr = (lang || 'ar') === 'ar';
-                    alert(isAr ? "🔒 تم تسجيل الخروج تلقائياً لعدم الاستخدام لفترة طويلة (حماية لبيانات العيادة)." : "🔒 Logged out automatically due to inactivity (Data Protection)."); 
+                    alert(isAr ? " تم تسجيل الخروج تلقائياً لعدم الاستخدام لفترة طويلة (حماية لبيانات العيادة)." : " Logged out automatically due to inactivity (Data Protection)."); 
                     
                     // 4. التوجيه الإجباري الآمن (replace تمنع العودة للخلف)
                     window.top.location.replace('index.html');
@@ -889,13 +889,13 @@ async function askAI(promptType) {
     
     if (!clinicId || clinicId === 'default') {
         setTimeout(() => {
-            appendToAIChat(isAr ? "⚠️ <strong>تنبيه:</strong> أنا مساعد ذكي مخصص لقراءة بيانات العيادات فقط. أنت الآن مسجل دخول بحساب (الإدارة المركزية)." : "⚠️ <strong>Alert:</strong> AI reads clinic data only. Please login with a clinic account to test.", false);
+            appendToAIChat(isAr ? "<strong>تنبيه:</strong> أنا مساعد ذكي مخصص لقراءة بيانات العيادات فقط. أنت الآن مسجل دخول بحساب (الإدارة المركزية)." : "<strong>Alert:</strong> AI reads clinic data only. Please login with a clinic account to test.", false);
         }, 500);
         return;
     }
 
     const loadingId = "ai-loading-" + Date.now();
-    appendToAIChat(`<span id="${loadingId}" style="color:#64748b;">⏳ ${isAr ? 'جاري الفحص السريع...' : 'Checking data...'}</span>`);
+    appendToAIChat(`<span id="${loadingId}" style="color:#64748b;">${isAr ? 'جاري الفحص السريع...' : 'Checking data...'}</span>`);
 
     try {
         const todayStr = new Date().toISOString().split('T')[0];
@@ -907,22 +907,22 @@ async function askAI(promptType) {
         if (promptType === 'income') {
             const snap = await db.collection("Finances").where("clinicId", "==", clinicId).where("date", "==", todayStr).where("type", "==", "income").get();
             let total = 0; snap.forEach(doc => total += Number(doc.data().amount));
-            aiResponse = isAr ? `✅ إجمالي المبالغ المحصلة اليوم هو: <strong>${total} ج.م</strong> من ${snap.size} عملية توريد.` : `✅ Today's total collected income is: <strong>${total} EGP</strong> from ${snap.size} transactions.`;
+            aiResponse = isAr ? `إجمالي المبالغ المحصلة اليوم هو: <strong style="color:#10b981;">${total} ج.م</strong> من ${snap.size} عملية توريد.` : `Today's total collected income is: <strong style="color:#10b981;">${total} EGP</strong> from ${snap.size} transactions.`;
         } 
         else if (promptType === 'expenses') {
             const snap = await db.collection("Finances").where("clinicId", "==", clinicId).where("date", "==", todayStr).where("type", "==", "expense").get();
             let total = 0; snap.forEach(doc => total += Number(doc.data().amount));
-            aiResponse = isAr ? `📉 إجمالي المصروفات المسجلة اليوم هو: <strong style="color:#dc2626;">${total} ج.م</strong> في ${snap.size} بند.` : `📉 Today's total expenses are: <strong style="color:#dc2626;">${total} EGP</strong> in ${snap.size} items.`;
+            aiResponse = isAr ? `إجمالي المصروفات المسجلة اليوم هو: <strong style="color:#dc2626;">${total} ج.م</strong> في ${snap.size} بند.` : `Today's total expenses are: <strong style="color:#dc2626;">${total} EGP</strong> in ${snap.size} items.`;
         }
         else if (promptType === 'debts') {
             const snap = await db.collection("Patients").where("clinicId", "==", clinicId).where("totalDebt", ">", 0).get();
             let totalDebts = 0; let patientsList = [];
             snap.forEach(doc => { let d = doc.data(); totalDebts += Number(d.totalDebt); patientsList.push(`${d.name} (${d.totalDebt} ج.م)`); });
-            if (snap.size === 0) { aiResponse = isAr ? "✨ ممتاز! لا يوجد مرضى عليهم مديونيات للعيادة." : "✨ Great! No patients with outstanding debts."; } 
+            if (snap.size === 0) { aiResponse = isAr ? "ممتاز! لا يوجد مرضى عليهم مديونيات للعيادة." : "Great! No patients with outstanding debts."; } 
             else {
                 let topList = patientsList.slice(0, 3).join('<br> - '); 
                 let moreHtml = patientsList.length > 3 ? `<br><small>...و ${patientsList.length - 3} مرضى آخرين (راجع صفحة المرضى).</small>` : "";
-                aiResponse = isAr ? `💸 إجمالي الديون المستحقة للعيادة هو: <strong>${totalDebts} ج.م</strong> موزع على ${snap.size} مريض.<br><strong>أبرز المتعثرين:</strong><br> - ${topList} ${moreHtml}` : `💸 Total debts owed to clinic: <strong>${totalDebts} EGP</strong> across ${snap.size} patients.`;
+                aiResponse = isAr ? `إجمالي الديون المستحقة للعيادة هو: <strong style="color:#f59e0b;">${totalDebts} ج.م</strong> موزع على ${snap.size} مريض.<br><strong>أبرز المتعثرين:</strong><br> - ${topList} ${moreHtml}` : `Total debts owed to clinic: <strong style="color:#f59e0b;">${totalDebts} EGP</strong> across ${snap.size} patients.`;
             }
         }
         else if (promptType === 'appointments') {
@@ -932,20 +932,20 @@ async function askAI(promptType) {
                 const s = doc.data().status;
                 if (s === 'completed') completed++; else if (s === 'cancelled') cancelled++; else pending++;
             });
-            aiResponse = isAr ? `📅 إجمالي حجوزات اليوم: <strong>${total}</strong><br>✔️ اكتمل: ${completed}<br>⏳ في الانتظار: ${pending}<br>🚫 ملغي: ${cancelled}` : `📅 Total appointments today: <strong>${total}</strong><br>✔️ Completed: ${completed}<br>⏳ Pending: ${pending}<br>🚫 Cancelled: ${cancelled}`;
+            aiResponse = isAr ? `إجمالي حجوزات اليوم: <strong>${total}</strong><br>اكتمل: ${completed}<br>في الانتظار: ${pending}<br>ملغي: ${cancelled}` : `Total appointments today: <strong>${total}</strong><br>Completed: ${completed}<br>Pending: ${pending}<br>Cancelled: ${cancelled}`;
         }
         else if (promptType === 'tomorrow') {
             const snap = await db.collection("Appointments").where("clinicId", "==", clinicId).where("date", "==", tomorrowStr).get();
             let total = snap.size;
-            if (total === 0) { aiResponse = isAr ? "لا توجد أي حجوزات مسجلة لغدٍ حتى الآن. 🏖️" : "No appointments scheduled for tomorrow yet. 🏖️"; } 
-            else { aiResponse = isAr ? `🔮 يوجد <strong>${total} كشوفات</strong> مسجلة غداً.` : `🔮 There are <strong>${total} appointments</strong> scheduled for tomorrow.`; }
+            if (total === 0) { aiResponse = isAr ? "لا توجد أي حجوزات مسجلة لغدٍ حتى الآن." : "No appointments scheduled for tomorrow yet."; } 
+            else { aiResponse = isAr ? `يوجد <strong>${total} كشوفات</strong> مسجلة غداً.` : `There are <strong>${total} appointments</strong> scheduled for tomorrow.`; }
         }
         else if (promptType === 'inventory') {
             const snap = await db.collection("Inventory").where("clinicId", "==", clinicId).get();
             let shortages = [];
             snap.forEach(doc => { const item = doc.data(); if (item.qty <= item.minAlert) shortages.push(item.name); });
-            if (shortages.length === 0) { aiResponse = isAr ? "📦 المخزون في أمان! لا توجد نواقص حالياً." : "📦 Inventory is safe! No shortages currently."; } 
-            else { aiResponse = isAr ? `🚨 <strong>تحذير!</strong> يوجد ${shortages.length} أصناف أوشكت على الانتهاء:<br> - ${shortages.join('<br> - ')}` : `🚨 <strong>Warning!</strong> ${shortages.length} items are running low:<br> - ${shortages.join('<br> - ')}`; }
+            if (shortages.length === 0) { aiResponse = isAr ? "المخزون في أمان! لا توجد نواقص حالياً." : "Inventory is safe! No shortages currently."; } 
+            else { aiResponse = isAr ? `<strong style="color:#dc2626;">تحذير!</strong> يوجد ${shortages.length} أصناف أوشكت على الانتهاء:<br> - ${shortages.join('<br> - ')}` : `<strong style="color:#dc2626;">Warning!</strong> ${shortages.length} items are running low:<br> - ${shortages.join('<br> - ')}`; }
         }
 
         const loadingElement = document.getElementById(loadingId);
@@ -956,7 +956,7 @@ async function askAI(promptType) {
         console.error(error);
         const loadingElement = document.getElementById(loadingId);
         if(loadingElement && loadingElement.parentElement) loadingElement.parentElement.remove();
-        appendToAIChat(isAr ? "❌ حدث خطأ أثناء سحب البيانات. يرجى المحاولة لاحقاً." : "❌ Error fetching data. Please try again.", false);
+        appendToAIChat(isAr ? "حدث خطأ أثناء سحب البيانات. يرجى المحاولة لاحقاً." : "Error fetching data. Please try again.", false);
     }
 }
 
@@ -995,10 +995,10 @@ function printClinicQR() {
             <h2 style="color: #0f172a; margin-top: 0;">بوابة المريض الذكية</h2>
             <img src="${imgData}" style="width: 250px; height: 250px; margin: 20px 0;">
             <p style="font-size: 20px; font-weight: bold; color: #d97706;">قم بمسح الكود بكاميرا هاتفك</p>
-            <ul style="text-align: right; font-size: 18px; color: #475569; display: inline-block; padding-right: 20px;">
-                <li style="margin-bottom: 10px;">✅ تابع دورك في الانتظار</li>
-                <li style="margin-bottom: 10px;">✅ احجز موعد جديد بسهولة</li>
-                <li style="margin-bottom: 10px;">✅ راجع حساباتك الطبية</li>
+            <ul style="text-align: right; font-size: 18px; color: #475569; display: inline-block; padding-right: 20px; list-style: none;">
+                <li style="margin-bottom: 10px;">- تابع دورك في الانتظار</li>
+                <li style="margin-bottom: 10px;">- احجز موعد جديد بسهولة</li>
+                <li style="margin-bottom: 10px;">- راجع حساباتك الطبية</li>
             </ul>
         </div>
     `;
