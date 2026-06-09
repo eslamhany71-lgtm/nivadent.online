@@ -27,10 +27,7 @@ function toggleTheme() {
     }
 }
 
-function toggleTheme() {
-    const currentTheme = document.body.getAttribute('data-theme');
-    applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
-}
+
 
 document.addEventListener('DOMContentLoaded', () => {
     applyTheme(localStorage.getItem('niva_theme') || 'light');
