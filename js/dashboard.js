@@ -52,20 +52,20 @@ function updatePageContent(lang) {
             pat: "إجمالي المرضى", wait: "في الانتظار (اليوم)", rev: "إيرادات اليوم", sess: "حجوزات مكتملة",
             chart: "حالات المواعيد والجلسات", actions: "إجراءات سريعة",
             btnWait: "عرض قائمة الانتظار", btnPat: "إضافة مريض جديد", btnApp: "حجز موعد جديد",
-            invAlerts: "🔔 تنبيهات المخزون الذكية", sysMods: "🚀 أقسام النظام المركزية (ERP)",
-            loadingInv: "جاري فحص المخازن...", emptyInv: "✅ المخزون سليم حالياً.",
+            invAlerts: "تنبيهات المخزون الذكية", sysMods: "أقسام النظام المركزية (ERP)",
+            loadingInv: "جاري فحص المخازن...", emptyInv: "المخزون سليم حالياً.",
             modRep: "التقارير", modInv: "الفواتير", modHr: "الموظفين", modBran: "الفروع", 
             modStock: "جرد المخزون", modNotif: "الإشعارات", modServ: "الخدمات", modCont: "التعاقدات",
             current: "الحالي:", minQty: "الحد الأدنى:",
-            mWaitTitle: "⏳ قائمة الانتظار", tToday: "مواعيد اليوم", tUpc: "الأيام القادمة",
+            mWaitTitle: "قائمة الانتظار", tToday: "مواعيد اليوم", tUpc: "الأيام القادمة",
             mAppDetTitle: "تفاصيل الحجز", lName: "اسم المريض:", lPhone: "الموبايل:", lDate: "التاريخ:", lTime: "الساعة:", lType: "نوع الكشف:", lNotes: "ملاحظات:",
-            mPatTitle: "🦷 جميع المرضى", mPatDetTitle: "تفاصيل المريض", lpPhone: "الموبايل:", lpAge: "السن:", lpHist: "أمراض مزمنة:", btnProf: "فتح الملف الطبي الكامل",
-            mRevTitle: "💵 إيرادات اليوم تفصيلياً", mSessTitle: "✅ الحجوزات المكتملة", empty: "لا يوجد بيانات حالياً.",
-            btnCanc: "❌ إلغاء", btnDel: "🗑️ حذف", confDel: "هل أنت متأكد من حذف هذا الموعد نهائياً؟",
+            mPatTitle: "جميع المرضى", mPatDetTitle: "تفاصيل المريض", lpPhone: "الموبايل:", lpAge: "السن:", lpHist: "أمراض مزمنة:", btnProf: "فتح الملف الطبي الكامل",
+            mRevTitle: "إيرادات اليوم تفصيلياً", mSessTitle: "الحجوزات المكتملة", empty: "لا يوجد بيانات حالياً.",
+            btnCanc: "إلغاء", btnDel: "حذف", confDel: "هل أنت متأكد من حذف هذا الموعد نهائياً؟",
             mRevDetTitle: "تفاصيل الإيراد", lRevAmt: "المبلغ:", lRevDate: "التاريخ:", lRevCat: "البند:", lRevNotes: "البيان:",
-            lblMonthSummary: "📊 ملخص أداء الشهر الحالي", lblMonthPat: "مرضى جُدد", lblMonthSess: "جلسات مكتملة", lblMonthRev: "إيرادات (ج.م)",
-            lblLiveUpcoming: "📅 المواعيد القادمة فوراً", noUpcoming: "لا يوجد مواعيد في الانتظار حالياً.",
-            lblLiveFinances: "💸 أحدث العمليات المالية (اليوم)", noFinances: "لا توجد عمليات مالية مسجلة اليوم.",
+            lblMonthSummary: "ملخص أداء الشهر الحالي", lblMonthPat: "مرضى جُدد", lblMonthSess: "جلسات مكتملة", lblMonthRev: "إيرادات (ج.م)",
+            lblLiveUpcoming: "المواعيد القادمة فوراً", noUpcoming: "لا يوجد مواعيد في الانتظار حالياً.",
+            lblLiveFinances: "أحدث العمليات المالية (اليوم)", noFinances: "لا توجد عمليات مالية مسجلة اليوم.",
             weatherLoading: "جاري تحديث الطقس..."
         }, 
         en: { 
@@ -73,23 +73,24 @@ function updatePageContent(lang) {
             pat: "Total Patients", wait: "Pending (Today)", rev: "Today's Revenue", sess: "Completed Sessions",
             chart: "Appointments & Sessions Status", actions: "Quick Actions",
             btnWait: "Show Waiting List", btnPat: "Add New Patient", btnApp: "Book Appointment",
-            invAlerts: "🔔 Smart Inventory Alerts", sysMods: "🚀 ERP System Modules",
-            loadingInv: "Checking stock...", emptyInv: "✅ Inventory is safe.",
+            invAlerts: "Smart Inventory Alerts", sysMods: "ERP System Modules",
+            loadingInv: "Checking stock...", emptyInv: "Inventory is safe.",
             modRep: "Reports", modInv: "Invoices", modHr: "HR", modBran: "Branches", 
             modStock: "Stocktaking", modNotif: "Notifications", modServ: "Services", modCont: "Contracts",
             current: "Now:", minQty: "Min:",
-            mWaitTitle: "⏳ Waiting List", tToday: "Today's Apps", tUpc: "Upcoming",
+            mWaitTitle: "Waiting List", tToday: "Today's Apps", tUpc: "Upcoming",
             mAppDetTitle: "Booking Details", lName: "Patient Name:", lPhone: "Phone:", lDate: "Date:", lTime: "Time:", lType: "Type:", lNotes: "Notes:",
-            mPatTitle: "🦷 All Patients", mPatDetTitle: "Patient Details", lpPhone: "Phone:", lpAge: "Age:", lpHist: "Medical History:", btnProf: "Open Full Profile",
-            mRevTitle: "💵 Today's Revenue Details", mSessTitle: "✅ Completed Sessions", empty: "No data available currently.",
-            btnCanc: "❌ Cancel", btnDel: "🗑️ Delete", confDel: "Are you sure you want to permanently delete this appointment?",
+            mPatTitle: "All Patients", mPatDetTitle: "Patient Details", lpPhone: "Phone:", lpAge: "Age:", lpHist: "Medical History:", btnProf: "Open Full Profile",
+            mRevTitle: "Today's Revenue Details", mSessTitle: "Completed Sessions", empty: "No data available currently.",
+            btnCanc: "Cancel", btnDel: "Delete", confDel: "Are you sure you want to permanently delete this appointment?",
             mRevDetTitle: "Revenue Details", lRevAmt: "Amount:", lRevDate: "Date:", lRevCat: "Category:", lRevNotes: "Notes:",
-            lblMonthSummary: "📊 Current Month Summary", lblMonthPat: "New Patients", lblMonthSess: "Completed Sessions", lblMonthRev: "Revenue (EGP)",
-            lblLiveUpcoming: "📅 Upcoming Appointments", noUpcoming: "No pending appointments currently.",
-            lblLiveFinances: "💸 Recent Transactions (Today)", noFinances: "No financial transactions recorded today.",
+            lblMonthSummary: "Current Month Summary", lblMonthPat: "New Patients", lblMonthSess: "Completed Sessions", lblMonthRev: "Revenue (EGP)",
+            lblLiveUpcoming: "Upcoming Appointments", noUpcoming: "No pending appointments currently.",
+            lblLiveFinances: "Recent Transactions (Today)", noFinances: "No financial transactions recorded today.",
             weatherLoading: "Updating weather..."
         } 
     };
+
     const c = t[lang] || t.ar;
     const setTxt = (id, txt) => { if(document.getElementById(id)) document.getElementById(id).innerText = txt; };
     const setClassTxt = (cls, txt) => { document.querySelectorAll('.'+cls).forEach(el => el.innerText = txt); };
@@ -98,9 +99,10 @@ function updatePageContent(lang) {
     setTxt('lbl-patients', c.pat); setTxt('lbl-appointments', c.wait); setTxt('lbl-revenue', c.rev); setTxt('lbl-sessions', c.sess);
     setTxt('lbl-chart', c.chart); setTxt('lbl-actions', c.actions);
     setTxt('btn-wait-list', c.btnWait); setTxt('btn-add-patient', c.btnPat); setTxt('btn-book-app', c.btnApp);
-    setTxt('lbl-inventory-alerts', c.invAlerts); setTxt('lbl-system-modules', c.sysMods);
     setTxt('txt-loading-inv', c.loadingInv);
     
+    // (باقي محتوى الدالة زي ما هو عندك بالظبط بدون تغيير)
+    // ...    
     const monthSummaryTitle = document.querySelector('h3.panel-title[style*="8b5cf6"]');
     if(monthSummaryTitle) monthSummaryTitle.innerText = c.lblMonthSummary;
     
@@ -174,22 +176,22 @@ async function fetchWeatherAPI() {
             tempEl.innerText = temp + '°C';
 
             let condition = isAr ? "صافي" : "Clear";
-            let icon = "☀️";
+            let icon = "clear_day"; // اسم الأيقونة العالمية
 
-            if (code >= 1 && code <= 3) { condition = isAr ? "غائم جزئياً" : "Partly Cloudy"; icon = "⛅"; }
-            else if (code >= 45 && code <= 48) { condition = isAr ? "ضباب" : "Foggy"; icon = "🌫️"; }
-            else if (code >= 51 && code <= 67) { condition = isAr ? "ممطر خفيف" : "Drizzle"; icon = "🌧️"; }
-            else if (code >= 71 && code <= 77) { condition = isAr ? "تساقط ثلوج" : "Snow"; icon = "❄️"; }
-            else if (code >= 80 && code <= 82) { condition = isAr ? "ممطر" : "Rainy"; icon = "🌧️"; }
-            else if (code >= 95 && code <= 99) { condition = isAr ? "عواصف رعدية" : "Thunderstorm"; icon = "⛈️"; }
+            if (code >= 1 && code <= 3) { condition = isAr ? "غائم جزئياً" : "Partly Cloudy"; icon = "partly_cloudy_day"; }
+            else if (code >= 45 && code <= 48) { condition = isAr ? "ضباب" : "Foggy"; icon = "foggy"; }
+            else if (code >= 51 && code <= 67) { condition = isAr ? "ممطر خفيف" : "Drizzle"; icon = "rainy_light"; }
+            else if (code >= 71 && code <= 77) { condition = isAr ? "تساقط ثلوج" : "Snow"; icon = "cloudy_snowing"; }
+            else if (code >= 80 && code <= 82) { condition = isAr ? "ممطر" : "Rainy"; icon = "rainy"; }
+            else if (code >= 95 && code <= 99) { condition = isAr ? "عواصف رعدية" : "Thunderstorm"; icon = "thunderstorm"; }
 
             descEl.innerText = condition;
-            iconEl.innerText = icon;
+            iconEl.innerHTML = `<span class="material-symbols-rounded">${icon}</span>`;
         }
     } catch (error) {
         console.error("Error fetching weather:", error);
         descEl.innerText = isAr ? "تعذر جلب الطقس" : "Weather Unavailable";
-        iconEl.innerText = "⚠️";
+        iconEl.innerHTML = `<span class="material-symbols-rounded">cloud_off</span>`;
     }
 }
 // ===============================================
@@ -260,8 +262,7 @@ function loadInventoryAlerts() {
                 const statusClass = qty === 0 ? 'danger' : 'warning';
                 container.innerHTML += `
                     <div class="inventory-alert ${statusClass}">
-                        <span>⚠️ ${item.name || 'صنف غير معروف'} (${item.category || ''})</span>
-                        <span>${window.invCurrentTxt} ${qty} | ${window.invMinTxt} ${min}</span>
+                    <span><span class="material-symbols-rounded" style="color:#ef4444; font-size:18px;">warning</span> ${item.name || 'صنف غير معروف'} (${item.category || ''})</span>                        <span>${window.invCurrentTxt} ${qty} | ${window.invMinTxt} ${min}</span>
                     </div>
                 `;
             }
@@ -296,7 +297,7 @@ function renderLiveUpcoming() {
                 <small style="color: #64748b;">${app.type}</small>
             </div>
             <div style="background: #fffbeb; color: #d97706; padding: 5px 10px; border-radius: 8px; font-weight: bold; border: 1px solid #fde68a;">
-                ⏰ ${app.time}
+                <span class="material-symbols-rounded" style="font-size:16px;">schedule</span> ${app.time}
             </div>
         `;
         container.appendChild(div);
@@ -823,7 +824,7 @@ function renderWaitList(containerId, dataArray) {
         li.className = 'data-list-li';
         li.onclick = () => openAppDetails(app);
         let timeTag = containerId === 'todayWaitContainer' ? app.time : `${app.date} | ${app.time}`;
-        li.innerHTML = `<span style="font-weight: bold; font-size: 16px;">👤 ${app.patientName}</span><span class="data-badge orange">⏰ ${timeTag}</span>`;
+        li.innerHTML = '<span style="font-weight: bold; font-size: 16px; display:flex; align-items:center; gap:5px;"><span class="material-symbols-rounded" style="color:#64748b;">person</span> ${app.patientName}</span><span class="data-badge orange" style="display:flex; align-items:center; gap:5px;"><span class="material-symbols-rounded" style="font-size:16px;">schedule</span> ${timeTag}</span>';
         container.appendChild(li);
     });
 }
@@ -895,7 +896,7 @@ function openPatientsModal() {
             const li = document.createElement('li');
             li.className = 'data-list-li';
             li.onclick = () => openPatientDetails(p);
-            li.innerHTML = `<span style="font-weight: bold; font-size: 16px;">🦷 ${p.name}</span><span class="data-badge" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;">📞 ${p.phone}</span>`;
+            li.innerHTML = '<span style="font-weight: bold; font-size: 16px; display:flex; align-items:center; gap:5px;"><span class="material-symbols-rounded" style="color:#0ea5e9;">dentistry</span> ${p.name}</span><span class="data-badge" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; display:flex; align-items:center; gap:5px;"><span class="material-symbols-rounded" style="font-size:16px;">call</span> ${p.phone}</span>';
             container.appendChild(li);
         });
     }
@@ -942,11 +943,11 @@ function openRevenueModal() {
             li.onclick = () => openRevDetails(rev); 
             const lang = localStorage.getItem('preferredLang') || 'ar';
             
-            let methodIcon = '💵';
-            if(rev.paymentMethod === 'wallet') methodIcon = '📱';
-            if(rev.paymentMethod === 'instapay') methodIcon = '🏦';
+let methodIcon = '<span class="material-symbols-rounded" style="color:#10b981; font-size:18px;">payments</span>';
+if(rev.paymentMethod === 'wallet') methodIcon = '<span class="material-symbols-rounded" style="color:#8b5cf6; font-size:18px;">smartphone</span>';
+if(rev.paymentMethod === 'instapay') methodIcon = '<span class="material-symbols-rounded" style="color:#0284c7; font-size:18px;">account_balance</span>';
 
-            li.innerHTML = `<span style="font-weight: bold; font-size: 15px;">${methodIcon} ${rev.notes || (lang==='ar'?'إيراد عيادة':'Clinic Revenue')}</span><span class="data-badge green">💰 ${rev.amount}</span>`;
+            li.innerHTML = `<span style="font-weight: bold; font-size: 15px; display:flex; align-items:center; gap:5px;">${methodIcon} ${rev.notes || (lang==='ar'?'إيراد عيادة':'Clinic Revenue')}</span><span class="data-badge green" style="display:flex; align-items:center; gap:5px;"><span class="material-symbols-rounded" style="font-size:16px;">attach_money</span> ${rev.amount}</span>`;
             container.appendChild(li);
         });
     }
@@ -963,7 +964,7 @@ function openSessionsModal() {
             const li = document.createElement('li');
             li.className = 'data-list-li';
             li.onclick = () => openAppDetails(sess); 
-            li.innerHTML = `<span style="font-weight: bold; font-size: 16px;">✅ ${sess.patientName}</span><span class="data-badge" style="background: #10b981;">⏰ ${sess.date}</span>`;
+            li.innerHTML = '<span style="font-weight: bold; font-size: 16px; display:flex; align-items:center; gap:5px;"><span class="material-symbols-rounded" style="color:#10b981;">check_circle</span> ${sess.patientName}</span><span class="data-badge" style="background: #10b981; display:flex; align-items:center; gap:5px;"><span class="material-symbols-rounded" style="font-size:16px;">calendar_today</span> ${sess.date}</span>';
             container.appendChild(li);
         });
     }
