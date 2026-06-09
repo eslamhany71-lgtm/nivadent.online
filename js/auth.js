@@ -539,16 +539,16 @@ function updatePageContent(lang) {
             title: "تسجيل الدخول - نظام NivaDent", welcome: "أهلاً بك في NivaDent", subLogin: "قم بتسجيل الدخول لإدارة عيادتك",
             code: "البريد الإلكتروني أو كود العيادة", pass: "كلمة المرور", btn: "تسجيل الدخول", newEmp: "حساب جديد؟", actLink: "تفعيل حساب العيادة من هنا",
             brandTitle: "NivaDent", brandDesc: "النظام السحابي الأذكى لإدارة عيادات طب الأسنان من إنتاج Start Online Agency. صُمم لرفع كفاءة العيادة، تنظيم المواعيد، وإدارة ملفات المرضى باحترافية وسهولة.",
-            feat1: "✔️ ملف طبي ذكي وأشعة", feat2: "✔️ إدارة الجلسات والمواعيد", feat3: "✔️ روشتات وحسابات دقيقة",
+            feat1: "ملف طبي ذكي وأشعة", feat2: "إدارة الجلسات والمواعيد", feat3: "روشتات وحسابات دقيقة",
             forgotPass: "نسيت كلمة المرور؟", resetTitle: "استعادة كلمة المرور", resetSub: "أدخل بريدك الإلكتروني المسجل لدينا، وسنرسل لك رابطاً لتعيين كلمة مرور جديدة.",
             btnReset: "إرسال رابط الاستعادة", emailPlaceholder: "أدخل البريد الإلكتروني",
             actPageTitle: "تفعيل الحساب - NivaDent", actWelcome: "تفعيل حساب العيادة", actSub: "يرجى إدخال البيانات المسجلة لدى إدارة النظام",
             actCode: "كود الدخول", actPhone: "رقم الموبايل", actPass: "اختر كلمة مرور جديدة", btnAct: "تفعيل الحساب الآن",
             backLoginStr: "لديك حساب بالفعل؟", backLoginLink: "العودة للدخول", brandActTitle: "أهلاً بك في NivaDent",
             brandActDesc: "يسعدنا انضمامك. قم بتفعيل حسابك للوصول إلى لوحة تحكم عيادتك وإدارة مواعيدك وملفات مرضاك بكل سهولة.", actEmail: "البريد الإلكتروني للعيادة",
-            staffInvite: " لدي كود دعوة (تفعيل حساب موظف)", btnTrialTxt: "ابدأ فترة تجريبية مجانية (7 أيام)", 
+            staffInvite: "لدي كود دعوة (تفعيل حساب موظف)", btnTrialTxt: "ابدأ فترة تجريبية مجانية (7 أيام)", 
             copyright: `© ${currentYear} Start Online Agency. جميع الحقوق محفوظة.`, privacy: "سياسة الخصوصية والتأمين (Privacy Policy)", poweredBy: "Powered by",
-            mTrialTitle: " إنشاء حساب تجريبي", mTrialSub: "جرب النظام بكامل مميزاته مجاناً لمدة 7 أيام", 
+            mTrialTitle: "إنشاء حساب تجريبي", mTrialSub: "جرب النظام بكامل مميزاته مجاناً لمدة 7 أيام", 
             lTClinic: "اسم العيادة", pTClinic: "مثال: عيادة النور لطب الأسنان", lTAdmin: "اسم الطبيب / المدير", pTAdmin: "الاسم بالكامل",
             lTPhone: "رقم الموبايل للتواصل", pTPhone: "01xxxxxxxxx", lTEmail: "البريد الإلكتروني (للدخول)", pTEmail: "clinic@example.com",
             lTPass: "كلمة المرور (6 أحرف أو أكثر)", pTPass: "********", btnSubmitTrial: "إنشاء الحساب وبدء التجربة",
@@ -556,22 +556,22 @@ function updatePageContent(lang) {
             privH2: "2. النسخ الاحتياطي التلقائي (Cloud Backup)", privP2: "لا داعي للقلق من فقدان البيانات. يقوم النظام بعمل نسخ احتياطي تلقائي ولحظي للبيانات. في حالة فقدان جهازك أو تغييره، ستجد جميع بيانات عيادتك كما هي بمجرد تسجيل الدخول.",
             privH3: "3. حقوق الملكية الفكرية", privP3: "نظام NivaDent هو منتج برمجي مملوك بالكامل لشركة Start Online Agency. لا يجوز نسخ، إعادة بيع، أو هندسة عكسية لأي جزء من النظام دون إذن كتابي مسبق.",
             privH4: "4. استخدام البيانات للتطوير", privP4: "نحن لا نقوم ببيع أو مشاركة بيانات عيادتك مع أي جهة إعلانية. النظام يجمع فقط بعض الإحصائيات الفنية مجهولة المصدر لتحسين الأداء وسرعة النظام.", btnPrivOk: "موافق ومفهوم",
-            btn-pricing-txt: "استكشف خطط الأسعار والاشتراكات",
+            "btn-pricing-txt": "استكشف خطط الأسعار والاشتراكات"
         },
         en: {
             title: "Login - NivaDent System", welcome: "Welcome to NivaDent", subLogin: "Sign in to manage your clinic",
             code: "Email or Access Code", pass: "Password", btn: "Login", newEmp: "New Account?", actLink: "Activate clinic account here",
             brandTitle: "NivaDent", brandDesc: "The smartest cloud system for dental practice management powered by Start Online Agency. Designed to increase efficiency, organize appointments, and manage patient records professionally.",
-            feat1: "✔️ Smart Medical Records & X-Rays", feat2: "✔️ Appointments & Sessions Management", feat3: "✔️ E-Prescriptions & Accurate Billing",
+            feat1: "Smart Medical Records & X-Rays", feat2: "Appointments & Sessions Management", feat3: "E-Prescriptions & Accurate Billing",
             forgotPass: "Forgot Password?", resetTitle: "Reset Password", resetSub: "Enter your registered email, and we will send you a link to set a new password.",
             btnReset: "Send Reset Link", emailPlaceholder: "Enter email address",
             actPageTitle: "Activate Account - NivaDent", actWelcome: "Activate Clinic Account", actSub: "Please enter the data registered with the system administration",
             actCode: "Access Code", actPhone: "Mobile Number", actPass: "Choose a new password", btnAct: "Activate Account Now",
             backLoginStr: "Already have an account?", backLoginLink: "Back to Login", brandActTitle: "Welcome to NivaDent",
             brandActDesc: "We are glad you joined. Activate your account to access your clinic's dashboard, manage appointments, and track patient files easily.", actEmail: "Clinic Email Address",
-            staffInvite: " I have an invite code (Staff)", btnTrialTxt: "Start Free Trial (7 Days)", 
+            staffInvite: "I have an invite code (Staff)", btnTrialTxt: "Start Free Trial (7 Days)", 
             copyright: `© ${currentYear} Start Online Agency. All rights reserved.`, privacy: "Privacy Policy & Security", poweredBy: "Powered by",
-            mTrialTitle: " Create Trial Account", mTrialSub: "Try full features free for 7 days", 
+            mTrialTitle: "Create Trial Account", mTrialSub: "Try full features free for 7 days", 
             lTClinic: "Clinic Name", pTClinic: "e.g., Al-Nour Dental Clinic", lTAdmin: "Doctor / Admin Name", pTAdmin: "Full Name",
             lTPhone: "Contact Phone", pTPhone: "01xxxxxxxxx", lTEmail: "Email (For Login)", pTEmail: "clinic@example.com",
             lTPass: "Password (Min 6 chars)", pTPass: "********", btnSubmitTrial: "Create Account & Start Trial",
@@ -579,25 +579,34 @@ function updatePageContent(lang) {
             privH2: "2. Automatic Cloud Backup", privP2: "No need to worry about data loss. The system performs automatic real-time backups. If your device is lost, you will find your clinic's data intact upon logging in.",
             privH3: "3. Intellectual Property Rights", privP3: "NivaDent is a software product fully owned by Start Online Agency. Copying, reselling, or reverse engineering any part of the system without prior written permission is prohibited.",
             privH4: "4. Data Usage for Development", privP4: "We do not sell or share your clinic's data with advertisers. The system only collects anonymous technical statistics to improve performance.", btnPrivOk: "I Understand & Agree",
-            btn-pricing-txt: "Explore Pricing & Plans",
+            "btn-pricing-txt": "Explore Pricing & Plans"
         }
     };
-    const currentLang = localStorage.getItem('preferredLang') || 'ar';
-    const pricingBtnTxt = document.getElementById('btn-pricing-txt');
-    
-    if (pricingBtnTxt) {
-        pricingBtnTxt.innerText = currentLang === 'en' ? "Explore Pricing & Plans" : "استكشف خطط الأسعار والاشتراكات";
-    }
+
     const t = translations[lang] || translations['ar'];
     document.body.dir = (lang === 'en') ? 'ltr' : 'rtl';
+    
+    // دوال المساعدة المحدثة
     const safeSetText = (id, text) => { const el = document.getElementById(id); if (el) el.innerText = text; };
     const safeSetPlaceholder = (id, text) => { const el = document.getElementById(id); if (el) el.placeholder = text; };
+    
+    // دالة جديدة مخصصة للمميزات عشان تحافظ على أيقونة جوجل ومتمسحهاش
+    const safeSetFeatureText = (id, text) => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = `<span class="material-symbols-rounded" style="color: #10b981;">check_circle</span> ${text}`;
+    };
 
     if (document.title.includes('دخول') || document.title.includes('Login')) document.title = t.title;
+    
     safeSetText('txt-welcome', t.welcome); safeSetText('sub-login', t.subLogin); safeSetText('lbl-code', t.code);
     safeSetText('lbl-pass', t.pass); safeSetText('btn-login', t.btn); safeSetText('txt-new', t.newEmp);
     safeSetText('link-activate', t.actLink); safeSetText('txt-brand', t.brandTitle); safeSetText('brand-desc', t.brandDesc);
-    safeSetText('feat-1', t.feat1); safeSetText('feat-2', t.feat2); safeSetText('feat-3', t.feat3);
+    
+    // استخدام الدالة الجديدة للحفاظ على الأيقونات
+    safeSetFeatureText('feat-1', t.feat1); 
+    safeSetFeatureText('feat-2', t.feat2); 
+    safeSetFeatureText('feat-3', t.feat3);
+    
     safeSetText('link-forgot', t.forgotPass); safeSetText('txt-reset-title', t.resetTitle); safeSetText('txt-reset-sub', t.resetSub);
     safeSetText('btn-send-reset', t.btnReset); safeSetPlaceholder('resetEmailInput', t.emailPlaceholder);
     if (document.title.includes('تفعيل') || document.title.includes('Activate')) document.title = t.actPageTitle;
@@ -623,8 +632,10 @@ function updatePageContent(lang) {
     safeSetText('priv-h3', t.privH3); safeSetText('priv-p3', t.privP3);
     safeSetText('priv-h4', t.privH4); safeSetText('priv-p4', t.privP4);
     safeSetText('btn-priv-ok', t.btnPrivOk);
+    
+    // زر التسعير
+    safeSetText('btn-pricing-txt', t['btn-pricing-txt']);
 }
-
 function togglePasswordVisibility(inputId) {
     const input = document.getElementById(inputId);
     // جلب العنصر (الأيقونة) اللي جنب حقل الإدخال
