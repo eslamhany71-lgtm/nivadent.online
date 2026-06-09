@@ -555,7 +555,8 @@ function updatePageContent(lang) {
             mPrivTitle: "سياسة الخصوصية وتأمين البيانات", privH1: "1. سرية السجلات الطبية", privP1: "نحن في Start Online Agency ندرك تماماً حساسية السجلات الطبية. جميع بيانات مرضاك (التشخيص، الأشعة، المديونيات) مشفرة ومحفوظة في قواعد بيانات سحابية آمنة لا يمكن لأي طرف ثالث الاطلاع عليها.",
             privH2: "2. النسخ الاحتياطي التلقائي (Cloud Backup)", privP2: "لا داعي للقلق من فقدان البيانات. يقوم النظام بعمل نسخ احتياطي تلقائي ولحظي للبيانات. في حالة فقدان جهازك أو تغييره، ستجد جميع بيانات عيادتك كما هي بمجرد تسجيل الدخول.",
             privH3: "3. حقوق الملكية الفكرية", privP3: "نظام NivaDent هو منتج برمجي مملوك بالكامل لشركة Start Online Agency. لا يجوز نسخ، إعادة بيع، أو هندسة عكسية لأي جزء من النظام دون إذن كتابي مسبق.",
-            privH4: "4. استخدام البيانات للتطوير", privP4: "نحن لا نقوم ببيع أو مشاركة بيانات عيادتك مع أي جهة إعلانية. النظام يجمع فقط بعض الإحصائيات الفنية مجهولة المصدر لتحسين الأداء وسرعة النظام.", btnPrivOk: "موافق ومفهوم"
+            privH4: "4. استخدام البيانات للتطوير", privP4: "نحن لا نقوم ببيع أو مشاركة بيانات عيادتك مع أي جهة إعلانية. النظام يجمع فقط بعض الإحصائيات الفنية مجهولة المصدر لتحسين الأداء وسرعة النظام.", btnPrivOk: "موافق ومفهوم",
+            btn-pricing-txt: "استكشف خطط الأسعار والاشتراكات",
         },
         en: {
             title: "Login - NivaDent System", welcome: "Welcome to NivaDent", subLogin: "Sign in to manage your clinic",
@@ -577,9 +578,16 @@ function updatePageContent(lang) {
             mPrivTitle: "Privacy Policy & Data Security", privH1: "1. Medical Records Confidentiality", privP1: "At Start Online Agency, we fully understand the sensitivity of medical records. All your patient data is encrypted and stored in secure cloud databases inaccessible to any third party.",
             privH2: "2. Automatic Cloud Backup", privP2: "No need to worry about data loss. The system performs automatic real-time backups. If your device is lost, you will find your clinic's data intact upon logging in.",
             privH3: "3. Intellectual Property Rights", privP3: "NivaDent is a software product fully owned by Start Online Agency. Copying, reselling, or reverse engineering any part of the system without prior written permission is prohibited.",
-            privH4: "4. Data Usage for Development", privP4: "We do not sell or share your clinic's data with advertisers. The system only collects anonymous technical statistics to improve performance.", btnPrivOk: "I Understand & Agree"
+            privH4: "4. Data Usage for Development", privP4: "We do not sell or share your clinic's data with advertisers. The system only collects anonymous technical statistics to improve performance.", btnPrivOk: "I Understand & Agree",
+            btn-pricing-txt: "Explore Pricing & Plans",
         }
     };
+    const currentLang = localStorage.getItem('preferredLang') || 'ar';
+    const pricingBtnTxt = document.getElementById('btn-pricing-txt');
+    
+    if (pricingBtnTxt) {
+        pricingBtnTxt.innerText = currentLang === 'en' ? "Explore Pricing & Plans" : "استكشف خطط الأسعار والاشتراكات";
+    }
     const t = translations[lang] || translations['ar'];
     document.body.dir = (lang === 'en') ? 'ltr' : 'rtl';
     const safeSetText = (id, text) => { const el = document.getElementById(id); if (el) el.innerText = text; };
