@@ -182,10 +182,17 @@
 
         <div class="main-content">
             <header class="topbar">
-                <div class="topbar-right">
+                    <div class="topbar-right" style="display: flex; align-items: center; gap: 15px;">
                     <button class="menu-toggle" onclick="toggleSidebar()"><span class="material-symbols-rounded">menu</span></button>
                     <button class="desktop-toggle" onclick="toggleSidebarDesktop()"><span class="material-symbols-rounded">menu_open</span></button>
-                    <h2 id="txt-header">لوحة التحكم</h2>
+                    <h2 id="txt-header" style="margin: 0;">لوحة التحكم</h2>
+                    
+                    <div id="live-clock-widget" style="background: rgba(2, 132, 199, 0.08); color: #0284c7; padding: 6px 15px; border-radius: 8px; font-weight: bold; display: flex; align-items: center; gap: 8px; font-size: 14px; border: 1px solid rgba(2, 132, 199, 0.2); margin-right: 15px;">
+                        <span class="material-symbols-rounded" style="font-size: 20px;">calendar_clock</span>
+                        <span id="live-time-display" style="letter-spacing: 1px;">--:--:--</span>
+                        <span style="opacity: 0.3;">|</span>
+                        <span id="live-date-display">--/--/----</span>
+                    </div>
                 </div>
                 
                 <div class="topbar-left user-controls">
