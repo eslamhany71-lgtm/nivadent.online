@@ -617,12 +617,17 @@ function updatePageContent(lang) {
     safeSetText('btn-priv-ok', t.btnPrivOk);
 }
 
-function togglePasswordVisibility() {
-    const passInput = document.getElementById('password');
-    const toggleIcon = document.querySelector('.toggle-password');
-    if (passInput && toggleIcon) {
-        if (passInput.type === 'password') { passInput.type = 'text'; toggleIcon.innerText = '🙈'; } 
-        else { passInput.type = 'password'; toggleIcon.innerText = '👁️'; }
+function togglePasswordVisibility(inputId) {
+    const input = document.getElementById(inputId);
+    // جلب العنصر (الأيقونة) اللي جنب حقل الإدخال
+    const icon = input.nextElementSibling;
+    
+    if (input.type === "password") {
+        input.type = "text";
+        icon.innerText = "visibility"; // عين مفتوحة
+    } else {
+        input.type = "password";
+        icon.innerText = "visibility_off"; // عين مقفولة
     }
 }
 
