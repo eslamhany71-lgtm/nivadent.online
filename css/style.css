@@ -255,3 +255,30 @@ html[dir="ltr"] .toggle-password { left: auto; right: 15px; }
         margin: 10px auto !important;
     }
 }
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* محاذاة الأيقونة اللي على اليمين (الإيميل/القفل) */
+.input-wrapper .input-icon {
+    position: absolute;
+    right: 12px;
+    color: #64748b;
+}
+
+/* محاذاة أيقونة العين اللي على الشمال */
+.input-wrapper .toggle-password {
+    position: absolute;
+    left: 12px;
+    cursor: pointer;
+    color: #64748b;
+}
+
+/* إعطاء مساحة جوه الحقل عشان الكلام ميجيش فوق الأيقونات */
+.input-wrapper input {
+    padding-right: 40px !important;
+    padding-left: 40px !important;
+    width: 100%;
+}
