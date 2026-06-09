@@ -5,11 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title id="txt-title">تسجيل الدخول - نظام NivaDent</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
     <link rel="stylesheet" href="css/style.css">
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <style>
+        /* 🔴 تنسيق الأيقونات الجديدة 🔴 */
+        .material-symbols-rounded {
+            font-size: 22px;
+            color: #64748b;
+            vertical-align: middle;
+            user-select: none;
+        }
+        .btn-trial .material-symbols-rounded, .btn-pricing .material-symbols-rounded {
+            color: inherit;
+            font-size: 20px;
+        }
+        
         .btn-trial {
             width: 100%; background: #10b981; color: white; padding: 12px; border: none;
             border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer;
@@ -18,15 +31,14 @@
         }
         .btn-trial:hover { background: #059669; transform: translateY(-2px); }
         
-        /* 🔴 زرار خطط الأسعار الجديد 🔴 */
         .btn-pricing {
             width: 100%; background: white; color: #f59e0b; padding: 12px; border: 2px solid #fcd34d;
             border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer;
             display: flex; justify-content: center; align-items: center; gap: 8px;
             transition: 0.3s; font-family: inherit; text-decoration: none;
         }
-        /* 🔴 تأثيرات الزغللة والانزلاق (Blur & Slide Transition) 🔴 */
-        .split-layout { overflow: hidden; position: relative; } /* منع ظهور السكرول أثناء الحركة */
+        
+        .split-layout { overflow: hidden; position: relative; }
         
         .form-section {
             width: 100%; transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.5s ease, filter 0.5s ease;
@@ -38,26 +50,55 @@
             position: relative; opacity: 1; filter: blur(0); transform: translateX(0); pointer-events: auto; z-index: 10;
         }
 
-        /* حركات الخروج والدخول */
         .form-section.slide-out-left { transform: translateX(-150%); opacity: 0; filter: blur(15px); }
         .form-section.slide-in-right { transform: translateX(150%); opacity: 0; filter: blur(15px); }
         
         [dir="ltr"] .form-section.slide-out-left { transform: translateX(150%); }
         [dir="ltr"] .form-section.slide-in-right { transform: translateX(-150%); }
 
-        /* حاوية النماذج (عشان التوسيط يكون مظبوط) */
         #login-section, #activate-section { width: 100%; max-width: 400px; margin: 0 auto; }
         
         .btn-pricing:hover { background: #fffbeb; border-color: #f59e0b; transform: translateY(-2px); }
         
         .privacy-content p { line-height: 1.8; color: #475569; margin-bottom: 15px; font-size: 14.5px; }
         .privacy-content h3 { color: #0f172a; margin-top: 25px; margin-bottom: 10px; font-size: 17px; }
+
+        /* تظبيط شكل الأيقونة جوه الـ Input */
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .input-wrapper .input-icon {
+            position: absolute;
+            right: 12px; /* للمسافات في العربي */
+        }
+        [dir="ltr"] .input-wrapper .input-icon {
+            right: auto;
+            left: 12px;
+        }
+        .input-wrapper input {
+            padding-right: 40px !important; /* مساحة للأيقونة */
+        }
+        [dir="ltr"] .input-wrapper input {
+            padding-right: 15px !important;
+            padding-left: 40px !important;
+        }
+        .toggle-password {
+            position: absolute;
+            left: 12px;
+            cursor: pointer;
+        }
+        [dir="ltr"] .toggle-password {
+            left: auto;
+            right: 12px;
+        }
     </style>
 </head>
 <body style="touch-action: manipulation; overflow-x: hidden;">
     <div class="split-layout">
         <div class="form-side">
-<div class="form-container" style="position: relative; min-height: 80vh; display: flex; align-items: center; justify-content: center; width: 100%;">
+            <div class="form-container" style="position: relative; min-height: 80vh; display: flex; align-items: center; justify-content: center; width: 100%;">
                 
                 <div class="lang-switcher" style="position: absolute; top: 20px; right: 20px; z-index: 100;">
                     <span onclick="setLanguage('ar')">عربي</span> | 
@@ -80,7 +121,7 @@
                     <div class="input-group" style="width: 100%;">
                         <label id="lbl-code">البريد الإلكتروني أو كود العيادة</label>
                         <div class="input-wrapper">
-                            <span class="input-icon">👤</span>
+                            <span class="material-symbols-rounded input-icon">person</span>
                             <input type="text" id="empCode" placeholder="أدخل البريد أو الكود الخاص بك" required>
                         </div>
                     </div>
@@ -88,9 +129,9 @@
                     <div class="input-group" style="width: 100%;">
                         <label id="lbl-pass">كلمة المرور</label>
                         <div class="input-wrapper">
-                            <span class="input-icon">🔒</span>
+                            <span class="material-symbols-rounded input-icon">lock</span>
                             <input type="password" id="password" placeholder="********" required>
-                            <span class="toggle-password" onclick="togglePasswordVisibility('password')" title="إظهار/إخفاء كلمة المرور">👁️</span>
+                            <span class="material-symbols-rounded toggle-password" onclick="togglePasswordVisibility('password')" title="إظهار/إخفاء كلمة المرور">visibility_off</span>
                         </div>
                     </div>
 
@@ -105,19 +146,24 @@
                     <div class="register-link" style="display: flex; flex-direction: column; gap: 10px; margin-top: 25px; width: 100%;">
                         <div style="text-align: center;">
                             <span id="txt-new">حساب جديد؟</span> 
-                            <a href="#"onclick="toggleAuthForms('activate', event)" id="link-activate" style="color: #10b981; font-weight: bold; cursor: pointer;">تفعيل حساب العيادة من هنا</a>
+                            <a href="#" onclick="toggleAuthForms('activate', event)" id="link-activate" style="color: #10b981; font-weight: bold; cursor: pointer;">تفعيل حساب العيادة من هنا</a>
                         </div>
                         
                         <div style="border-top: 1px solid #e2e8f0; padding-top: 15px; margin-top: 5px; text-align: center;">
-                            <a href="#" onclick="openStaffModal()" style="color: #0ea5e9; text-decoration: none; font-size: 15px; font-weight: bold;"><span id="txt-staff-invite">🔑 لدي كود دعوة (تفعيل حساب موظف)</span></a>
+                            <a href="#" onclick="openStaffModal()" style="color: #0ea5e9; text-decoration: none; font-size: 15px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                                <span class="material-symbols-rounded">vpn_key</span>
+                                <span id="txt-staff-invite">لدي كود دعوة (تفعيل حساب موظف)</span>
+                            </a>
                         </div>
 
                         <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px;">
                             <button type="button" class="btn-trial" onclick="openTrialModal()">
-                                🚀 <span id="btn-trial-txt">ابدأ فترة تجريبية مجانية (7 أيام)</span>
+                                <span class="material-symbols-rounded">rocket_launch</span>
+                                <span id="btn-trial-txt">ابدأ فترة تجريبية مجانية (7 أيام)</span>
                             </button>
                             <a href="pricing.html" class="btn-pricing">
-                                👑 <span id="btn-pricing-txt">استكشف خطط الأسعار والاشتراكات</span>
+                                <span class="material-symbols-rounded">diamond</span>
+                                <span id="btn-pricing-txt">استكشف خطط الأسعار والاشتراكات</span>
                             </a>
                         </div>
                     </div>
@@ -135,7 +181,7 @@
                     <div class="input-group" style="width: 100%;">
                         <label id="lbl-act-code">كود الدخول (استلمته من الإدارة)</label>
                         <div class="input-wrapper">
-                            <span class="input-icon">🔑</span>
+                            <span class="material-symbols-rounded input-icon">key</span>
                             <input type="text" id="reg-code" placeholder="أدخل كود العيادة" required style="direction: ltr; text-align: left;">
                         </div>
                     </div>
@@ -143,7 +189,7 @@
                     <div class="input-group" style="width: 100%;">
                         <label id="lbl-act-phone">رقم الموبايل المسجل</label>
                         <div class="input-wrapper">
-                            <span class="input-icon">📱</span>
+                            <span class="material-symbols-rounded input-icon">smartphone</span>
                             <input type="tel" id="reg-phone" placeholder="01xxxxxxxxx" required style="direction: ltr; text-align: left;">
                         </div>
                     </div>
@@ -151,7 +197,7 @@
                     <div class="input-group" style="width: 100%;">
                         <label id="lbl-act-email">البريد الإلكتروني للعيادة (لتسجيل الدخول لاحقاً)</label>
                         <div class="input-wrapper">
-                            <span class="input-icon">📧</span>
+                            <span class="material-symbols-rounded input-icon">mail</span>
                             <input type="email" id="reg-email" placeholder="أدخل البريد الإلكتروني" required style="direction: ltr; text-align: left;">
                         </div>
                     </div>
@@ -159,9 +205,9 @@
                     <div class="input-group" style="width: 100%;">
                         <label id="lbl-act-pass">اختر كلمة مرور جديدة للعيادة</label>
                         <div class="input-wrapper">
-                            <span class="input-icon">🔒</span>
+                            <span class="material-symbols-rounded input-icon">lock</span>
                             <input type="password" id="reg-pass" placeholder="********" required>
-                            <span class="toggle-password" onclick="togglePasswordVisibility('reg-pass')" title="إظهار/إخفاء كلمة المرور">👁️</span>
+                            <span class="material-symbols-rounded toggle-password" onclick="togglePasswordVisibility('reg-pass')" title="إظهار/إخفاء كلمة المرور">visibility_off</span>
                         </div>
                     </div>
 
@@ -196,9 +242,9 @@
                 <h1 id="txt-brand" style="display: none;">NivaDent</h1> 
                 <p id="brand-desc">النظام السحابي الأذكى لإدارة عيادات طب الأسنان من إنتاج Start Online Agency. صُمم لرفع كفاءة العيادة، تنظيم المواعيد، وإدارة ملفات المرضى باحترافية وسهولة.</p>
                 <div class="features">
-                    <span id="feat-1">✔️ ملف طبي ذكي وأشعة</span>
-                    <span id="feat-2">✔️ إدارة الجلسات والمواعيد</span>
-                    <span id="feat-3">✔️ روشتات وحسابات دقيقة</span>
+                    <span id="feat-1"><span class="material-symbols-rounded" style="color: #10b981;">check_circle</span> ملف طبي ذكي وأشعة</span>
+                    <span id="feat-2"><span class="material-symbols-rounded" style="color: #10b981;">check_circle</span> إدارة الجلسات والمواعيد</span>
+                    <span id="feat-3"><span class="material-symbols-rounded" style="color: #10b981;">check_circle</span> روشتات وحسابات دقيقة</span>
                 </div>
                 
                 <div style="margin-top: 50px; text-align: center; color: #94a3b8; font-size: 14px;">
@@ -210,21 +256,18 @@
 
     <div id="privacyModal" class="modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(4px);">
         <div class="modal-content" style="background: white; width: 90%; max-width: 600px; max-height: 85vh; overflow-y: auto; padding: 30px; border-radius: 16px; position: relative;">
-            <span class="close-modal" onclick="closePrivacyModal()" style="position: absolute; top: 15px; left: 20px; font-size: 24px; cursor: pointer; color: #64748b;">&times;</span>
+            <span class="close-modal material-symbols-rounded" onclick="closePrivacyModal()" style="position: absolute; top: 15px; left: 20px; font-size: 28px; cursor: pointer; color: #64748b;">close</span>
             <h2 id="mod-priv-title" style="margin-top: 0; color: #0f172a; text-align: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px;">سياسة الخصوصية وتأمين البيانات</h2>
             
             <div class="privacy-content" style="text-align: start;">
                 <h3 id="priv-h1">1. سرية السجلات الطبية</h3>
-                <p id="priv-p1">نحن في Start Online Agency ندرك تماماً حساسية السجلات الطبية. جميع بيانات مرضاك (التشخيص، الأشعة، المديونيات) مشفرة ومحفوظة في قواعد بيانات سحابية آمنة لا يمكن لأي طرف ثالث الاطلاع عليها.</p>
-                
-                <h3 id="priv-h2">2. النسخ الاحتياطي التلقائي (Cloud Backup)</h3>
-                <p id="priv-p2">لا داعي للقلق من فقدان البيانات. يقوم النظام بعمل نسخ احتياطي تلقائي ولحظي للبيانات. في حالة فقدان جهازك أو تغييره، ستجد جميع بيانات عيادتك كما هي بمجرد تسجيل الدخول.</p>
-                
+                <p id="priv-p1">نحن في Start Online Agency ندرك تماماً حساسية السجلات الطبية. جميع بيانات مرضاك مشفرة ومحفوظة في قواعد بيانات سحابية آمنة.</p>
+                <h3 id="priv-h2">2. النسخ الاحتياطي التلقائي</h3>
+                <p id="priv-p2">لا داعي للقلق من فقدان البيانات. يقوم النظام بعمل نسخ احتياطي تلقائي ولحظي للبيانات.</p>
                 <h3 id="priv-h3">3. حقوق الملكية الفكرية</h3>
-                <p id="priv-p3">نظام NivaDent هو منتج برمجي مملوك بالكامل لشركة Start Online Agency. لا يجوز نسخ، إعادة بيع، أو هندسة عكسية لأي جزء من النظام دون إذن كتابي مسبق.</p>
-                
+                <p id="priv-p3">نظام NivaDent هو منتج برمجي مملوك بالكامل لشركة Start Online Agency.</p>
                 <h3 id="priv-h4">4. استخدام البيانات للتطوير</h3>
-                <p id="priv-p4">نحن لا نقوم ببيع أو مشاركة بيانات عيادتك مع أي جهة إعلانية. النظام يجمع فقط بعض الإحصائيات الفنية مجهولة المصدر لتحسين الأداء وسرعة النظام.</p>
+                <p id="priv-p4">نحن لا نقوم ببيع أو مشاركة بيانات عيادتك مع أي جهة إعلانية.</p>
             </div>
             
             <button onclick="closePrivacyModal()" id="btn-priv-ok" style="width: 100%; background: #0284c7; color: white; border: none; padding: 12px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; font-family: inherit;">
@@ -233,10 +276,10 @@
         </div>
     </div>
 
-<div id="trialModal" class="modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(4px);">
+    <div id="trialModal" class="modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(4px);">
         <div class="modal-content" style="background: white; width: 90%; max-width: 500px; padding: 30px; border-radius: 16px; position: relative; max-height: 90vh; overflow-y: auto;">
-            <span class="close-modal" onclick="closeTrialModal()" style="position: absolute; top: 15px; left: 20px; font-size: 24px; cursor: pointer; color: #64748b;">&times;</span>
-            <h2 id="mod-trial-title" style="margin-top: 0; color: #0f172a; text-align: center;">🚀 إنشاء حساب تجريبي</h2>
+            <span class="close-modal material-symbols-rounded" onclick="closeTrialModal()" style="position: absolute; top: 15px; left: 20px; font-size: 28px; cursor: pointer; color: #64748b;">close</span>
+            <h2 id="mod-trial-title" style="margin-top: 0; color: #0f172a; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px;"><span class="material-symbols-rounded" style="color: #0ea5e9; font-size: 28px;">rocket_launch</span> إنشاء حساب تجريبي</h2>
             <p id="mod-trial-sub" style="text-align: center; color: #64748b; margin-bottom: 25px;">جرب النظام بكامل مميزاته مجاناً لمدة 7 أيام</p>
             
             <div id="trial-form-wrapper">
@@ -244,10 +287,10 @@
                     <div class="form-group" style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155; font-size: 14px;">اسم العيادة</label>
                         <input type="text" id="trial_clinic_name" required style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-family: inherit;">
-                   <div class="mb-3">
-                    <label for="trial_syndicate_id" class="form-label">رقم القيد بنقابة أطباء الأسنان <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="trial_syndicate_id" placeholder="أدخل رقم القيد الخاص بك" required>
-                </div>
+                        <div style="margin-top: 15px;">
+                            <label for="trial_syndicate_id" style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155; font-size: 14px;">رقم القيد بنقابة أطباء الأسنان <span style="color: #ef4444;">*</span></label>
+                            <input type="text" id="trial_syndicate_id" placeholder="أدخل رقم القيد الخاص بك" required style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; font-family: inherit;">
+                        </div>
                     </div>
                     <div class="form-group" style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155; font-size: 14px;">اسم الطبيب / المدير</label>
@@ -270,23 +313,25 @@
                         <div style="font-size: 11px; color: #64748b; margin-top: 5px; display: flex; justify-content: space-between; align-items: flex-start;">
                         <span style="flex: 1;">8 أحرف الأقل، وتحتوي على: (حرف كبير، صغير، رقم، ورمز)</span>
                         <span id="pass-strength-label" style="font-weight: bold; margin-inline-start: 10px;"></span>
-</div>
+                        </div>
                     </div>
                     
-                    <button type="button" id="btn-submit-trial" onclick="sendOTP(event)" style="width: 100%; background: #10b981; color: white; border: none; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; font-family: inherit;">
-                        تأكيد وإرسال كود التفعيل 📱
+                    <button type="button" id="btn-submit-trial" onclick="sendOTP(event)" style="width: 100%; background: #10b981; color: white; border: none; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <span class="material-symbols-rounded">send_to_mobile</span> تأكيد وإرسال كود التفعيل
                     </button>
                 </div>
 
                 <div id="step-2-otp" style="display: none; text-align: center;">
-                    <div style="font-size: 40px; margin-bottom: 15px;">💬</div>
+                    <div style="margin-bottom: 15px;">
+                        <span class="material-symbols-rounded" style="font-size: 56px; color: #0ea5e9;">mark_chat_unread</span>
+                    </div>
                     <h3 style="margin-bottom: 10px;">تم إرسال كود التفعيل</h3>
                     <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">أدخل الكود المكون من 6 أرقام المرسل إلى هاتفك لإتمام إنشاء العيادة.</p>
                     
                     <input type="text" id="otp_code_input" maxlength="6" dir="ltr" placeholder="------" style="width: 60%; padding: 15px; font-size: 24px; text-align: center; letter-spacing: 5px; border: 2px solid #0ea5e9; border-radius: 8px; margin-bottom: 20px; outline: none;">
                     
-                    <button type="button" id="btn-verify-otp" onclick="verifyOTPAndRegister(event)" style="width: 100%; background: #0ea5e9; color: white; border: none; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; font-family: inherit;">
-                        تحقق وإنشاء الحساب 🚀
+                    <button type="button" id="btn-verify-otp" onclick="verifyOTPAndRegister(event)" style="width: 100%; background: #0ea5e9; color: white; border: none; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <span class="material-symbols-rounded">rocket_launch</span> تحقق وإنشاء الحساب
                     </button>
                     
                     <button type="button" onclick="cancelOTP()" style="width: 100%; background: transparent; color: #ef4444; border: none; padding: 10px; margin-top: 10px; font-weight: bold; cursor: pointer;">
@@ -301,7 +346,7 @@
 
     <div id="resetModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(15, 23, 42, 0.7); align-items: center; justify-content: center; backdrop-filter: blur(4px);">
         <div class="modal-content" style="background: white; border-radius: 16px; width: 90%; max-width: 400px; padding: 25px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); position: relative; animation: animatetop 0.3s; max-height: 90vh; overflow-y: auto;">
-            <span onclick="closeResetModal()" style="position: absolute; left: 20px; top: 15px; font-size: 24px; color: #64748b; cursor: pointer;">&times;</span>
+            <span class="close-modal material-symbols-rounded" onclick="closeResetModal()" style="position: absolute; left: 20px; top: 15px; font-size: 24px; color: #64748b; cursor: pointer;">close</span>
             <h2 id="txt-reset-title" style="margin-top: 0; color: #1e293b; font-size: 20px; font-weight: 800;">استعادة كلمة المرور</h2>
             <p id="txt-reset-sub" style="color: #64748b; font-size: 14px; margin-bottom: 20px; line-height: 1.5;">أدخل بريدك الإلكتروني المسجل لدينا، وسنرسل لك رابطاً لتعيين كلمة مرور جديدة.</p>
             
@@ -314,7 +359,7 @@
 
     <div id="staffModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(15, 23, 42, 0.7); align-items: center; justify-content: center; backdrop-filter: blur(4px);">
         <div class="modal-content" style="background: white; border-radius: 16px; width: 90%; max-width: 400px; padding: 25px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); position: relative; animation: animatetop 0.3s; text-align: start; max-height: 90vh; overflow-y: auto;">
-            <span onclick="closeStaffModal()" style="position: absolute; left: 20px; top: 15px; font-size: 24px; color: #64748b; cursor: pointer;">&times;</span>
+            <span class="close-modal material-symbols-rounded" onclick="closeStaffModal()" style="position: absolute; left: 20px; top: 15px; font-size: 24px; color: #64748b; cursor: pointer;">close</span>
             <h2 id="txt-staff-title" style="margin-top: 0; color: #1e293b; font-size: 20px; font-weight: 800;">تفعيل حساب موظف</h2>
             <p id="txt-staff-sub" style="color: #64748b; font-size: 14px; margin-bottom: 20px; line-height: 1.5;">أدخل كود الدعوة الذي استلمته من إدارة العيادة، وقم بإنشاء بريد وكلمة مرور للدخول.</p>
             
@@ -354,7 +399,6 @@
         for (let name of names) caches.delete(name);
     });
 </script>
-
     
 </body>
 </html>
