@@ -10,20 +10,20 @@ if (impersonateParam) {
     window.history.replaceState({}, document.title, window.location.pathname); 
 }
 
-function applyTheme(themeName) {
-    document.body.setAttribute('data-theme', themeName);
-    localStorage.setItem('niva_theme', themeName);
+function toggleTheme() {
+    const body = document.body;
     const themeBtn = document.getElementById('btn-theme');
-    if (themeName === 'dark') { 
-        themeBtn.innerText = '☀️'; 
-        themeBtn.title = 'الوضع الفاتح'; 
-    } else { 
-        themeBtn.innerText = '🌙'; 
-        themeBtn.title = 'الوضع الليلي'; 
-    }
-    const frame = document.getElementById('content-frame');
-    if (frame && frame.contentWindow) { 
-        frame.contentWindow.postMessage({ type: 'THEME_CHANGE', theme: themeName }, '*'); 
+    
+    if (body.getAttribute('data-theme') === 'dark') {
+        body.setAttribute('data-theme', 'light');
+        localStorage.setItem('niva_theme', 'light');
+        // أيقونة القمر للوضع الفاتح
+        if(themeBtn) themeBtn.innerHTML = '<span class="material-symbols-rounded">dark_mode</span>'; 
+    } else {
+        body.setAttribute('data-theme', 'dark');
+        localStorage.setItem('niva_theme', 'dark');
+        // أيقونة الشمس للوضع الليلي
+        if(themeBtn) themeBtn.innerHTML = '<span class="material-symbols-rounded">light_mode</span>'; 
     }
 }
 
