@@ -696,12 +696,18 @@ function toggleAuthForms(target, event) {
     }
 }
 
-// تعديل بسيط عشان يقبل الـ ID بتاع حقل الباسوورد لو عندنا أكتر من واحد (Login و Activate)
+// التعديل الجديد ليتوافق مع مكتبة الأيقونات العالمية (Material Symbols)
 window.togglePasswordVisibility = function(inputId = 'password') {
     const passInput = document.getElementById(inputId);
     const toggleIcon = passInput.nextElementSibling; // يجيب الأيقونة اللي جنبه
+    
     if (passInput && toggleIcon) {
-        if (passInput.type === 'password') { passInput.type = 'text'; toggleIcon.innerText = '🙈'; } 
-        else { passInput.type = 'password'; toggleIcon.innerText = '👁️'; }
+        if (passInput.type === 'password') { 
+            passInput.type = 'text'; 
+            toggleIcon.innerText = 'visibility'; // أيقونة العين المفتوحة
+        } else { 
+            passInput.type = 'password'; 
+            toggleIcon.innerText = 'visibility_off'; // أيقونة العين المقفولة
+        }
     }
 }
