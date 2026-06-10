@@ -145,12 +145,20 @@ function loadPatientData() {
 
             if (isInitialLoad && window.showLoader) window.showLoader(isAr ? "جاري تحميل بيانات المريض..." : "Loading patient...");
 
-            // 🌟 الاستعلام السحري: هنبحث في كوليكشن المرضى كـ Query عادي عشان نتخطى حظر الـ doc المباشر
+            // البحث بكود العيادة لضمان جلب المرضى المشتركين
             db.collection("Patients")
                 .where("clinicId", "==", clinicId)
                 .onSnapshot(snapshot => {
-                    // تصفية المستند يدويًا جوه الكود لضمان لقط المريض الصح
-                    const targetDoc = snapshot.docs.find(d => d.id === patientId);
+                    console.log("🔍 إجمالي المرضى اللي رجعوا من العيادة:", snapshot.size);
+                    
+                    // تحويل الـ ID لنص صافي بدون مسافات لضمان التطابق
+                    const cleanPatientId = String(patientId).trim();
+                    
+                    // محاولة لقط المريض بأكثر من طريقة مطابقة
+                    const targetDoc = snapshot.docs.find(d => 
+                        String(d.id).trim() === cleanPatientId || 
+                        (d.data().id && String(d.data().id).trim() === cleanPatientId)
+                    );
 
                     if (targetDoc) {
                         const p = targetDoc.data();
@@ -183,7 +191,9 @@ function loadPatientData() {
                             }
                         }
                     } else {
-                        // محاولة أخيره: لو الـ snapshot شغال بس ملقاش الآي دي ده في الـ لستة الحالية لسبب ما
+                        // لو منورتش، اطبعلي الـ IDs اللي موجودة في الكونسول عشان نعرف الاختلاف فين
+                        console.log("❌ ملقيناش تطابق. الـ IDs المتاحة في الكوليكشن هي:");
+                        snapshot.docs.forEach(d => console.log("-> داتا آي دي:", d.id));
                         nameEl.innerHTML = `<span style="color:#ef4444;">⚠️ هذا المريض غير موجود أو تم حذفه!</span>`;
                     }
                     
