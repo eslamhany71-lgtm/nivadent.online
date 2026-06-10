@@ -172,6 +172,7 @@ async function loadSessionDetails() {
             if (!chartDataToLoad || Object.keys(chartDataToLoad).length === 0) {
                 try {
                     const lastSessionSnap = await db.collection("Sessions")
+                        .where("clinicId", "==", clinicId)
                         .where("patientId", "==", patientId)
                         .orderBy("createdAt", "desc")
                         .limit(3)
@@ -896,7 +897,7 @@ async function saveSmartPrescription() {
 function attachImageToRx(docId) { activePrescriptionDocId = docId; document.getElementById('upload-rx-input').click(); }
 
 function loadSessionPrescription() {
-    db.collection("Prescriptions").where("sessionId", "==", sessionId).orderBy("createdAt", "asc").onSnapshot(snap => {
+    db.collection("Prescriptions").where("sessionId", "==", sessionId).where("clinicId", "==", clinicId).orderBy("createdAt", "asc").onSnapshot(snap => {
         const container = document.getElementById('session-rx-container'); const isAr = getLang(); sessionPrescriptions = {}; 
         if(snap.empty) { container.innerHTML = `<div class="empty-state">${dict[currentLang].noRx}</div><div style="text-align: center; margin-top: 15px;"><button class="btn-action" style="background:#f8fafc; border:1px solid #cbd5e1; color:#475569;" onclick="attachImageToRx(null)">${dict[currentLang].extRx}</button></div>`; return; }
         container.innerHTML = ''; let counter = 1;
@@ -989,7 +990,7 @@ async function saveSessionXRay(e) {
 }
 
 function loadSessionXRays() {
-    db.collection("XRays").where("sessionId", "==", sessionId).onSnapshot(snap => {
+    db.collection("XRays").where("sessionId", "==", sessionId).where("clinicId", "==", clinicId).onSnapshot(snap => {
         const isAr = getLang(); const list = document.getElementById('session-xrays-list'); list.innerHTML = '';
         if (snap.empty) { list.innerHTML = `<div class="empty-state" style="grid-column: 1 / -1; padding: 30px 20px;">${isAr?'لا توجد مرفقات.':'No attachments.'}</div>`; return; }
         snap.forEach(doc => {
