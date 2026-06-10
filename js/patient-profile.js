@@ -365,10 +365,6 @@ function loadPatientData() {
     }
 
     function loadLabOrders() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const clinicId = urlParams.get('clinicId') || sessionStorage.getItem('clinicId');
-    const patientId = urlParams.get('id');
-        
         db.collection("LabOrders").where("patientId", "==", patientId).where("clinicId", "==", clinicId).orderBy("createdAt", "desc").onSnapshot(snap => {
             const isAr = getLang();
             const container = document.getElementById('lab-orders-list');
@@ -686,9 +682,6 @@ function loadPatientData() {
     }
 
     async function loadPatientSessions() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const clinicId = urlParams.get('clinicId') || sessionStorage.getItem('clinicId');
-    const patientId = urlParams.get('id');
         if (!patientId) return;
         const isAr = getLang();
         const tbody = document.getElementById('sessions-list');
