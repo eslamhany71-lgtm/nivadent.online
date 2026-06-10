@@ -133,6 +133,8 @@ try {
     }
 
 function loadPatientData() {
+    console.log("🛑 قيمة الـ patientId اللي الكود بيقارن بيها هي: ->", patientId, "<-");
+    console.log("🛑 نوعها:", typeof patientId, "طولها:", String(patientId).length);
         try {
             const isAr = getLang();
             const nameEl = document.getElementById('prof-name');
