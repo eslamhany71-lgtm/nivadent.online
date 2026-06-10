@@ -365,7 +365,7 @@ function loadPatientData() {
     }
 
     function loadLabOrders() {
-        db.collection("LabOrders").where("patientId", "==", patientId).where("clinicId", "==", clinicId).orderBy("createdAt", "desc").onSnapshot(snap => {
+        db.collection("LabOrders").where("clinicId", "==", clinicId).where("patientId", "==", patientId).orderBy("createdAt", "desc").onSnapshot(snap => {
             const isAr = getLang();
             const container = document.getElementById('lab-orders-list');
             if(!container) return;
