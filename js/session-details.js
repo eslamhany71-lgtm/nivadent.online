@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadSessionDetails() {
     if(!sessionId || !clinicId) return;
 
-    db.collection("Patients").where("clinicId", "==", clinicId).doc(patientId).get().then(doc => {
+    db.collection("Patients").doc(patientId).get().then(doc => {
         if(doc.exists) {
             patientName = doc.data().name;
             patientAge = doc.data().age || '---';
@@ -133,7 +133,7 @@ async function loadSessionDetails() {
         }
     });
 
-    db.collection("Sessions").where("clinicId", "==", clinicId).doc(sessionId).onSnapshot(async docSnap => { 
+    db.collection("Sessions").doc(sessionId).onSnapshot(async docSnap => { 
         if(docSnap.exists) {
             sessionData = docSnap.data();
             
