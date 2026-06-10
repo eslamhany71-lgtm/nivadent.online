@@ -181,8 +181,18 @@ async function savePatient(e) {
     if(otherHistory) historyArr.push(otherHistory);
 
     const selectedDateStr = document.getElementById('p_date').value;
-    const selectedDateObj = new Date(selectedDateStr);
-    
+const now = new Date();
+
+const [year, month, day] = selectedDateStr.split('-').map(Number);
+
+const selectedDateObj = new Date(
+    year,
+    month - 1,
+    day,
+    now.getHours(),
+    now.getMinutes(),
+    now.getSeconds()
+);    
     let targetBranchId = userBranch;
     if (userRole === 'admin' || userRole === 'superadmin') {
         targetBranchId = document.getElementById('p_branch').value;
