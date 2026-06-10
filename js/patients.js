@@ -790,7 +790,23 @@ async function handlePatientQRScan(scannedCode) {
     if (window.showLoader) window.showLoader(isAr ? "جاري البحث عن المريض..." : "Searching patient...");
 
     try {
-        const docRef = await db.collection("Patients").doc(scannedCode).get();
+        let targetId = scannedCode.trim();
+
+        // 🌟 السحر هنا: استخراج الـ ID لو الـ QR عبارة عن رابط كامل
+        if (targetId.includes('http') && targetId.includes('id=')) {
+            try {
+                const urlObj = new URL(targetId);
+                const extractedId = urlObj.searchParams.get('id');
+                if (extractedId) {
+                    targetId = extractedId; // تحديث المتغير بالـ ID الصافي بس
+                }
+            } catch (err) {
+                console.warn("Could not parse URL from QR", err);
+            }
+        }
+
+        // 1. البحث باستخدام الـ ID الصافي
+        const docRef = await db.collection("Patients").doc(targetId).get();
         if (docRef.exists && docRef.data().clinicId === currentClinicId) {
             if (window.parent && typeof window.parent.loadPage === 'function') {
                 window.parent.loadPage(`patient-profile.html?id=${docRef.id}&clinicId=${currentClinicId}&v=${Date.now()}`);
@@ -800,9 +816,10 @@ async function handlePatientQRScan(scannedCode) {
             return;
         }
 
+        // 2. لو ملقاش بالـ ID، يبحث برقم الموبايل زي ما إنت عامل
         const phoneSnap = await db.collection("Patients")
             .where("clinicId", "==", currentClinicId)
-            .where("phone", "==", scannedCode)
+            .where("phone", "==", targetId)
             .limit(1)
             .get();
 
@@ -816,10 +833,12 @@ async function handlePatientQRScan(scannedCode) {
             return;
         }
 
-        alert(isAr ? `لم يتم العثور على مريض بهذا الكود: (${scannedCode})` : `No patient found with this code: (${scannedCode})`);
+        // 3. لو ملقاش حاجة خالص
+        alert(isAr ? `لم يتم العثور على مريض بهذا الكود: (${targetId})` : `No patient found with this code: (${targetId})`);
         
     } catch (e) {
         console.error("QR Scan Error:", e);
+        alert(isAr ? "حدث خطأ أثناء قراءة الكود." : "Error reading the code.");
     } finally {
         if (window.hideLoader) window.hideLoader();
     }
