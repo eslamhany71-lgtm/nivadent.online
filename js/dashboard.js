@@ -915,16 +915,21 @@ function openPatientsModal() {
 }
 
 function openPatientDetails(p) {
+    console.log("PATIENT OBJECT:", p);
+    console.log("PATIENT ID:", p.id);
+
     currentSelectedPatientId = p.id;
+
     document.getElementById('pdet_name').innerText = p.name;
     document.getElementById('pdet_phone').innerText = p.phone;
     const lang = localStorage.getItem('preferredLang') || 'ar';
     document.getElementById('pdet_age').innerText = p.age + (lang === 'ar' ? ' سنة' : ' Years');
-    
-    let historyStr = (p.medicalHistory && p.medicalHistory.length > 0) ? p.medicalHistory.join(' ، ') : (lang === 'ar' ? 'سليم' : 'Healthy');
+
+    let historyStr = (p.medicalHistory && p.medicalHistory.length > 0)
+        ? p.medicalHistory.join(' ، ')
+        : (lang === 'ar' ? 'سليم' : 'Healthy');
+
     document.getElementById('pdet_history').innerText = historyStr;
-    if(historyStr === 'سليم' || historyStr === 'Healthy') document.getElementById('pdet_history').style.color = '#10b981';
-    else document.getElementById('pdet_history').style.color = '#ef4444';
 
     document.getElementById('patientDetailsModal').style.display = 'flex';
 }
