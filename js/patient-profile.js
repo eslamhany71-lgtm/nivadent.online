@@ -142,69 +142,60 @@ function loadPatientData() {
                 nameEl.innerHTML = `<span style="color:#ef4444; font-size:16px;">⚠️ خطأ: كود المريض مفقود!</span>`;
                 return;
             }
-            if (!clinicId) {
-                nameEl.innerHTML = `<span style="color:#ef4444; font-size:16px;">⚠️ خطأ: كود العيادة مفقود!</span>`;
-                return;
-            }
 
             if (isInitialLoad && window.showLoader) window.showLoader(isAr ? "جاري تحميل بيانات المريض..." : "Loading patient...");
 
-            // 🌟 التعديل هنا: استخدام الاستعلام المفلتر بالدومين والعيادة لحل مشكلة الصلاحيات
-            db.collection("Patients")
-                .where(firebase.firestore.FieldPath.documentId(), "==", patientId)
-                .where("clinicId", "==", clinicId)
-                .onSnapshot(snapshot => {
-                    if (!snapshot.empty) {
-                        const doc = snapshot.docs[0];
-                        const p = doc.data();
-                        currentPatientName = p.name;
-                        currentPatientPhone = p.phone || ""; 
-                        
-                        let debtHtml = '';
-                        if (p.totalDebt && p.totalDebt > 0) {
-                            const debtTxt = isAr ? "الديون" : "Debt";
-                            debtHtml = `<span style="color: #ef4444; font-size: 14px; font-weight: bold; background: #fee2e2; padding: 4px 10px; border-radius: 8px; margin-right: 15px; border: 1px solid #fca5a5;">${debtTxt}: ${p.totalDebt}</span>`;
-                        }
-                        
-                        nameEl.innerHTML = `${p.name} ${debtHtml}`;
-                        const phoneEl = document.getElementById('prof-phone');
-                        if(phoneEl) phoneEl.innerText = `📞 ${p.phone || '---'}`;
-                        
-                        const ageEl = document.getElementById('prof-age');
-                        if(ageEl) ageEl.innerText = `🎂 ${p.age || '---'} ${isAr ? 'سنة' : 'Y'}`;
-                        
-                        const genderEl = document.getElementById('prof-gender');
-                        if(genderEl) genderEl.innerText = `🚻 ${p.gender || (isAr ? 'غير محدد' : 'Unknown')}`;
-                        
-                        const alerts = document.getElementById('prof-alerts');
-                        if(alerts) {
-                            alerts.innerHTML = '';
-                            if (p.medicalHistory && p.medicalHistory.length > 0) {
-                                p.medicalHistory.forEach(d => { alerts.innerHTML += `<span class="alert-tag">⚠️ ${d}</span>`; });
-                            } else {
-                                alerts.innerHTML = `<span style="color: #10b981; font-weight: bold;">${isAr ? '✅ سليم' : '✅ Healthy'}</span>`;
-                            }
-                        }
-                    } else {
-                        nameEl.innerHTML = `<span style="color:#ef4444;">⚠️ هذا المريض غير موجود أو تم حذفه!</span>`;
+            // 🌟 رجعناها لأصلها المباشر والسريع، والرولز الجديدة هتحميها وتفتح لها الباب فوراً
+            db.collection("Patients").doc(patientId).onSnapshot(doc => {
+                if (doc.exists) {
+                    const p = doc.data();
+                    currentPatientName = p.name;
+                    currentPatientPhone = p.phone || ""; 
+                    
+                    let debtHtml = '';
+                    if (p.totalDebt && p.totalDebt > 0) {
+                        const debtTxt = isAr ? "الديون" : "Debt";
+                        debtHtml = `<span style="color: #ef4444; font-size: 14px; font-weight: bold; background: #fee2e2; padding: 4px 10px; border-radius: 8px; margin-right: 15px; border: 1px solid #fca5a5;">${debtTxt}: ${p.totalDebt}</span>`;
                     }
                     
-                    if (isInitialLoad) {
-                        loadPatientSessions(); 
-                        loadLabOrders(); 
-                        isInitialLoad = false;
-                        if (window.hideLoader) window.hideLoader();
+                    nameEl.innerHTML = `${p.name} ${debtHtml}`;
+                    const phoneEl = document.getElementById('prof-phone');
+                    if(phoneEl) phoneEl.innerText = `📞 ${p.phone || '---'}`;
+                    
+                    const ageEl = document.getElementById('prof-age');
+                    if(ageEl) ageEl.innerText = `🎂 ${p.age || '---'} ${isAr ? 'سنة' : 'Y'}`;
+                    
+                    const genderEl = document.getElementById('prof-gender');
+                    if(genderEl) genderEl.innerText = `🚻 ${p.gender || (isAr ? 'غير محدد' : 'Unknown')}`;
+                    
+                    const alerts = document.getElementById('prof-alerts');
+                    if(alerts) {
+                        alerts.innerHTML = '';
+                        if (p.medicalHistory && p.medicalHistory.length > 0) {
+                            p.medicalHistory.forEach(d => { alerts.innerHTML += `<span class="alert-tag">⚠️ ${d}</span>`; });
+                        } else {
+                            alerts.innerHTML = `<span style="color: #10b981; font-weight: bold;">${isAr ? '✅ سليم' : '✅ Healthy'}</span>`;
+                        }
                     }
-                }, (error) => {
-                    console.error(error);
-                    nameEl.innerHTML = `<span style="color:#ef4444; font-size:14px;">❌ خطأ اتصال بالفايربيز: ${error.message}</span>`;
-                    if (isInitialLoad && window.hideLoader) window.hideLoader();
-                });
+                } else {
+                    nameEl.innerHTML = `<span style="color:#ef4444;">⚠️ هذا المريض غير موجود أو تم حذفه!</span>`;
+                }
+                
+                if (isInitialLoad) {
+                    loadPatientSessions(); 
+                    loadLabOrders(); 
+                    isInitialLoad = false;
+                    if (window.hideLoader) window.hideLoader();
+                }
+            }, (error) => {
+                console.error("Error loading patient info:", error);
+                nameEl.innerHTML = `<span style="color:#ef4444; font-size:14px;">❌ خطأ اتصال بالفايربيز: Missing permissions</span>`;
+                if (isInitialLoad && window.hideLoader) window.hideLoader();
+            });
         } catch (innerError) {
             alert("خطأ في جلب البيانات: " + innerError.message);
         }
     }
-
     function sendPortalLinkWhatsApp() {
         const isAr = getLang();
         if (!currentPatientPhone || currentPatientPhone.trim() === '') {
