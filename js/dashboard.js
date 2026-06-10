@@ -898,7 +898,16 @@ function openPatientsModal() {
             const li = document.createElement('li');
             li.className = 'data-list-li';
             li.onclick = () => openPatientDetails(p);
-            li.innerHTML = '<span style="font-weight: bold; font-size: 16px; display:flex; align-items:center; gap:5px;"><span class="material-symbols-rounded" style="color:#0ea5e9;">dentistry</span> ${p.name}</span><span class="data-badge" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; display:flex; align-items:center; gap:5px;"><span class="material-symbols-rounded" style="font-size:16px;">call</span> ${p.phone}</span>';
+            li.innerHTML = `
+    <span style="font-weight: bold; font-size: 16px; display:flex; align-items:center; gap:5px;">
+        <span class="material-symbols-rounded" style="color:#0ea5e9;">dentistry</span>
+        ${p.name}
+    </span>
+    <span class="data-badge" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; display:flex; align-items:center; gap:5px;">
+        <span class="material-symbols-rounded" style="font-size:16px;">call</span>
+        ${p.phone}
+    </span>
+`;
             container.appendChild(li);
         });
     }
