@@ -934,12 +934,13 @@ function goToPatientProfile(patientId) {
     if (window.parent && window.parent.document && window.parent.loadPage) {
         const navPatients = window.parent.document.getElementById('nav-patients');
         if (navPatients && navPatients.parentElement) {
-            window.parent.loadPage(`patient-profile.html?id=${patientId}&clinicId=${clinicId}`, navPatients.parentElement);
+            // 🌟 تم التعديل هنا لـ currentClinicId
+            window.parent.loadPage(`patient-profile.html?id=${patientId}&clinicId=${currentClinicId}`, navPatients.parentElement);
             return;
         }
     }
-    // لو مفيش parent أو العناصر مش موجودة، افتح في نفس الصفحة عادي
-    window.location.href = `patient-profile.html?id=${patientId}&clinicId=${clinicId}`;
+    // لو مفيش parent أو العناصر مش موجودة، افتح في نفس الصفحة عادي (وتعديل المتغير هنا أيضاً)
+    window.location.href = `patient-profile.html?id=${patientId}&clinicId=${currentClinicId}`;
 }
 
 function openRevenueModal() {
