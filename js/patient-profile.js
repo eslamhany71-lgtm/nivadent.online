@@ -11,9 +11,6 @@ try {
     }
 
     let clinicId = urlParams.get('clinicId') || sessionStorage.getItem('clinicId') || localStorage.getItem('clinicId');
-    console.log("PATIENT ID =", patientId);
-console.log("CLINIC ID =", clinicId);
-console.log("BRANCH ID =", currentBranchId);
     if (!clinicId && window.parent) {
         try { clinicId = window.parent.sessionStorage.getItem('clinicId'); } catch(e) {}
     }
