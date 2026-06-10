@@ -360,7 +360,7 @@ try {
     }
 
     function loadLabOrders() {
-        db.collection("LabOrders").where("patientId", "==", patientId).orderBy("createdAt", "desc").onSnapshot(snap => {
+        db.collection("LabOrders").where("patientId", "==", patientId).where("clinicId", "==", clinicId).orderBy("createdAt", "desc").onSnapshot(snap => {
             const isAr = getLang();
             const container = document.getElementById('lab-orders-list');
             if(!container) return;
@@ -686,7 +686,7 @@ try {
         allPatientSessions = [];
 
         try {
-            const snap = await db.collection("Sessions").where("patientId", "==", patientId).get();
+            const snap = await db.collection("Sessions").where("patientId", "==", patientId).where("clinicId", "==", clinicId).get();
             if (!snap.empty) {
                 snap.forEach(doc => {
                     const s = doc.data({ serverTimestamps: 'estimate' });
