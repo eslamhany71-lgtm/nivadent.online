@@ -523,7 +523,7 @@ function searchExistingPatientsDash() {
         resultsBox.appendChild(div);
     });
 }
-        });
+        };
         resultsBox.style.display = 'block';
     } else {
         resultsBox.style.display = 'none';
