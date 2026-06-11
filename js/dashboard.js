@@ -1197,16 +1197,87 @@ async function generateDailyReport() {
             employee: sessionStorage.getItem('userName') || uEmail
         };
 
-        console.log("📊 Sending Daily Report to n8n...", reportData);
-        if(typeof triggerN8nWebhook === 'function') {
-            triggerN8nWebhook("daily_summary_report", reportData);
+// 4. إرسال التقرير مباشرة للواتساب عبر Green-API (بدون n8n)
+        console.log("📊 Sending Daily Report directly to WhatsApp...");
+        
+        const isSent = await sendDirectWhatsAppReport(reportData);
+        
+        if (isSent) {
+            alert("✅ تم إرسال تقرير نهاية اليوم بنجاح إلى الإدارة عبر الواتساب.");
+        } else {
+            alert("❌ حدث خطأ أثناء إرسال التقرير للواتساب، برجاء مراجعة الاتصال.");
         }
 
-        alert("✅ تم إرسال تقرير نهاية اليوم بنجاح إلى الإدارة.");
     } catch (error) {
         console.error("Error sending report:", error);
-        alert("❌ حدث خطأ أثناء إرسال التقرير.");
+        alert("❌ حدث خطأ في النظام أثناء تجميع التقرير.");
     } finally {
         if (window.hideLoader) window.hideLoader();
+    }
+}
+// ===============================================
+// 🟢 دالة الإرسال المباشر للواتساب عبر Green-API
+// ===============================================
+async function sendDirectWhatsAppReport(reportData) {
+    // ⚠️ حط بياناتك هنا من موقع Green-API
+    const idInstance = "7107623331"; // مثال: 1101000001
+    const apiTokenInstance = "33fc8dd7fdef4ac1939cb0be682ecbe6792fc528152242fbaf";
+
+    if (!idInstance || !apiTokenInstance) {
+        console.error("🛑 بيانات Green-API مفقودة!");
+        return false;
+    }
+
+    // تظبيط رقم التليفون عشان Green-API بيحتاج كود الدولة + @c.us
+    let phone = reportData.targetPhone.trim();
+    if (phone.startsWith('0')) {
+        phone = '2' + phone; // تحويل 011 إلى 2011 (كود مصر)
+    }
+    if (!phone.includes('@c.us')) {
+        phone = phone + '@c.us';
+    }
+
+    // تنسيق رسالة الواتساب بشكل احترافي (بيدعم الـ Bold والإيموجي)
+    const messageText = `
+*📊 تقرير نهاية اليوم - ${reportData.clinicName}*
+📅 التاريخ: ${reportData.date}
+👤 الموظف: ${reportData.employee}
+
+*💰 الإيرادات:*
+💵 كاش: ${reportData.details.cash} ج.م
+📱 محفظة: ${reportData.details.wallet} ج.م
+🏦 بنكي: ${reportData.details.bank} ج.م
+*💸 الإجمالي: ${reportData.totalRevenue} ج.م*
+
+*📈 إحصائيات الجلسات:*
+✅ جلسات مكتملة: ${reportData.stats.completed}
+⏳ مواعيد قيد الانتظار: ${reportData.stats.pendingRemaining}
+
+_تم الإرسال تلقائياً من نظام Nivadent_ 🤖
+    `.trim();
+
+    const url = `https://api.green-api.com/waInstance${idInstance}/sendMessage/${apiTokenInstance}`;
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chatId: phone,
+                message: messageText
+            })
+        });
+
+        if (response.ok) {
+            console.log("✅ تم إرسال رسالة الواتساب بنجاح عبر Green-API");
+            return true;
+        } else {
+            const errorData = await response.text();
+            console.error("❌ خطأ من Green-API:", errorData);
+            return false;
+        }
+    } catch (error) {
+        console.error("❌ فشل الاتصال بـ Green-API:", error);
+        return false;
     }
 }
