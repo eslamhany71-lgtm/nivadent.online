@@ -836,6 +836,9 @@ function renderWaitList(containerId, dataArray) {
 
 function openAppDetails(app) {
     currentSelectedApp = app; 
+    // 🌟 التعديل هنا: تحديث المتغير العام بـ ID المريض عشان لو فتح الملف من الحجز
+    currentSelectedPatientId = app.patientId; 
+    
     document.getElementById('det_name').innerText = app.patientName;
     document.getElementById('det_phone').innerText = app.phone || '---';
     document.getElementById('det_date').innerText = app.date;
@@ -861,7 +864,6 @@ function openAppDetails(app) {
 
     document.getElementById('appDetailsModal').style.display = 'flex';
 }
-
 async function updateAppStatus(newStatus) {
     if(!currentSelectedApp) return;
 
@@ -932,26 +934,46 @@ function openPatientDetails(p) {
 }
 
 function goToPatientProfile(patientId) {
+    // 🌟 حائط صد ناري (Firewall) لمنع أي قيم مشوهة
+    let finalId = patientId;
+    
+    // لو اللي مبعوت للدالة فاضي، أو عبارة عن Event من الماوس، أو كلمة 'undefined'
+    if (!finalId || typeof finalId === 'object' || finalId === 'undefined' || finalId === 'null') {
+        // ناخد الـ ID من آخر مريض أو حجز إنت ضغطت عليه في الداشبورد
+        finalId = currentSelectedPatientId; 
+    }
+
+    // تأمين أخير لو لسه فاضي (حالة إن الحجز تم سريعاً بدون إنشاء ملف مريض)
+    if (!finalId || finalId === 'undefined' || finalId === 'null') {
+        console.error("🛑 لا يوجد ID صحيح للمريض:", finalId);
+        alert("⚠️ لا يمكن فتح الملف: هذا المريض ليس له ملف طبي مسجل بعد (ربما مجرد حجز سريع).");
+        return;
+    }
+
+    // تنظيف القيمة النهائية من أي مسافات
+    finalId = String(finalId).trim();
+
     const activeClinicId = (typeof clinicId !== 'undefined' ? clinicId : null) || 
                            (typeof currentClinicId !== 'undefined' ? currentClinicId : null) || 
                            sessionStorage.getItem('impersonatedClinicId') || 
                            sessionStorage.getItem('clinicId');
 
     if (!activeClinicId) {
-        console.error("⚠️ فشل الانتقال: كود العيادة غير موجود في الكاش أو المتغيرات!");
         alert("برجاء إعادة تحميل الصفحة، كود العيادة مفقود.");
         return;
     }
 
+    const targetUrl = `patient-profile.html?id=${finalId}&clinicId=${activeClinicId}&v=${Date.now()}`;
+
     if (window.parent && window.parent.document && window.parent.loadPage) {
         const navPatients = window.parent.document.getElementById('nav-patients');
         if (navPatients && navPatients.parentElement) {
-            window.parent.loadPage(`patient-profile.html?id=${patientId}&clinicId=${activeClinicId}`, navPatients.parentElement);
+            window.parent.loadPage(targetUrl, navPatients.parentElement);
             return;
         }
     }
     
-    window.location.href = `patient-profile.html?id=${patientId}&clinicId=${activeClinicId}`;
+    window.location.href = targetUrl;
 }
 
 function openRevenueModal() {
