@@ -500,13 +500,29 @@ function searchExistingPatientsDash() {
         (p.phone && p.phone.includes(input))
     );
 
-    if (filtered.length > 0) {
-        filtered.forEach(p => {
-            const div = document.createElement('div');
-            div.className = 'patient-result-item';
-            div.innerHTML = `<span class="patient-result-name">${p.name}</span><span class="patient-result-phone" dir="ltr">${p.phone || ''}</span>`;
-            div.onclick = () => fillPatientDataDash(p);
-            resultsBox.appendChild(div);
+   if (filtered.length > 0) {
+    filtered.forEach(p => {
+        // تأمين: لو الـ ID الحقيقي للمريض متخزن في الحقل المباشر p.id أو docId
+        const actualPatientId = p.id || p.docId; 
+
+        const div = document.createElement('div');
+        div.className = 'patient-result-item';
+        // هنخزن الـ ID جوه الـ div كـ data attribute عشان نضمن إنه ميضيعش
+        div.setAttribute('data-id', actualPatientId);
+        
+        div.innerHTML = `<span class="patient-result-name">${p.name}</span><span class="patient-result-phone" dir="ltr">${p.phone || ''}</span>`;
+        
+        div.onclick = () => {
+            console.log("🔍 تم الضغط على المريض والـ ID بتاعه هو:", actualPatientId);
+            if (!actualPatientId || actualPatientId === 'undefined') {
+                console.error("🛑 تحذير: الكائن p لا يحتوي على ID صحيح!", p);
+            }
+            fillPatientDataDash(p, actualPatientId); // 👈 باصينا الـ ID صراحة للدالة
+        };
+        
+        resultsBox.appendChild(div);
+    });
+}
         });
         resultsBox.style.display = 'block';
     } else {
@@ -514,7 +530,7 @@ function searchExistingPatientsDash() {
     }
 }
 
-function fillPatientDataDash(p) {
+function fillPatientDataDash(p, patientId) {
     document.getElementById('search_patient_input').value = p.name;
     document.getElementById('patient-search-results').style.display = 'none';
 
