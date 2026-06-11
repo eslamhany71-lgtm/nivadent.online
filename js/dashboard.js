@@ -153,31 +153,41 @@ function updatePageContent(lang) {
 }
 
 // ===============================================
-
-// 🔴 دالة جلب الطقس عبر Open-Meteo API 🔴
-
+// 🔴 دالة جلب الطقس المحصنة ضد اعتراض الـ Service Worker 🔴
 // ===============================================
-
 async function fetchWeatherAPI() {
     const tempEl = document.getElementById('weather-temp');
     const descEl = document.getElementById('weather-desc');
     const iconEl = document.getElementById('weather-icon');
     if (!tempEl) return;
+
     const lang = localStorage.getItem('preferredLang') || 'ar';
     const isAr = lang === 'ar';
-    try {
-        const url = 'https://api.open-meteo.com/v1/forecast?latitude=30.0444&longitude=31.2357&current_weather=true';
 
-        const response = await fetch(url);
+    try {
+        // 🌟 السحر هنا: إضافة تيمستامب ديناميكي يجبر الـ Service Worker والمتصفح على جلب الداتا لايف من السيرفر فوراً
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=30.0444&longitude=31.2357&current_weather=true&_=${Date.now()}`;
+        
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
         const data = await response.json();
 
         if (data && data.current_weather) {
             const temp = Math.round(data.current_weather.temperature);
             const code = data.current_weather.weathercode;
-            tempEl.innerText = temp + '°C';
-            let condition = isAr ? "صافي" : "Clear";
 
-            let icon = "clear_day"; // اسم الأيقونة العالمية
+            tempEl.innerText = temp + '°C';
+
+            let condition = isAr ? "صافي" : "Clear";
+            let icon = "clear_day"; 
+
             if (code >= 1 && code <= 3) { condition = isAr ? "غائم جزئياً" : "Partly Cloudy"; icon = "partly_cloudy_day"; }
             else if (code >= 45 && code <= 48) { condition = isAr ? "ضباب" : "Foggy"; icon = "foggy"; }
             else if (code >= 51 && code <= 67) { condition = isAr ? "ممطر خفيف" : "Drizzle"; icon = "rainy_light"; }
@@ -192,9 +202,7 @@ async function fetchWeatherAPI() {
         console.error("Error fetching weather:", error);
         descEl.innerText = isAr ? "تعذر جلب الطقس" : "Weather Unavailable";
         iconEl.innerHTML = `<span class="material-symbols-rounded">cloud_off</span>`;
-
     }
-
 }
 // ===============================================
 
