@@ -1,6 +1,6 @@
 // js/dashboard.js
 const db = firebase.firestore();
-// 🔴 التعديل هنا: السيستم هيشوف لو فيه impersonatedClinicId، لو مفيش هيستخدم الـ clinicId العادي
+// 🔴 السيستم هيشوف لو فيه impersonatedClinicId، لو مفيش هيستخدم الـ clinicId العادي
 const clinicId = sessionStorage.getItem('impersonatedClinicId') || sessionStorage.getItem('clinicId'); 
 const userRole = sessionStorage.getItem('userRole'); 
 const userBranch = sessionStorage.getItem('branchId') || 'main';
@@ -103,8 +103,6 @@ function updatePageContent(lang) {
     setTxt('btn-wait-list', c.btnWait); setTxt('btn-add-patient', c.btnPat); setTxt('btn-book-app', c.btnApp);
     setTxt('txt-loading-inv', c.loadingInv);
     
-    // (باقي محتوى الدالة زي ما هو عندك بالظبط بدون تغيير)
-    // ...    
     const monthSummaryTitle = document.querySelector('h3.panel-title[style*="8b5cf6"]');
     if(monthSummaryTitle) monthSummaryTitle.innerText = c.lblMonthSummary;
     
@@ -178,7 +176,7 @@ async function fetchWeatherAPI() {
             tempEl.innerText = temp + '°C';
 
             let condition = isAr ? "صافي" : "Clear";
-            let icon = "clear_day"; // اسم الأيقونة العالمية
+            let icon = "clear_day"; 
 
             if (code >= 1 && code <= 3) { condition = isAr ? "غائم جزئياً" : "Partly Cloudy"; icon = "partly_cloudy_day"; }
             else if (code >= 45 && code <= 48) { condition = isAr ? "ضباب" : "Foggy"; icon = "foggy"; }
@@ -485,6 +483,7 @@ function loadDashboardStats() {
 
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
+// 🌟 الدالة اللي كان فيها القوس الزيادة اللي بوظ الدنيا، اتعدلت وبقت فُلة 🌟
 function searchExistingPatientsDash() {
     const input = document.getElementById('search_patient_input').value.trim().toLowerCase();
     const resultsBox = document.getElementById('patient-search-results');
@@ -500,30 +499,26 @@ function searchExistingPatientsDash() {
         (p.phone && p.phone.includes(input))
     );
 
-   if (filtered.length > 0) {
-    filtered.forEach(p => {
-        // تأمين: لو الـ ID الحقيقي للمريض متخزن في الحقل المباشر p.id أو docId
-        const actualPatientId = p.id || p.docId; 
+    if (filtered.length > 0) {
+        filtered.forEach(p => {
+            const actualPatientId = p.id || p.docId; 
 
-        const div = document.createElement('div');
-        div.className = 'patient-result-item';
-        // هنخزن الـ ID جوه الـ div كـ data attribute عشان نضمن إنه ميضيعش
-        div.setAttribute('data-id', actualPatientId);
-        
-        div.innerHTML = `<span class="patient-result-name">${p.name}</span><span class="patient-result-phone" dir="ltr">${p.phone || ''}</span>`;
-        
-        div.onclick = () => {
-            console.log("🔍 تم الضغط على المريض والـ ID بتاعه هو:", actualPatientId);
-            if (!actualPatientId || actualPatientId === 'undefined') {
-                console.error("🛑 تحذير: الكائن p لا يحتوي على ID صحيح!", p);
-            }
-            fillPatientDataDash(p, actualPatientId); // 👈 باصينا الـ ID صراحة للدالة
-        };
-        
-        resultsBox.appendChild(div);
-    });
-}
-        };
+            const div = document.createElement('div');
+            div.className = 'patient-result-item';
+            div.setAttribute('data-id', actualPatientId);
+            
+            div.innerHTML = `<span class="patient-result-name">${p.name}</span><span class="patient-result-phone" dir="ltr">${p.phone || ''}</span>`;
+            
+            div.onclick = () => {
+                console.log("🔍 تم الضغط على المريض والـ ID بتاعه هو:", actualPatientId);
+                if (!actualPatientId || actualPatientId === 'undefined') {
+                    console.error("🛑 تحذير: الكائن p لا يحتوي على ID صحيح!", p);
+                }
+                fillPatientDataDash(p, actualPatientId);
+            };
+            
+            resultsBox.appendChild(div);
+        });
         resultsBox.style.display = 'block';
     } else {
         resultsBox.style.display = 'none';
@@ -638,14 +633,11 @@ function openNewAppModal() {
     // ==========================================
     // 🛡️ إعادة تعيين زرار تأكيد الحجز (Reset Button)
     // ==========================================
-    // هنجيب الزرار जोه المودال بتاع الحجز الجديد
     const modalForm = document.querySelector('#newAppModal form');
     if(modalForm) {
-        // بنشوف الزرار اللي هو من نوع submit جوه الفورم
         const saveBtn = modalForm.querySelector('button[type="submit"]'); 
         if (saveBtn) {
-            saveBtn.disabled = false; // تفعيل الزرار تاني
-            // إرجاع النص الأصلي للزرار حسب لغة السيستم
+            saveBtn.disabled = false; 
             const lang = localStorage.getItem('preferredLang') || 'ar';
             if (lang === 'ar') {
                 saveBtn.innerText = "تأكيد الحجز";
@@ -654,7 +646,6 @@ function openNewAppModal() {
             }
         }
     }
-    // ==========================================
 }
 
 function calculateNewAppERP() {
@@ -748,58 +739,54 @@ async function saveNewAppointment(e) {
     try {
         const btn = e.target.querySelector('button');
         btn.disabled = true; btn.innerText = "...";
+
         // ==========================================
-    // 🛡️ فحص التعارض (Pre-Check Validation)
-    // ==========================================
-    const checkDate = document.getElementById('app_date').value;
-    const checkTime = document.getElementById('app_time').value;
-    const checkPhone = document.getElementById('app_phone').value.trim();
-    
-    // سحب المواعيد اللي في نفس اليوم ونفس الفرع وحالتها قيد الانتظار
-    const conflictSnap = await db.collection("Appointments")
-        .where("clinicId", "==", clinicId)
-        .where("branchId", "==", targetBranchId)
-        .where("date", "==", checkDate)
-        .where("status", "==", "pending")
-        .get();
-
-    let isTimeTaken = false;
-    let isPatientDuplicate = false;
-
-    conflictSnap.forEach(doc => {
-        const existingApp = doc.data();
+        // 🛡️ فحص التعارض (Pre-Check Validation)
+        // ==========================================
+        const checkDate = document.getElementById('app_date').value;
+        const checkTime = document.getElementById('app_time').value;
+        const checkPhone = document.getElementById('app_phone').value.trim();
         
-        // 1. فحص تعارض الوقت (نفس الوقت لنفس الطبيب)
-        // لو مفيش طبيب محدد (العيادة كلها شغالة طابور)، هنفحص الوقت بس
-        const isSameDoctor = doctorId ? (existingApp.doctorId === doctorId) : true; 
-        if (existingApp.time === checkTime && isSameDoctor) {
-            isTimeTaken = true;
-        }
+        const conflictSnap = await db.collection("Appointments")
+            .where("clinicId", "==", clinicId)
+            .where("branchId", "==", targetBranchId)
+            .where("date", "==", checkDate)
+            .where("status", "==", "pending")
+            .get();
 
-        // 2. فحص تكرار المريض (نفس الرقم في نفس اليوم)
-        if (existingApp.phone === checkPhone) {
-            isPatientDuplicate = true;
-        }
-    });
+        let isTimeTaken = false;
+        let isPatientDuplicate = false;
 
-    if (isTimeTaken) {
-        alert("⚠️ عذراً، هذا الموعد محجوز مسبقاً! يرجى اختيار وقت آخر أو طبيب آخر.");
-        if (window.hideLoader) window.hideLoader();
-        return; // توقيف عملية الحفظ فوراً
-    }
+        conflictSnap.forEach(doc => {
+            const existingApp = doc.data();
+            const isSameDoctor = doctorId ? (existingApp.doctorId === doctorId) : true; 
+            if (existingApp.time === checkTime && isSameDoctor) {
+                isTimeTaken = true;
+            }
+            if (existingApp.phone === checkPhone) {
+                isPatientDuplicate = true;
+            }
+        });
 
-    if (isPatientDuplicate) {
-        const confirmDuplicate = confirm("⚠️ هذا المريض (نفس رقم الموبايل) لديه حجز بالفعل في هذا اليوم.. هل تريد تأكيد حجز موعد إضافي له؟");
-        if (!confirmDuplicate) {
+        if (isTimeTaken) {
+            alert("⚠️ عذراً، هذا الموعد محجوز مسبقاً! يرجى اختيار وقت آخر أو طبيب آخر.");
             if (window.hideLoader) window.hideLoader();
-            return; // توقيف عملية الحفظ لو ضغط Cancel
+            return; 
         }
-    }
-    // ==========================================
-    // نهاية الفحص، نكمل الحفظ العادي لو الدنيا تمام
+
+        if (isPatientDuplicate) {
+            const confirmDuplicate = confirm("⚠️ هذا المريض (نفس رقم الموبايل) لديه حجز بالفعل في هذا اليوم.. هل تريد تأكيد حجز موعد إضافي له؟");
+            if (!confirmDuplicate) {
+                if (window.hideLoader) window.hideLoader();
+                return; 
+            }
+        }
+
+        // الحفظ العادي
         await db.collection("Appointments").add(data);
-        // هنادي على الدالة المركزية ونبعتلها الداتا
-        triggerN8nWebhook("new_appointment", data);
+        if(typeof triggerN8nWebhook === 'function') {
+            triggerN8nWebhook("new_appointment", data);
+        }
         closeModal('newAppModal');
     } catch(err) {
         console.error(err);
@@ -842,7 +829,7 @@ function renderWaitList(containerId, dataArray) {
         li.className = 'data-list-li';
         li.onclick = () => openAppDetails(app);
         let timeTag = containerId === 'todayWaitContainer' ? app.time : `${app.date} | ${app.time}`;
-        li.innerHTML = '<span style="font-weight: bold; font-size: 16px; display:flex; align-items:center; gap:5px;"><span class="material-symbols-rounded" style="color:#64748b;">person</span> ${app.patientName}</span><span class="data-badge orange" style="display:flex; align-items:center; gap:5px;"><span class="material-symbols-rounded" style="font-size:16px;">schedule</span> ${timeTag}</span>';
+        li.innerHTML = `<span style="font-weight: bold; font-size: 16px; display:flex; align-items:center; gap:5px;"><span class="material-symbols-rounded" style="color:#64748b;">person</span> ${app.patientName}</span><span class="data-badge orange" style="display:flex; align-items:center; gap:5px;"><span class="material-symbols-rounded" style="font-size:16px;">schedule</span> ${timeTag}</span>`;
         container.appendChild(li);
     });
 }
@@ -922,8 +909,7 @@ function openPatientsModal() {
     <span class="data-badge" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; display:flex; align-items:center; gap:5px;">
         <span class="material-symbols-rounded" style="font-size:16px;">call</span>
         ${p.phone}
-    </span>
-`;
+    </span>`;
             container.appendChild(li);
         });
     }
@@ -946,7 +932,6 @@ function openPatientDetails(p) {
 }
 
 function goToPatientProfile(patientId) {
-    // 🌟 السحر هنا: هنلقط كود العيادة بأي شكل متاح (سواء متغير اسمه clinicId أو من الكاش)
     const activeClinicId = (typeof clinicId !== 'undefined' ? clinicId : null) || 
                            (typeof currentClinicId !== 'undefined' ? currentClinicId : null) || 
                            sessionStorage.getItem('impersonatedClinicId') || 
@@ -958,7 +943,6 @@ function goToPatientProfile(patientId) {
         return;
     }
 
-    // 🔴 فحص وجود الـ parent والـ element قبل استخدامه
     if (window.parent && window.parent.document && window.parent.loadPage) {
         const navPatients = window.parent.document.getElementById('nav-patients');
         if (navPatients && navPatients.parentElement) {
@@ -967,7 +951,6 @@ function goToPatientProfile(patientId) {
         }
     }
     
-    // لو مفيش parent، افتح في نفس الصفحة عادي
     window.location.href = `patient-profile.html?id=${patientId}&clinicId=${activeClinicId}`;
 }
 
@@ -983,9 +966,9 @@ function openRevenueModal() {
             li.onclick = () => openRevDetails(rev); 
             const lang = localStorage.getItem('preferredLang') || 'ar';
             
-let methodIcon = '<span class="material-symbols-rounded" style="color:#10b981; font-size:18px;">payments</span>';
-if(rev.paymentMethod === 'wallet') methodIcon = '<span class="material-symbols-rounded" style="color:#8b5cf6; font-size:18px;">smartphone</span>';
-if(rev.paymentMethod === 'instapay') methodIcon = '<span class="material-symbols-rounded" style="color:#0284c7; font-size:18px;">account_balance</span>';
+            let methodIcon = '<span class="material-symbols-rounded" style="color:#10b981; font-size:18px;">payments</span>';
+            if(rev.paymentMethod === 'wallet') methodIcon = '<span class="material-symbols-rounded" style="color:#8b5cf6; font-size:18px;">smartphone</span>';
+            if(rev.paymentMethod === 'instapay') methodIcon = '<span class="material-symbols-rounded" style="color:#0284c7; font-size:18px;">account_balance</span>';
 
             li.innerHTML = `<span style="font-weight: bold; font-size: 15px; display:flex; align-items:center; gap:5px;">${methodIcon} ${rev.notes || (lang==='ar'?'إيراد عيادة':'Clinic Revenue')}</span><span class="data-badge green" style="display:flex; align-items:center; gap:5px;"><span class="material-symbols-rounded" style="font-size:16px;">attach_money</span> ${rev.amount}</span>`;
             container.appendChild(li);
@@ -1004,7 +987,7 @@ function openSessionsModal() {
             const li = document.createElement('li');
             li.className = 'data-list-li';
             li.onclick = () => openAppDetails(sess); 
-            li.innerHTML = '<span style="font-weight: bold; font-size: 16px; display:flex; align-items:center; gap:5px;"><span class="material-symbols-rounded" style="color:#10b981;">check_circle</span> ${sess.patientName}</span><span class="data-badge" style="background: #10b981; display:flex; align-items:center; gap:5px;"><span class="material-symbols-rounded" style="font-size:16px;">calendar_today</span> ${sess.date}</span>';
+            li.innerHTML = `<span style="font-weight: bold; font-size: 16px; display:flex; align-items:center; gap:5px;"><span class="material-symbols-rounded" style="color:#10b981;">check_circle</span> ${sess.patientName}</span><span class="data-badge" style="background: #10b981; display:flex; align-items:center; gap:5px;"><span class="material-symbols-rounded" style="font-size:16px;">calendar_today</span> ${sess.date}</span>`;
             container.appendChild(li);
         });
     }
@@ -1047,21 +1030,16 @@ function setupERPInputs() {
     }
 }
 
-// ==========================================
-// 🔴 دالات الفلتر الجديدة 🔴
-// ==========================================
 async function setupDashboardBranchFilter() {
     const filterContainer = document.getElementById('branch-filter-container');
     const branchSelect = document.getElementById('dashBranchFilter');
 
-    // لو اليوزر مش أدمن، خليه يشوف فرعه هو بس والفلتر ميظهرش
     if (userRole !== 'admin' && userRole !== 'superadmin') {
         currentDashboardBranch = userBranch; 
         if(filterContainer) filterContainer.style.display = 'none';
         return;
     }
 
-    // لو أدمن، نظهر الفلتر ونجيب الفروع
     if(filterContainer) filterContainer.style.display = 'block';
     try {
         const snap = await db.collection("Branches").where("clinicId", "==", clinicId).get();
@@ -1077,7 +1055,7 @@ async function setupDashboardBranchFilter() {
 
 function changeDashboardBranch() {
     currentDashboardBranch = document.getElementById('dashBranchFilter').value;
-    loadDashboardStats(); // هننادي دالة الإحصائيات تاني بالفرع الجديد
+    loadDashboardStats();
 }
 
 window.onload = async () => { 
@@ -1089,30 +1067,23 @@ window.onload = async () => {
     setupERPInputs(); 
     updateChart(0, 0, 0);
 
-    // 🔴 تشغيل جلب الطقس بمجرد فتح الداشبورد 🔴
     fetchWeatherAPI();
 
-    // 🛡️ الحارس الأمني (Auth State & Clinic Isolation) 🛡️
     firebase.auth().onAuthStateChanged(async (user) => {
         if (user) {
-            // 1. التأكد من وجود الـ clinicId في الجلسة قبل أي استعلام
             const currentClinicId = sessionStorage.getItem('clinicId');
             
             if (currentClinicId) {
                 console.log("✅ الحارس سمح بالدخول، جاري تحميل داتا العيادة:", currentClinicId);
-                
-                // 2. تشغيل استعلامات الفايربيز بأمان
                 try {
                     await loadBranchesForModal();
-                    await setupDashboardBranchFilter(); // تفعيل الفلتر قبل الإحصائيات
+                    await setupDashboardBranchFilter();
                     loadDashboardStats();
                 } catch (error) {
                     console.error("❌ خطأ أثناء تحميل بيانات الداشبورد:", error);
                 }
             } else {
                 console.warn("⏳ المستخدم مسجل بس الـ clinicId مش موجود في الجلسة.");
-                // لو حابب زيادة أمان، ممكن ترجعه لصفحة الدخول هنا
-                // window.location.replace("index.html");
             }
         } else {
             console.log("🔒 مستخدم غير مصرح له، جاري إيقاف الاستعلامات والتحويل...");
@@ -1132,13 +1103,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// 🌟 الدالة بقت متاحة ومفيهاش أي قيود برمجية جواها
 async function generateDailyReport() {
     if (!confirm("هل أنت متأكد من إغلاق اليوم وإرسال التقرير للمدير؟")) return;
 
     if (window.showLoader) window.showLoader("جاري إرسال التقرير...");
 
     try {
-        // 1. حساب إجمالي الإيرادات
         let totalCash = 0;
         let totalWallet = 0;
         let totalBank = 0;
@@ -1152,7 +1123,6 @@ async function generateDailyReport() {
         const completedCount = completedSessionsData.length;
         const pendingCount = todayPendingApps.length;
 
-        // 2. جلب رقم تليفون مدير العيادة
         let adminPhone = ""; 
         const clinicDoc = await db.collection("Clinics").doc(clinicId).get();
         if (clinicDoc.exists) {
@@ -1165,7 +1135,6 @@ async function generateDailyReport() {
             return;
         }
 
-        // 🔴 السحر هنا: قراءة آمنة لاسم العيادة والموظف من الصفحة الأب 🔴
         let cName = 'العيادة';
         let uEmail = 'موظف الاستقبال';
         try {
@@ -1178,7 +1147,6 @@ async function generateDailyReport() {
             }
         } catch(e) { console.warn("Cannot access parent frame", e); }
 
-        // 3. تجهيز "الباكيدج"
         const reportData = {
             clinicId: clinicId,            
             targetPhone: adminPhone,       
@@ -1197,7 +1165,6 @@ async function generateDailyReport() {
             employee: sessionStorage.getItem('userName') || uEmail
         };
 
-        // 4. إرسال الإشارة للـ n8n
         console.log("📊 Sending Daily Report to n8n...", reportData);
         if(typeof triggerN8nWebhook === 'function') {
             triggerN8nWebhook("daily_summary_report", reportData);
