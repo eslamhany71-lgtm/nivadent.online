@@ -1111,25 +1111,11 @@ window.onload = async () => {
             if (activeClinicId) {
                 console.log("✅ الحارس سمح بالدخول، جاري تحميل داتا:", activeClinicId);
                 
-                // 🛑 الفلتر الذكي:
+                // 🛑 الفلتر الذكي: تحويل مباشر للسوبر أدمن للوحته
                 if (role === 'superadmin' && activeClinicId === 'default') {
                     console.log("👑 مرحباً بالمدير العام! جاري تحويلك للوحة التحكم المركزية...");
-                    // تحويل مباشر لصفحة السوبر أدمن
                     window.location.replace("super-admin.html");
                     return; 
-                }
-                    
-                    // هنا هنخفي الداشبورد العادية لأن ملهاش لازمة للسوبر أدمن
-                    const mainDashContent = document.querySelector('.dashboard-content'); // تأكد من اسم الكلاس عندك
-                    if(mainDashContent) mainDashContent.style.display = 'none';
-                    
-                    // إيقاف اللودر فوراً
-                    if (window.hideLoader) window.hideLoader();
-                    
-                    // تنبيه مؤقت لحد ما نبني واجهة طلبات العيادات
-                    alert("مرحباً بك يا مدير النظام! أنت الآن على حساب الـ Super Admin. سيتم قريباً بناء واجهة مراجعة العيادات (Pending) هنا.");
-                    
-                    return; // ⛔ توقيف تام لكل استعلامات الفايربيز اللي بتعمل إيرور
                 }
 
                 // لو دكتور عادي أو أدمن عيادة، كمل تحميل طبيعي
@@ -1148,6 +1134,7 @@ window.onload = async () => {
             window.location.replace("index.html");
         }
     });
+};
 
 
 document.addEventListener('DOMContentLoaded', () => {
