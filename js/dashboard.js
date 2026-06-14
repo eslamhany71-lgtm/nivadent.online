@@ -1090,6 +1090,7 @@ function changeDashboardBranch() {
     loadDashboardStats();
 }
 
+// داخل ملف dashboard.js
 window.onload = async () => { 
     const lang = localStorage.getItem('preferredLang') || 'ar';
     document.body.dir = lang === 'en' ? 'ltr' : 'rtl';
@@ -1103,10 +1104,32 @@ window.onload = async () => {
 
     firebase.auth().onAuthStateChanged(async (user) => {
         if (user) {
-            const currentClinicId = sessionStorage.getItem('clinicId');
+            // سحب الـ ID الفعال والصلاحية
+            const activeClinicId = sessionStorage.getItem('impersonatedClinicId') || sessionStorage.getItem('clinicId');
+            const role = sessionStorage.getItem('userRole');
             
-            if (currentClinicId) {
-                console.log("✅ الحارس سمح بالدخول، جاري تحميل داتا العيادة:", currentClinicId);
+            if (activeClinicId) {
+                console.log("✅ الحارس سمح بالدخول، جاري تحميل داتا:", activeClinicId);
+                
+                // 🛑 الفلتر الذكي للاستراتيجية الجديدة:
+                // لو اليوزر سوبر أدمن، ومش عامل انتحال شخصية (Impersonation) لعيادة معينة
+                if (role === 'superadmin' && activeClinicId === 'default') {
+                    console.log("👑 مرحباً بالمدير العام! جاري إيقاف لوحة العيادات وتجهيز لوحة الإدارة...");
+                    
+                    // هنا هنخفي الداشبورد العادية لأن ملهاش لازمة للسوبر أدمن
+                    const mainDashContent = document.querySelector('.dashboard-content'); // تأكد من اسم الكلاس عندك
+                    if(mainDashContent) mainDashContent.style.display = 'none';
+                    
+                    // إيقاف اللودر فوراً
+                    if (window.hideLoader) window.hideLoader();
+                    
+                    // تنبيه مؤقت لحد ما نبني واجهة طلبات العيادات
+                    alert("مرحباً بك يا مدير النظام! أنت الآن على حساب الـ Super Admin. سيتم قريباً بناء واجهة مراجعة العيادات (Pending) هنا.");
+                    
+                    return; // ⛔ توقيف تام لكل استعلامات الفايربيز اللي بتعمل إيرور
+                }
+
+                // لو دكتور عادي أو أدمن عيادة، كمل تحميل طبيعي
                 try {
                     await loadBranchesForModal();
                     await setupDashboardBranchFilter();
