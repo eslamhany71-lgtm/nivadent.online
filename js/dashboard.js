@@ -1111,10 +1111,13 @@ window.onload = async () => {
             if (activeClinicId) {
                 console.log("✅ الحارس سمح بالدخول، جاري تحميل داتا:", activeClinicId);
                 
-                // 🛑 الفلتر الذكي للاستراتيجية الجديدة:
-                // لو اليوزر سوبر أدمن، ومش عامل انتحال شخصية (Impersonation) لعيادة معينة
+                // 🛑 الفلتر الذكي:
                 if (role === 'superadmin' && activeClinicId === 'default') {
-                    console.log("👑 مرحباً بالمدير العام! جاري إيقاف لوحة العيادات وتجهيز لوحة الإدارة...");
+                    console.log("👑 مرحباً بالمدير العام! جاري تحويلك للوحة التحكم المركزية...");
+                    // تحويل مباشر لصفحة السوبر أدمن
+                    window.location.replace("super-admin.html");
+                    return; 
+                }
                     
                     // هنا هنخفي الداشبورد العادية لأن ملهاش لازمة للسوبر أدمن
                     const mainDashContent = document.querySelector('.dashboard-content'); // تأكد من اسم الكلاس عندك
