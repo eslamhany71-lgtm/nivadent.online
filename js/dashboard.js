@@ -1148,7 +1148,7 @@ window.onload = async () => {
             window.location.replace("index.html");
         }
     });
-};
+
 
 document.addEventListener('DOMContentLoaded', () => {
     const modals = document.querySelectorAll('.modal');
