@@ -115,6 +115,11 @@ async function loginById() {
                     await auth.signOut();
                     throw { code: 'custom/suspended-clinic' };
                 }
+                // 🔴 الفلتر الصارم لمنع العيادات المعلقة من الدخول
+                if (clinicStatus === 'pending') {
+                    await auth.signOut();
+                    throw { code: 'custom/pending-clinic' }; 
+                }
             }
         }
 
@@ -148,8 +153,11 @@ async function loginById() {
         }
         if (errorDiv) {
             const isRtl = document.body.dir === 'rtl';
-            if (error.code === 'custom/suspended-clinic') {
+if (error.code === 'custom/suspended-clinic') {
                 errorDiv.innerText = isRtl ? "عفواً، حساب هذه العيادة موقوف مؤقتاً." : "Account suspended.";
+            } else if (error.code === 'custom/pending-clinic') { // 🔴 الرسالة الجديدة
+                errorDiv.innerText = isRtl ? "⏳ حسابك لا يزال قيد المراجعة من الإدارة." : "Account is still pending approval.";
+                errorDiv.style.color = "#f59e0b"; // لون برتقالي للتنبيه
             } else if (error.code === 'auth/user-not-found' || error.code === 'custom/user-not-found' || error.code === 'auth/wrong-password') {
                 errorDiv.innerText = isRtl ? "خطأ في البريد/الكود أو كلمة المرور" : "Error in Email/Code or Password";
             } else {
