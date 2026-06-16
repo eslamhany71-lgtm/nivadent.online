@@ -2016,67 +2016,142 @@ function loadAuditTrail() {
     });
 }
 
-// 🟢 3. نظام الطلبات المعلقة والزرار السحري
+// 🟢 3. نظام الطلبات المعلقة والزرار السحري (المعدل لدعم العيادات الجديدة والإيصالات)
+let allPendingPaymentsArray = [];
+let allPendingClinicsArray = [];
+
 function loadPendingPayments() {
-    db.collection("PendingPayments").orderBy("createdAt", "desc").onSnapshot(snap => {
-        const tbody = document.getElementById('pendingPaymentsBody');
-        const badge = document.getElementById('badge-pending');
-        const statPending = document.getElementById('stat-pending-payments');
+    const tbody = document.getElementById('pendingPaymentsBody');
+    const badge = document.getElementById('badge-pending');
+    const statPending = document.getElementById('stat-pending-payments');
+    const c = window.superLang || {};
+    
+    if(!tbody) return;
+
+    // دالة داخلية لرسم الجدول بعد تجميع الداتا من الكوليكشنين
+    const renderCombinedTable = () => {
         const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
-        const c = window.superLang;
-        
-        if(!tbody) return;
-        let pendingCount = 0;
         let html = '';
+        let totalCount = allPendingPaymentsArray.length + allPendingClinicsArray.length;
 
-        snap.docChanges().forEach(change => {
-            if (change.type === "added" && !isInitialPendingLoad && change.doc.data().status === "قيد المراجعة") {
-                showRealTimeToast(c.toastNewReq || "طلب جديد!", `${c.toastNewReqSub || "إيصال من:"} ${change.doc.data().userEmail}`);
-            }
+        // 1. رسم إيصالات الدفع القديمة
+        allPendingPaymentsArray.forEach(req => {
+            let dateStr = req.createdAt ? new Date(req.createdAt.toDate()).toLocaleDateString() : '---';
+            let pkgLabel = c[req.packageType === 'yearly' ? 'pkgElite' : 'pkgPro'] || req.packageType;
+            let proofHtml = req.referenceNumber 
+                ? `<span style="font-family: monospace; font-size: 16px; background: #e0f2fe; color: #0284c7; padding: 4px 10px; border-radius: 6px; font-weight: bold; border: 1px dashed #38bdf8;">#${req.referenceNumber}</span>`
+                : `<a href="${req.receiptUrl}" target="_blank" style="background: #f1f5f9; color: #475569; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-weight: bold; border: 1px solid #cbd5e1;">📸 ${isAr?'عرض الإيصال':'View Receipt'}</a>`;
+
+            const matchedClinic = typeof allClinicsList !== 'undefined' ? allClinicsList.find(clinic => clinic.id === req.clinicId) : null;
+            const realClinicName = matchedClinic ? matchedClinic.clinicName : req.clinicId;
+            const realEmail = matchedClinic ? (matchedClinic.adminEmail || req.userEmail) : req.userEmail;
+
+            html += `
+                <tr>
+                    <td style="font-weight: bold; color: #475569;">${dateStr}</td>
+                    <td>
+                        <a class="clinic-link" onclick="openClinicDetailsModal('${req.clinicId}')" style="cursor: pointer; color: #0ea5e9; font-weight: bold; font-size: 15px; text-decoration: none;">🏢 ${realClinicName}</a><br>
+                        <small dir="ltr" style="color: #64748b;">${realEmail}</small>
+                    </td>
+                    <td><span style="color: #8b5cf6; font-weight: bold;">${pkgLabel}</span><br><span style="color: #10b981; font-weight: bold;">${req.price} ج.م</span></td>
+                    <td>${proofHtml}</td>
+                    <td style="text-align: center;">
+                        <button onclick="approvePendingPayment('${req.docId}', '${req.clinicId}', '${req.packageType || 'monthly'}', ${req.price})" style="background: #10b981; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold;">✅ ${isAr?'تفعيل الإيصال':'Approve'}</button>
+                        <button onclick="rejectPendingPayment('${req.docId}')" style="background: #ef4444; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-inline-start: 5px;">❌ ${isAr?'رفض':'Reject'}</button>
+                    </td>
+                </tr>
+            `;
         });
-        isInitialPendingLoad = false;
 
+        // 2. رسم العيادات الجديدة المسجلة (الاستراتيجية الجديدة)
+        allPendingClinicsArray.forEach(clinic => {
+            let dateStr = clinic.createdAt ? new Date(clinic.createdAt.toDate()).toLocaleDateString() : '---';
+            let proofHtml = clinic.syndicateId 
+                ? `<span style="font-family: monospace; font-size: 14px; background: #fef08a; color: #b45309; padding: 4px 10px; border-radius: 6px; font-weight: bold; border: 1px dashed #f59e0b;">نقابة: ${clinic.syndicateId}</span>`
+                : `<span style="color:#94a3b8;">بدون نقابة</span>`;
+
+            html += `
+                <tr style="background-color: #f8fafc; border-right: 4px solid #f59e0b;">
+                    <td style="font-weight: bold; color: #475569;">${dateStr}</td>
+                    <td>
+                        <span style="color: #0ea5e9; font-weight: bold; font-size: 15px;">🏢 ${clinic.clinicName}</span><br>
+                        <small dir="ltr" style="color: #64748b;">${clinic.adminEmail}</small><br>
+                        <small dir="ltr" style="color: #64748b;">📞 ${clinic.phone1 || ''}</small>
+                    </td>
+                    <td><span style="color: #f59e0b; font-weight: bold;">حساب جديد (Pending)</span><br><span style="color: #10b981; font-weight: bold;">باقة مجانية</span></td>
+                    <td>${proofHtml}</td>
+                    <td style="text-align: center;">
+                        <button onclick="approveNewClinic('${clinic.id}')" style="background: #0284c7; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold;">✅ ${isAr?'موافقة وتفعيل':'Approve'}</button>
+                        <button onclick="rejectNewClinic('${clinic.id}', '${clinic.adminEmail}')" style="background: #ef4444; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-inline-start: 5px;">❌ ${isAr?'طرد':'Delete'}</button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        if (totalCount === 0) tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #64748b;">${isAr?'لا توجد طلبات أو عيادات معلقة.':'No pending requests.'}</td></tr>`;
+        else tbody.innerHTML = html;
+
+        if(badge) { badge.innerText = totalCount; badge.style.display = totalCount > 0 ? 'flex' : 'none'; }
+        if(statPending) statPending.innerText = totalCount;
+    };
+
+    // مراقب الإيصالات القديمة
+    db.collection("PendingPayments").orderBy("createdAt", "desc").onSnapshot(snap => {
+        allPendingPaymentsArray = [];
         snap.forEach(doc => {
             const req = doc.data();
             if (req.status === 'قيد المراجعة' || req.status === 'pending') {
-                pendingCount++;
-                let dateStr = req.createdAt ? new Date(req.createdAt.toDate()).toLocaleDateString() : '---';
-                let pkgLabel = c[req.packageType === 'yearly' ? 'pkgElite' : 'pkgPro'] || req.packageType;
-                
-                let proofHtml = req.referenceNumber 
-                    ? `<span style="font-family: monospace; font-size: 16px; background: #e0f2fe; color: #0284c7; padding: 4px 10px; border-radius: 6px; font-weight: bold; border: 1px dashed #38bdf8;">#${req.referenceNumber}</span>`
-                    : `<a href="${req.receiptUrl}" target="_blank" style="background: #f1f5f9; color: #475569; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-weight: bold; border: 1px solid #cbd5e1;">📸 ${isAr?'عرض الإيصال':'View Receipt'}</a>`;
-
-                // 🔴 جلب بيانات العيادة الحقيقية وجعلها قابلة للضغط
-                const matchedClinic = allClinicsList.find(clinic => clinic.id === req.clinicId);
-                const realClinicName = matchedClinic ? matchedClinic.clinicName : req.clinicId;
-                const realEmail = matchedClinic ? (matchedClinic.adminEmail || req.userEmail) : req.userEmail;
-
-                html += `
-                    <tr>
-                        <td style="font-weight: bold; color: #475569;">${dateStr}</td>
-                        <td>
-                            <a class="clinic-link" onclick="openClinicDetailsModal('${req.clinicId}')" style="cursor: pointer; color: #0ea5e9; font-weight: bold; font-size: 15px; text-decoration: none;">🏢 ${realClinicName}</a><br>
-                            <small dir="ltr" style="color: #64748b;">${realEmail}</small>
-                        </td>
-                        <td><span style="color: #8b5cf6; font-weight: bold;">${pkgLabel}</span><br><span style="color: #10b981; font-weight: bold;">${req.price} ج.م</span></td>
-                        <td>${proofHtml}</td>
-                        <td style="text-align: center;">
-                            <button onclick="approvePendingPayment('${doc.id}', '${req.clinicId}', '${req.packageType || 'monthly'}', ${req.price})" style="background: #10b981; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold;">✅ ${isAr?'تفعيل':'Approve'}</button>
-                            <button onclick="rejectPendingPayment('${doc.id}')" style="background: #ef4444; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-inline-start: 5px;">❌ ${isAr?'رفض':'Reject'}</button>
-                        </td>
-                    </tr>
-                `;
+                allPendingPaymentsArray.push({ docId: doc.id, ...req });
             }
         });
+        renderCombinedTable();
+    });
 
-        if (pendingCount === 0) tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #64748b;">${isAr?'لا توجد طلبات معلقة.':'No pending requests.'}</td></tr>`;
-        else tbody.innerHTML = html;
-
-        if(badge) { badge.innerText = pendingCount; badge.style.display = pendingCount > 0 ? 'flex' : 'none'; }
-        if(statPending) statPending.innerText = pendingCount;
+    // 🔴 مراقب العيادات الجديدة (قيد المراجعة)
+    db.collection("Clinics").where("status", "==", "pending").onSnapshot(snap => {
+        allPendingClinicsArray = [];
+        snap.forEach(doc => {
+            allPendingClinicsArray.push({ id: doc.id, ...doc.data() });
+        });
+        renderCombinedTable();
     });
 }
+// ==========================================
+// 🟢 دوال تفعيل وطرد العيادات الجديدة (Pending Strategy)
+// ==========================================
+window.approveNewClinic = async function(clinicId) {
+    if(!confirm("هل أنت متأكد من الموافقة على هذه العيادة وتفعيل حسابها للعمل؟")) return;
+    try {
+        await db.collection("Clinics").doc(clinicId).update({ status: 'active' });
+        alert("✅ تم تفعيل العيادة بنجاح! يمكن للطبيب تسجيل الدخول الآن.");
+    } catch (error) {
+        console.error(error);
+        alert("❌ حدث خطأ أثناء التفعيل.");
+    }
+};
+
+window.rejectNewClinic = async function(clinicId, adminEmail) {
+    if(!confirm("هل أنت متأكد من رفض طلب هذه العيادة وحذف بياناتها نهائياً؟ (لا يمكن التراجع)")) return;
+    try {
+        const batch = db.batch();
+        
+        // 1. مسح كود الدخول
+        const codeSnap = await db.collection("clinicId").where("clinicId", "==", clinicId).get();
+        codeSnap.forEach(doc => batch.delete(doc.ref));
+        
+        // 2. مسح المستخدم
+        if (adminEmail) batch.delete(db.collection("Users").doc(adminEmail));
+        
+        // 3. مسح العيادة
+        batch.delete(db.collection("Clinics").doc(clinicId));
+        
+        await batch.commit();
+        alert("🗑️ تم رفض الطلب ومسح العيادة الوهمية بنجاح.");
+    } catch (error) {
+        console.error(error);
+        alert("❌ حدث خطأ أثناء الحذف.");
+    }
+};
 
 async function approvePendingPayment(requestId, clinicId, pkgType, price) {
     const isAr = (localStorage.getItem('preferredLang') || 'ar') === 'ar';
