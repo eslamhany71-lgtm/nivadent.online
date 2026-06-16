@@ -2122,8 +2122,23 @@ function loadPendingPayments() {
 window.approveNewClinic = async function(clinicId) {
     if(!confirm("هل أنت متأكد من الموافقة على هذه العيادة وتفعيل حسابها للعمل؟")) return;
     try {
+        // 1. جلب بيانات العيادة عشان نبعتها في رسالة الواتساب
+        const clinicDoc = await db.collection("Clinics").doc(clinicId).get();
+        if (!clinicDoc.exists) throw new Error("العيادة غير موجودة");
+        const clinicData = clinicDoc.data();
+
+        // 2. تفعيل العيادة في قاعدة البيانات
         await db.collection("Clinics").doc(clinicId).update({ status: 'active' });
-        alert("✅ تم تفعيل العيادة بنجاح! يمكن للطبيب تسجيل الدخول الآن.");
+
+        // 3. إرسال رسالة الواتساب الترحيبية
+        await sendActivationWhatsApp(
+            clinicData.phone1, 
+            clinicData.clinicName, 
+            clinicData.adminEmail, 
+            clinicData.accessCode
+        );
+
+        alert("✅ تم تفعيل العيادة بنجاح! وتم إرسال رسالة الترحيب للعميل على الواتساب.");
     } catch (error) {
         console.error(error);
         alert("❌ حدث خطأ أثناء التفعيل.");
@@ -2369,5 +2384,67 @@ async function openKpiDetails(type) {
     } catch(e) {
         console.error("Modal Data Error:", e);
         tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: red;">${isAr?'حدث خطأ أثناء جلب البيانات.':'Error loading data.'}</td></tr>`;
+    }
+}
+// ==========================================
+// 🟢 دالة إرسال رسالة الترحيب والتفعيل عبر الواتساب (Green-API)
+// ==========================================
+async function sendActivationWhatsApp(phone, clinicName, email, accessCode) {
+    // ⚠️ حط بياناتك هنا من موقع Green-API
+    const idInstance = "7107623331"; // مثال: 1101000001
+    const apiTokenInstance = "33fc8dd7fdef4ac1939cb0be682ecbe6792fc528152242fbaf"
+
+    if (!idInstance || !apiTokenInstance) {
+        console.error("🛑 بيانات Green-API مفقودة!");
+        return false;
+    }
+
+    // تظبيط رقم التليفون عشان كود الدولة + @c.us
+    let formattedPhone = phone.trim();
+    if (formattedPhone.startsWith('0')) {
+        formattedPhone = '2' + formattedPhone; // تحويل 011 إلى 2011
+    }
+    if (!formattedPhone.includes('@c.us')) {
+        formattedPhone = formattedPhone + '@c.us';
+    }
+
+    // تنسيق رسالة الواتساب الشيك
+    const messageText = `
+🎉 *مرحباً بك في NivaDent!*
+د. المحترم مدير عيادة / *${clinicName}*
+
+يسعدنا إبلاغك بأنه قد *تمت الموافقة* على طلبك وتفعيل حسابك التجريبي بنجاح! 🚀
+
+يمكنك الآن تسجيل الدخول للبدء في إدارة عيادتك بكل سهولة:
+🌐 *رابط الدخول:* https://nivadent.online
+📧 *البريد الإلكتروني:* ${email}
+🔑 *كود العيادة:* ${accessCode}
+
+نتمنى لك تجربة مميزة ومثمرة معنا! 🦷✨
+_للتواصل مع الدعم الفني، يمكنك الرد مباشرة على هذه الرسالة._
+    `.trim();
+
+    const url = `https://api.green-api.com/waInstance${idInstance}/sendMessage/${apiTokenInstance}`;
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chatId: formattedPhone,
+                message: messageText
+            })
+        });
+
+        if (response.ok) {
+            console.log("✅ تم إرسال رسالة التفعيل على الواتساب بنجاح.");
+            return true;
+        } else {
+            console.error("❌ خطأ من Green-API:", await response.text());
+            return false;
+        }
+    } catch (error) {
+        console.error("❌ فشل الاتصال بـ Green-API:", error);
+        return false;
     }
 }
