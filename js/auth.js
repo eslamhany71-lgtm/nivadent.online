@@ -160,117 +160,52 @@ async function loginById() {
 }
 
 
-// ==========================================
-// إنشاء حساب تجريبي مجاني (بنظام OTP المزدوج)
-// ==========================================
+
 let confirmationResultGlobal = null; 
 
+// ==========================================
+// إنشاء حساب تجريبي (نظام المراجعة اليدوية - Pending)
+// ==========================================
 function openTrialModal() {
     document.getElementById('trial_clinic_name').value = '';
     document.getElementById('trial_admin_name').value = '';
     document.getElementById('trial_phone').value = '';
     document.getElementById('trial_email').value = '';
     document.getElementById('trial_password').value = '';
-    document.getElementById('otp_code_input').value = '';
-    
-    document.getElementById('step-1-data').style.display = 'block';
-    document.getElementById('step-2-otp').style.display = 'none';
     document.getElementById('trialModal').style.display = 'flex';
-
-    if (!window.recaptchaVerifier) {
-        window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-            'size': 'normal', 
-            'callback': (response) => { console.log("✅ الكابتشا اتحلت!"); }
-        });
-    }
 }
 
 function closeTrialModal() { document.getElementById('trialModal').style.display = 'none'; }
 
-function cancelOTP() {
-    document.getElementById('step-2-otp').style.display = 'none';
-    document.getElementById('step-1-data').style.display = 'block';
-    document.getElementById('otp_code_input').value = '';
-}
-
-window.sendOTP = async function(e) {
+window.registerTrialClinic = async function(e) {
     e.preventDefault();
     const btn = document.getElementById('btn-submit-trial');
+
+    const clinicName = document.getElementById('trial_clinic_name').value.trim();
+    const adminName = document.getElementById('trial_admin_name').value.trim();
     const phone = document.getElementById('trial_phone').value.trim();
+    const email = document.getElementById('trial_email').value.trim().toLowerCase();
     const password = document.getElementById('trial_password').value;
+    const syndicateId = document.getElementById('trial_syndicate_id').value.trim(); 
 
     if (phone.length !== 11) { alert("❌ رقم الموبايل يجب أن يكون 11 رقم بالضبط."); return; }
     
-    const syndicateId = document.getElementById('trial_syndicate_id').value.trim();
     const syndicateRegex = /^[1-9][0-9]{2,5}$/;
-    
     if (!syndicateRegex.test(syndicateId)) {
-        alert("❌ يرجى إدخال رقم قيد نقابي صحيح (يجب أن يحتوي على أرقام فقط، ولا يقل عن 3 ولا يزيد عن 6 أرقام).");
-        return; 
+        alert("❌ يرجى إدخال رقم قيد نقابي صحيح."); return; 
     }
 
     const strongRegex = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,}$");
     if (!strongRegex.test(password)) {
-        alert("❌ كلمة المرور ضعيفة! يجب ألا تقل عن 8 أحرف، وتحتوي على حرف كبير، حرف صغير، رقم، ورمز.");
-        return; 
+        alert("❌ كلمة المرور ضعيفة! يجب ألا تقل عن 8 أحرف، وتحتوي على حرف كبير وصغير ورقم ورمز."); return; 
     }
 
     btn.disabled = true;
-    btn.innerText = "جاري إرسال الكود...";
-    const formattedPhone = "+20" + phone.substring(1); 
-
-    try {
-        auth.settings.appVerificationDisabledForTesting = true;
-
-        if (!window.recaptchaVerifier) {
-            window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { 'size': 'invisible' });
-        }
-        
-        const appVerifier = window.recaptchaVerifier;
-        const confirmationResult = await auth.signInWithPhoneNumber(formattedPhone, appVerifier);
-        
-        confirmationResultGlobal = confirmationResult; 
-
-        document.getElementById('step-1-data').style.display = 'none';
-        document.getElementById('step-2-otp').style.display = 'block';
-
-    } catch (error) {
-        console.error("SMS Error:", error);
-        alert("❌ فشل إرسال الكود: " + error.message);
-        
-        if (window.recaptchaVerifier) {
-            window.recaptchaVerifier.clear();
-            window.recaptchaVerifier = null;
-        }
-    } finally {
-        btn.disabled = false;
-        btn.innerText = "تأكيد وإرسال كود التفعيل 📱";
-    }
-}
-
-window.verifyOTPAndRegister = async function(e) {
-    e.preventDefault();
-    const btn = document.getElementById('btn-verify-otp');
-    const otpCode = document.getElementById('otp_code_input').value.trim();
-
-    if (otpCode.length !== 6) { alert("❌ يرجى إدخال الكود المكون من 6 أرقام بشكل صحيح."); return; }
-
+    btn.innerText = "جاري تسجيل بيانات العيادة...";
     sessionStorage.setItem('isRegistering', 'true');
-    btn.disabled = true;
-    btn.innerText = "جاري التحقق وإنشاء العيادة...";
 
     try {
-        await confirmationResultGlobal.confirm(otpCode);
-        console.log("✅ الهاتف موثق بنجاح!");
-
-        const clinicName = document.getElementById('trial_clinic_name').value.trim();
-        const adminName = document.getElementById('trial_admin_name').value.trim();
-        const phone = document.getElementById('trial_phone').value.trim();
-        const email = document.getElementById('trial_email').value.trim().toLowerCase();
-        const password = document.getElementById('trial_password').value;
-        const syndicateId = document.getElementById('trial_syndicate_id').value.trim(); 
-
-        // 🔴 حماية الجلسة أثناء الإنشاء 🔴
+        // 1. إنشاء الحساب في Authentication
         await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
         const actualEmail = userCredential.user.email;
@@ -279,44 +214,54 @@ window.verifyOTPAndRegister = async function(e) {
         const expirationDate = new Date();
         expirationDate.setDate(expirationDate.getDate() + 7); 
 
+        // 2. تسجيل العيادة كـ Pending في قاعدة البيانات 🔴
         const clinicRef = await db.collection("Clinics").add({
             clinicName: clinicName, adminEmail: actualEmail, phone1: phone,
-            status: 'active', package: 'trial_7', maxUsers: 3, maxPatients: 500, maxWhatsapp: 50,    
-            accessCode: accessCode, hasUsedTrial: true,
-            syndicateId: syndicateId,
+            status: 'pending', package: 'trial_7', maxUsers: 3, maxPatients: 500, maxWhatsapp: 50,    
+            accessCode: accessCode, hasUsedTrial: true, syndicateId: syndicateId,
             nextPaymentDate: firebase.firestore.Timestamp.fromDate(expirationDate),
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         const newClinicId = clinicRef.id;
 
+        // 3. ربط الكود بالعيادة
         await db.collection("clinicId").doc(accessCode).set({
             clinicId: newClinicId, name: clinicName, phone: phone, email: actualEmail, role: "admin", activated: true
         });
 
+        // 4. إنشاء ملف المستخدم (ومش هنخليه متصل الآن لأنه لسه pending)
         await db.collection("Users").doc(actualEmail).set({
             role: 'admin', name: adminName, empCode: 'TRIAL-ADMIN', email: actualEmail, clinicId: newClinicId, branchId: 'main', 
             permissions: { patients: true, calendar: true, finances: true, inventory: true, reports: true, settings: true, services: true, contracts: true, branches: true, hr: true, notifications: true },
-            isOnline: true, lastLogin: firebase.firestore.FieldValue.serverTimestamp(), createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            isOnline: false, createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        sessionStorage.setItem('userRole', 'admin');
-        sessionStorage.setItem('empCode', 'TRIAL-ADMIN');
-        sessionStorage.setItem('clinicId', newClinicId);
-        sessionStorage.setItem('branchId', 'main'); 
-
-        alert(`✅ مبروك يا دكتور ${adminName}!\nتم توثيق الرقم وتفعيل العيادة بنجاح.\n🔑 كود العيادة الخاص بك للدخول هو: [ ${accessCode} ]`);
+        // 5. رسالة التوجيه للمراجعة ⏳
+        alert(`✅ مبروك يا دكتور ${adminName}!\nتم تسجيل بيانات عيادتك بنجاح.\n🔑 كود العيادة الخاص بك هو: [ ${accessCode} ] (احتفظ به جيداً).\n\n⏳ حسابك الآن (قيد المراجعة) لتأكيد بيانات النقابة. سيتم تفعيل حسابك من قبل الإدارة قريباً لتتمكن من الدخول.`);
         
         sessionStorage.removeItem('isRegistering');
-        window.location.replace("home.html");
+        await auth.signOut(); // طرد فوري لحد ما الإدارة توافق
+        window.location.replace("index.html");
 
     } catch (error) {
         sessionStorage.removeItem('isRegistering');
-        console.error("OTP or Registration Error:", error);
-        alert("❌ الكود غير صحيح أو حدث خطأ: " + error.message);
+        console.error("Registration Error:", error);
+        if (error.code === 'auth/email-already-in-use') alert("❌ هذا البريد الإلكتروني مستخدم بالفعل.");
+        else alert("❌ حدث خطأ: " + error.message);
         btn.disabled = false;
-        btn.innerText = "تحقق وإنشاء الحساب 🚀";
+        btn.innerText = "تأكيد وتسجيل الحساب";
     }
 }
+
+
+
+function closeTrialModal() { document.getElementById('trialModal').style.display = 'none'; }
+
+
+
+
+
+
 
 // ==========================================
 // دوال تفعيل حساب موظف (الممرضة/الدكتور)
